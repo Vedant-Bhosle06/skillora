@@ -1,0 +1,48 @@
+# =============================================================================
+# SKILLORA — .gitignore
+# =============================================================================
+
+# ----- Environment files (NEVER commit these) -----
+.env
+.env.local
+.env.*.local
+
+# ----- Node.js -----
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ----- React / Vite build output -----
+skillora-client/dist/
+skillora-client/.vite/
+
+# ----- OS files -----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ----- Editor -----
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ----- Logs -----
+*.log
+logs/
