@@ -25,6 +25,7 @@ app.use(express.json());
 app.use('/api/auth',   require('./routes/auth'));
 app.use('/api/skills', require('./routes/skills'));
 app.use('/api/roles',  require('./routes/roles'));
+app.use('/api/paths',  require('./routes/paths'));
 app.use('/api/stats',  require('./routes/stats'));
 app.use('/api/graph',  require('./routes/graph'));
 
