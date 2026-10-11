@@ -21,6 +21,10 @@ connectDB();
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' }));
 app.use(express.json());
 
+// Routes
+app.use('/api/auth',   require('./routes/auth'));
+
+
 app.use('/api', notFound);
 app.use(errorHandler);
 
