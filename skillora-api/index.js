@@ -27,6 +27,7 @@ app.use('/api/users',  require('./routes/users'));
 app.use('/api/skills', require('./routes/skills'));
 app.use('/api/roles',  require('./routes/roles'));
 app.use('/api/paths',  require('./routes/paths'));
+app.use('/api/admin',  require('./routes/admin'));
 app.use('/api/stats',  require('./routes/stats'));
 app.use('/api/graph',  require('./routes/graph'));
 
