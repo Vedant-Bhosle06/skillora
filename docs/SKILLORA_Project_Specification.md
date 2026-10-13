@@ -62,6 +62,7 @@
 | 22 | API-P-1 and API-P-2 overlapped (P-2's rank 1 *is* the primary path), running the search twice; `computed_paths.algorithm` was a single value for mixed algorithms. | Merged into one endpoint **API-P-1** `POST /compute/paths` returning k ranked paths. **API-P-2 retired.** `algorithm` ∈ `a_star \| dijkstra \| greedy_fallback`. |
 | 23 | P1 banner said "20+ roles" while the dataset plan targets 15–20. | Banner changed to "80+ skills, 15+ roles". |
 | 24 | No size guard: A\* over sets of skills is exponential in the worst case. | Search capped at 200,000 expanded states → falls back to cost-aware topological sort (`algorithm: "greedy_fallback"`). |
+| 25 | `$text` search matches whole words only, so it cannot do prefix typeahead (`pyt` never finds Python). | Replaced the text index with a case-insensitive word-prefix match on `name` + `aliases` (DB-2, P3, API-N-4). |
 
 ---
 
@@ -161,7 +162,7 @@ Skill **nodes** and **edges** are kept in two separate collections (rather than 
   updatedAt: Date
 }
 ```
-Indexes: `slug` (unique), text index on `name` + `aliases` (for search UI and typeahead autocomplete).
+Indexes: `slug` (unique), case-insensitive word-prefix match on `name` + `aliases` (regex query, for search UI and typeahead autocomplete; no text index).
 
 **Cost of a learning step:** learning skill *s* from rank *r* to target rank *t* costs `estHours(s) × (t − r) / 2`. So zero→beginner = 0.5 × estHours, zero→intermediate = 1.0 ×, beginner→intermediate = 0.5 ×, zero→advanced = 1.5 ×.
 
@@ -297,8 +298,8 @@ Public marketing/explainer page. No auth.
 - **API-N-3** `POST /api/auth/login` → reads `users` (DB-1), issues JWT (expiry via `JWT_EXPIRES_IN` env var, default `7d`), writes session record to `sessions` (DB-7). No refresh-token flow in v1.
 
 ### P3 — Onboarding: Skill Profile Builder (`/onboarding/skills`)
-Searchable multi-select of skills + proficiency picker per skill. Typeahead autocomplete leverages the `skills` text index on `name` + `aliases`.
-- **API-N-4** `GET /api/skills?search=` → reads `skills` (DB-2), text index search on `name` + `aliases`
+Searchable multi-select of skills + proficiency picker per skill. Typeahead autocomplete uses a case-insensitive word-prefix match on `name` + `aliases`.
+- **API-N-4** `GET /api/skills?search=` → reads `skills` (DB-2), case-insensitive word-prefix match on `name` + `aliases`
 - **API-N-5** `POST /api/users/me/skills` → writes `currentSkills` array in `users` (DB-1); marks the user's active path `stale`
 
 ### P4 — Target Role Selection (`/onboarding/role`)
