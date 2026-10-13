@@ -31,6 +31,8 @@ app.use('/api/admin',  require('./routes/admin'));
 app.use('/api/stats',  require('./routes/stats'));
 app.use('/api/graph',  require('./routes/graph'));
 
+// API Documentation
+require('./docs/swagger')(app);
 
 app.use('/api', notFound);
 app.use(errorHandler);
