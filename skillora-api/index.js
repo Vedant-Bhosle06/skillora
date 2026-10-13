@@ -23,6 +23,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth',   require('./routes/auth'));
+app.use('/api/users',  require('./routes/users'));
 app.use('/api/skills', require('./routes/skills'));
 app.use('/api/roles',  require('./routes/roles'));
 app.use('/api/paths',  require('./routes/paths'));
