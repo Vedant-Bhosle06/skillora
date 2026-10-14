@@ -1,0 +1,592 @@
+[
+  {
+    "slug": "excel",
+    "name": "Excel",
+    "category": "tool",
+    "description": "Spreadsheet basics for analysis. Covers formulas, sorting, filtering, pivot tables and simple charts.",
+    "aliases": [
+      "microsoft excel",
+      "spreadsheets"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "excel-advanced",
+    "name": "Advanced Excel",
+    "category": "tool",
+    "description": "Advanced spreadsheet techniques including lookup functions, Power Query, complex pivot tables and basic macros.",
+    "aliases": [
+      "advanced excel",
+      "power query",
+      "xlookup"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "statistics",
+    "name": "Statistics",
+    "category": "math",
+    "description": "Descriptive statistics, distributions, sampling and confidence intervals needed to interpret data.",
+    "aliases": [
+      "stats",
+      "descriptive statistics"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 30,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "probability",
+    "name": "Probability",
+    "category": "math",
+    "description": "Probability rules, conditional probability, Bayes theorem and random variables.",
+    "aliases": [
+      "probability theory"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "linear-algebra",
+    "name": "Linear Algebra",
+    "category": "math",
+    "description": "Vectors, matrices, linear transformations and decompositions that underpin machine learning methods.",
+    "aliases": [
+      "linear algebra",
+      "matrices",
+      "vectors"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "calculus",
+    "name": "Calculus",
+    "category": "math",
+    "description": "Derivatives, partial derivatives and gradients, used to understand how models are optimized.",
+    "aliases": [
+      "derivatives",
+      "gradients"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "jupyter",
+    "name": "Jupyter Notebooks",
+    "category": "tool",
+    "description": "Interactive notebooks for combining code, output and notes during analysis.",
+    "aliases": [
+      "jupyter",
+      "notebooks",
+      "ipython"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 5,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "numpy",
+    "name": "NumPy",
+    "category": "framework",
+    "description": "Python library for fast array computing, vectorized operations and basic linear algebra.",
+    "aliases": [
+      "numpy",
+      "numerical python"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "pandas",
+    "name": "Pandas",
+    "category": "framework",
+    "description": "Python library for working with tabular data. Covers DataFrames, filtering, grouping, merging and reshaping.",
+    "aliases": [
+      "dataframes",
+      "pandas"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 25,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "matplotlib-seaborn",
+    "name": "Matplotlib and Seaborn",
+    "category": "framework",
+    "description": "Python plotting libraries for building statistical charts and customizing figures.",
+    "aliases": [
+      "matplotlib",
+      "seaborn",
+      "plotting"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "data-cleaning",
+    "name": "Data Cleaning",
+    "category": "concept",
+    "description": "Finding and fixing missing values, duplicates, wrong types and inconsistent formats in raw data.",
+    "aliases": [
+      "data wrangling",
+      "data preparation"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "exploratory-data-analysis",
+    "name": "Exploratory Data Analysis",
+    "category": "concept",
+    "description": "Summarizing and visualizing a dataset to find patterns, outliers and questions worth testing.",
+    "aliases": [
+      "eda"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 20,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "data-visualization",
+    "name": "Data Visualization",
+    "category": "concept",
+    "description": "Choosing the right chart type and design principles to show data clearly and honestly.",
+    "aliases": [
+      "dataviz",
+      "charts",
+      "data viz"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "data-storytelling",
+    "name": "Data Storytelling",
+    "category": "soft-skill",
+    "description": "Turning analysis into a clear narrative with visuals so decision makers can act on the findings.",
+    "aliases": [
+      "storytelling",
+      "presenting data"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "tableau",
+    "name": "Tableau",
+    "category": "tool",
+    "description": "Business intelligence tool for building interactive dashboards and visual analyses from many data sources.",
+    "aliases": [
+      "tableau desktop"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "power-bi",
+    "name": "Power BI",
+    "category": "tool",
+    "description": "Microsoft business intelligence tool for loading data, modeling it and building reports and dashboards.",
+    "aliases": [
+      "powerbi",
+      "power bi",
+      "microsoft power bi"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 20,
+    "marketDemand": 0.8
+  },
+  {
+    "slug": "dax",
+    "name": "DAX",
+    "category": "programming",
+    "description": "Formula language for calculated columns and measures in Power BI and Excel data models.",
+    "aliases": [
+      "dax",
+      "data analysis expressions"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "r-programming",
+    "name": "R Programming",
+    "category": "programming",
+    "description": "Statistical programming language with strong tools for data manipulation, modeling and plotting.",
+    "aliases": [
+      "r",
+      "r language",
+      "tidyverse"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 30,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "hypothesis-testing",
+    "name": "Hypothesis Testing",
+    "category": "math",
+    "description": "Using t-tests, chi-square tests and p-values to decide whether an observed effect is real.",
+    "aliases": [
+      "t-test",
+      "p-value",
+      "significance testing"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "ab-testing",
+    "name": "A/B Testing",
+    "category": "domain",
+    "description": "Designing and analyzing controlled experiments to compare product or marketing changes.",
+    "aliases": [
+      "ab testing",
+      "experimentation",
+      "split testing"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 12,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "machine-learning",
+    "name": "Machine Learning",
+    "category": "concept",
+    "description": "Core machine learning ideas. Covers supervised and unsupervised learning, model evaluation, overfitting and common algorithms.",
+    "aliases": [
+      "ml",
+      "machine learning"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 50,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "scikit-learn",
+    "name": "scikit-learn",
+    "category": "framework",
+    "description": "Python library for classical machine learning, with ready-made models, pipelines and evaluation tools.",
+    "aliases": [
+      "sklearn",
+      "scikit learn"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.55
+  },
+  {
+    "slug": "feature-engineering",
+    "name": "Feature Engineering",
+    "category": "concept",
+    "description": "Creating and selecting input variables that help models learn, including encoding, scaling and aggregation.",
+    "aliases": [
+      "features",
+      "feature selection"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "deep-learning",
+    "name": "Deep Learning",
+    "category": "concept",
+    "description": "Neural networks with many layers. Covers backpropagation, CNNs, RNNs and training techniques.",
+    "aliases": [
+      "dl",
+      "neural networks",
+      "deep learning"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 45,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "tensorflow",
+    "name": "TensorFlow",
+    "category": "framework",
+    "description": "Google deep learning framework with the Keras API for building and deploying neural networks.",
+    "aliases": [
+      "tf",
+      "keras"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 30,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "pytorch",
+    "name": "PyTorch",
+    "category": "framework",
+    "description": "Deep learning framework popular in research and industry, known for its dynamic computation graphs.",
+    "aliases": [
+      "torch",
+      "pytorch"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 30,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "nlp",
+    "name": "Natural Language Processing",
+    "category": "domain",
+    "description": "Machine learning on text. Covers tokenization, embeddings, text classification and sequence models.",
+    "aliases": [
+      "nlp",
+      "text mining",
+      "language processing"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 35,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "computer-vision",
+    "name": "Computer Vision",
+    "category": "domain",
+    "description": "Machine learning on images and video, including classification, detection and segmentation.",
+    "aliases": [
+      "cv",
+      "image processing",
+      "opencv"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 35,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "transformers-llms",
+    "name": "Transformers and LLMs",
+    "category": "concept",
+    "description": "Transformer architectures and large language models, including attention, pretraining and fine-tuning.",
+    "aliases": [
+      "llm",
+      "transformers",
+      "large language models",
+      "gpt"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 40,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "llm-app-development",
+    "name": "LLM App Development",
+    "category": "domain",
+    "description": "Building applications on top of hosted language models. Covers prompting, retrieval-augmented generation and API integration.",
+    "aliases": [
+      "llm apps",
+      "rag",
+      "prompt engineering",
+      "langchain"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 30,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "time-series",
+    "name": "Time Series Analysis",
+    "category": "domain",
+    "description": "Analyzing and forecasting data ordered in time, including trend, seasonality and ARIMA-style models.",
+    "aliases": [
+      "forecasting",
+      "time series"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 25,
+    "marketDemand": 0.25
+  },
+  {
+    "slug": "pyspark",
+    "name": "PySpark",
+    "category": "framework",
+    "description": "Python API for Apache Spark, used to process large datasets across a cluster.",
+    "aliases": [
+      "spark",
+      "apache spark",
+      "pyspark"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 30,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "data-warehousing",
+    "name": "Data Warehousing",
+    "category": "concept",
+    "description": "Designing central analytical stores with star schemas, fact and dimension tables.",
+    "aliases": [
+      "data warehouse",
+      "dwh",
+      "olap"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "data-modeling",
+    "name": "Data Modeling",
+    "category": "concept",
+    "description": "Structuring data into tables and relationships, including normalization and dimensional models.",
+    "aliases": [
+      "schema design",
+      "dimensional modeling",
+      "er diagrams"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "etl-pipelines",
+    "name": "ETL Pipelines",
+    "category": "concept",
+    "description": "Building pipelines that extract data from sources, transform it and load it into a target store.",
+    "aliases": [
+      "etl",
+      "elt",
+      "data pipelines"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "airflow",
+    "name": "Apache Airflow",
+    "category": "tool",
+    "description": "Workflow orchestrator for scheduling and monitoring data pipelines defined as Python DAGs.",
+    "aliases": [
+      "airflow",
+      "apache airflow",
+      "dags"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "dbt",
+    "name": "dbt",
+    "category": "tool",
+    "description": "SQL-based transformation tool for building tested, documented analytics models inside a warehouse.",
+    "aliases": [
+      "data build tool",
+      "dbt core"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "snowflake",
+    "name": "Snowflake",
+    "category": "database",
+    "description": "Cloud data warehouse platform with separated storage and compute, queried with SQL.",
+    "aliases": [
+      "snowflake data cloud"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "bigquery",
+    "name": "BigQuery",
+    "category": "database",
+    "description": "Google Cloud serverless data warehouse for running SQL queries on very large datasets.",
+    "aliases": [
+      "google bigquery",
+      "bq"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "kafka",
+    "name": "Apache Kafka",
+    "category": "tool",
+    "description": "Distributed event streaming platform for moving data between systems in real time.",
+    "aliases": [
+      "kafka",
+      "apache kafka",
+      "event streaming"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 25,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "mlflow",
+    "name": "MLflow",
+    "category": "tool",
+    "description": "Open-source tool for tracking experiments, packaging models and managing the model lifecycle.",
+    "aliases": [
+      "mlflow",
+      "experiment tracking"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 12,
+    "marketDemand": 0.2
+  },
+  {
+    "slug": "mlops",
+    "name": "MLOps",
+    "category": "concept",
+    "description": "Practices for deploying, monitoring and retraining machine learning models in production.",
+    "aliases": [
+      "ml ops",
+      "model deployment",
+      "machine learning operations"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 30,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "python",
+    "name": "Python",
+    "category": "programming",
+    "description": "General-purpose programming language widely used for scripting, data analysis, automation and web back ends. Covers syntax, data types, functions, modules and common libraries.",
+    "aliases": [
+      "py",
+      "python3"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 40,
+    "marketDemand": 0.9
+  },
+  {
+    "slug": "sql",
+    "name": "SQL",
+    "category": "database",
+    "description": "Language for querying and manipulating relational databases. Covers SELECT, joins, aggregation, subqueries and basic schema design.",
+    "aliases": [
+      "structured query language"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 30,
+    "marketDemand": 0.9
+  }
+]
