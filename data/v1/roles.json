@@ -1,0 +1,1293 @@
+[
+  {
+    "slug": "data-analyst",
+    "title": "Data Analyst",
+    "description": "Turns raw data into answers using SQL, Python and BI dashboards. Typically the first data role people aim for.",
+    "category": "data",
+    "demandScore": 0.85,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "python"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "sql"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "statistics"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "pandas"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "power-bi",
+          "tableau"
+        ],
+        "minProficiency": "beginner",
+        "label": "BI tool"
+      }
+    ]
+  },
+  {
+    "slug": "bi-analyst",
+    "title": "BI Analyst",
+    "description": "Builds dashboards and reports that help business teams track performance, using BI tools, SQL and spreadsheets.",
+    "category": "data",
+    "demandScore": 0.6,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "sql"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "excel"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "statistics"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "power-bi",
+          "tableau"
+        ],
+        "minProficiency": "intermediate",
+        "label": "BI tool"
+      },
+      {
+        "anyOf": [
+          "data-visualization"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "data-storytelling"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "data-scientist",
+    "title": "Data Scientist",
+    "description": "Uses statistics and machine learning to model data and answer open-ended business questions.",
+    "category": "data",
+    "demandScore": 0.75,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "python"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "sql"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "statistics"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "pandas"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "exploratory-data-analysis"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "machine-learning"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "scikit-learn"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "matplotlib-seaborn",
+          "tableau",
+          "power-bi"
+        ],
+        "minProficiency": "beginner",
+        "label": "Visualization tool"
+      }
+    ]
+  },
+  {
+    "slug": "machine-learning-engineer",
+    "title": "Machine Learning Engineer",
+    "description": "Builds, trains and ships machine learning models as reliable software.",
+    "category": "data",
+    "demandScore": 0.7,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "python"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "machine-learning"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "scikit-learn"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "feature-engineering"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "deep-learning"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "tensorflow",
+          "pytorch"
+        ],
+        "minProficiency": "intermediate",
+        "label": "DL framework"
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "docker"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "mlflow"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "data-engineer",
+    "title": "Data Engineer",
+    "description": "Designs and runs the pipelines and warehouses that move data from source systems to analysts.",
+    "category": "data",
+    "demandScore": 0.8,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "python"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "sql"
+        ],
+        "minProficiency": "advanced",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "data-modeling"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "data-warehousing"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "etl-pipelines"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "airflow"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "snowflake",
+          "bigquery"
+        ],
+        "minProficiency": "beginner",
+        "label": "Cloud warehouse"
+      },
+      {
+        "anyOf": [
+          "pyspark"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "linux"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "analytics-engineer",
+    "title": "Analytics Engineer",
+    "description": "Models clean, tested datasets inside the warehouse so analysts can self-serve, mostly using SQL and dbt.",
+    "category": "data",
+    "demandScore": 0.5,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "sql"
+        ],
+        "minProficiency": "advanced",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "data-modeling"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "data-warehousing"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "dbt"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "snowflake",
+          "bigquery"
+        ],
+        "minProficiency": "beginner",
+        "label": "Cloud warehouse"
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "python"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "ai-nlp-engineer",
+    "title": "AI / NLP Engineer",
+    "description": "Builds language-based AI features using NLP techniques, transformers and large language models.",
+    "category": "data",
+    "demandScore": 0.55,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "python"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "machine-learning"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "deep-learning"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "tensorflow",
+          "pytorch"
+        ],
+        "minProficiency": "intermediate",
+        "label": "DL framework"
+      },
+      {
+        "anyOf": [
+          "nlp"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "transformers-llms"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "llm-app-development"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "mlops-engineer",
+    "title": "MLOps Engineer",
+    "description": "Automates the deployment, monitoring and retraining of machine learning models in production.",
+    "category": "data",
+    "demandScore": 0.5,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "python"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "machine-learning"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "mlflow"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "mlops"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "docker"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "kubernetes"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "github-actions",
+          "jenkins"
+        ],
+        "minProficiency": "intermediate",
+        "label": "CI tool"
+      },
+      {
+        "anyOf": [
+          "aws",
+          "azure",
+          "gcp"
+        ],
+        "minProficiency": "beginner",
+        "label": "Cloud platform"
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "frontend-developer",
+    "title": "Frontend Developer",
+    "description": "Builds the interactive, accessible user interfaces of web applications.",
+    "category": "engineering",
+    "demandScore": 0.8,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "html"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "css"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "javascript"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "es6-plus"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "react",
+          "vue",
+          "angular"
+        ],
+        "minProficiency": "intermediate",
+        "label": "Frontend framework"
+      },
+      {
+        "anyOf": [
+          "typescript"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "responsive-design"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "tailwind",
+          "bootstrap"
+        ],
+        "minProficiency": "beginner",
+        "label": "CSS framework"
+      },
+      {
+        "anyOf": [
+          "web-accessibility"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "backend-developer-node",
+    "title": "Backend Developer (Node.js)",
+    "description": "Builds server-side APIs and services in JavaScript on Node.js.",
+    "category": "engineering",
+    "demandScore": 0.75,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "javascript"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "node-js"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "express"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "rest-api-design"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "mongodb",
+          "postgresql"
+        ],
+        "minProficiency": "intermediate",
+        "label": "Database"
+      },
+      {
+        "anyOf": [
+          "authentication-jwt"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "web-security"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "backend-testing"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "python-backend-developer",
+    "title": "Python Backend Developer",
+    "description": "Builds web APIs and services in Python using a framework such as Django, Flask or FastAPI.",
+    "category": "engineering",
+    "demandScore": 0.7,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "python"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "sql"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "django",
+          "flask",
+          "fastapi"
+        ],
+        "minProficiency": "intermediate",
+        "label": "Python web framework"
+      },
+      {
+        "anyOf": [
+          "rest-api-design"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "postgresql",
+          "mongodb"
+        ],
+        "minProficiency": "intermediate",
+        "label": "Database"
+      },
+      {
+        "anyOf": [
+          "authentication-jwt"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "backend-testing"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "docker"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "full-stack-mern-developer",
+    "title": "Full-Stack MERN Developer",
+    "description": "Builds complete web applications with MongoDB, Express, React and Node.js.",
+    "category": "engineering",
+    "demandScore": 0.8,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "react"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "node-js"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "express"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "mongodb"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "mongoose"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "rest-api-design"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "authentication-jwt"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "css"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "tailwind",
+          "bootstrap"
+        ],
+        "minProficiency": "beginner",
+        "label": "CSS framework"
+      }
+    ]
+  },
+  {
+    "slug": "java-backend-developer",
+    "title": "Java Backend Developer",
+    "description": "Builds enterprise back-end services in Java with Spring Boot.",
+    "category": "engineering",
+    "demandScore": 0.65,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "java"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "oop"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "spring-boot"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "sql"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "postgresql",
+          "mongodb"
+        ],
+        "minProficiency": "beginner",
+        "label": "Database"
+      },
+      {
+        "anyOf": [
+          "rest-api-design"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "data-structures-algorithms"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "docker"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "backend-testing"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "devops-engineer",
+    "title": "DevOps Engineer",
+    "description": "Automates building, testing, deploying and running software using containers, pipelines and infrastructure as code.",
+    "category": "engineering",
+    "demandScore": 0.75,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "linux"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "bash-scripting"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "docker"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "kubernetes"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "ci-cd-concepts"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "github-actions",
+          "jenkins"
+        ],
+        "minProficiency": "intermediate",
+        "label": "CI tool"
+      },
+      {
+        "anyOf": [
+          "terraform"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "aws",
+          "azure",
+          "gcp"
+        ],
+        "minProficiency": "beginner",
+        "label": "Cloud platform"
+      },
+      {
+        "anyOf": [
+          "monitoring-prometheus-grafana"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "cloud-engineer",
+    "title": "Cloud Engineer",
+    "description": "Designs, builds and secures infrastructure on a public cloud platform.",
+    "category": "engineering",
+    "demandScore": 0.75,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "cloud-fundamentals"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "aws",
+          "azure",
+          "gcp"
+        ],
+        "minProficiency": "intermediate",
+        "label": "Cloud platform"
+      },
+      {
+        "anyOf": [
+          "iam-cloud-security"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "networking-basics"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "linux"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "terraform"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "serverless"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "docker"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "monitoring-prometheus-grafana"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "site-reliability-engineer",
+    "title": "Site Reliability Engineer",
+    "description": "Keeps production systems reliable using monitoring, automation and software engineering practices.",
+    "category": "engineering",
+    "demandScore": 0.55,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "linux"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "bash-scripting"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "networking-basics"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "monitoring-prometheus-grafana"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "logging-elk"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "sre-practices"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "python",
+          "go"
+        ],
+        "minProficiency": "intermediate",
+        "label": "Programming language"
+      },
+      {
+        "anyOf": [
+          "docker"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "kubernetes"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "git"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "platform-kubernetes-engineer",
+    "title": "Platform / Kubernetes Engineer",
+    "description": "Runs the Kubernetes platform other engineering teams deploy onto, including GitOps and cluster tooling.",
+    "category": "engineering",
+    "demandScore": 0.5,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "kubernetes"
+        ],
+        "minProficiency": "advanced",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "docker"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "helm"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "gitops-argocd"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "linux"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "terraform"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "github-actions",
+          "jenkins"
+        ],
+        "minProficiency": "intermediate",
+        "label": "CI tool"
+      },
+      {
+        "anyOf": [
+          "aws",
+          "azure",
+          "gcp"
+        ],
+        "minProficiency": "beginner",
+        "label": "Cloud platform"
+      },
+      {
+        "anyOf": [
+          "monitoring-prometheus-grafana"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "go"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  },
+  {
+    "slug": "ui-developer",
+    "title": "UI Developer",
+    "description": "Turns design mockups into polished, accessible interfaces, working between designers and engineers.",
+    "category": "design",
+    "demandScore": 0.4,
+    "requiredSkills": [
+      {
+        "anyOf": [
+          "figma"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "html"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "css"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "web-accessibility"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "responsive-design"
+        ],
+        "minProficiency": "intermediate",
+        "label": ""
+      },
+      {
+        "anyOf": [
+          "tailwind",
+          "bootstrap"
+        ],
+        "minProficiency": "beginner",
+        "label": "CSS framework"
+      },
+      {
+        "anyOf": [
+          "javascript"
+        ],
+        "minProficiency": "beginner",
+        "label": ""
+      }
+    ]
+  }
+]
