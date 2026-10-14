@@ -588,5 +588,514 @@
     "baseDifficulty": 3,
     "estHours": 30,
     "marketDemand": 0.9
+  },
+  {
+    "slug": "html",
+    "name": "HTML",
+    "category": "programming",
+    "description": "Markup language that structures web pages. Covers elements, forms, semantic tags and document layout.",
+    "aliases": [
+      "html5",
+      "markup"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 15,
+    "marketDemand": 0.85
+  },
+  {
+    "slug": "css",
+    "name": "CSS",
+    "category": "programming",
+    "description": "Styling language for web pages. Covers selectors, the box model, flexbox, grid and positioning.",
+    "aliases": [
+      "css3",
+      "stylesheets"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 25,
+    "marketDemand": 0.85
+  },
+  {
+    "slug": "responsive-design",
+    "name": "Responsive Design",
+    "category": "concept",
+    "description": "Building layouts that adapt to different screen sizes with media queries and flexible units.",
+    "aliases": [
+      "responsive",
+      "mobile first",
+      "media queries"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "tailwind",
+    "name": "Tailwind CSS",
+    "category": "framework",
+    "description": "Utility-first CSS framework for styling interfaces directly in markup.",
+    "aliases": [
+      "tailwindcss",
+      "tailwind css"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "bootstrap",
+    "name": "Bootstrap",
+    "category": "framework",
+    "description": "Component-based CSS framework with a grid system and prebuilt UI elements.",
+    "aliases": [
+      "bootstrap css",
+      "twitter bootstrap"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 10,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "javascript",
+    "name": "JavaScript",
+    "category": "programming",
+    "description": "The programming language of the web. Covers core syntax, functions, objects, closures and the event loop.",
+    "aliases": [
+      "js",
+      "javascript",
+      "ecmascript"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 40,
+    "marketDemand": 0.9
+  },
+  {
+    "slug": "dom-manipulation",
+    "name": "DOM Manipulation",
+    "category": "concept",
+    "description": "Reading and changing a web page from JavaScript through the DOM, including event handling.",
+    "aliases": [
+      "dom",
+      "document object model",
+      "events"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "es6-plus",
+    "name": "Modern JavaScript (ES6+)",
+    "category": "programming",
+    "description": "Modern JavaScript features such as arrow functions, destructuring, modules, classes and template strings.",
+    "aliases": [
+      "es6",
+      "es2015",
+      "modern javascript"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "async-javascript",
+    "name": "Asynchronous JavaScript",
+    "category": "concept",
+    "description": "Handling asynchronous work with callbacks, promises and async/await, including network requests.",
+    "aliases": [
+      "async await",
+      "promises",
+      "callbacks",
+      "fetch"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "typescript",
+    "name": "TypeScript",
+    "category": "programming",
+    "description": "Typed superset of JavaScript that catches errors at compile time through static types.",
+    "aliases": [
+      "ts",
+      "typescript"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.65
+  },
+  {
+    "slug": "npm",
+    "name": "npm",
+    "category": "tool",
+    "description": "Package manager for JavaScript projects. Covers installing dependencies, scripts and semantic versioning.",
+    "aliases": [
+      "npm",
+      "package manager",
+      "yarn",
+      "pnpm"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 6,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "build-tools-vite",
+    "name": "Build Tools (Vite)",
+    "category": "tool",
+    "description": "Bundlers and dev servers that compile and optimize front-end code, with a focus on Vite.",
+    "aliases": [
+      "vite",
+      "webpack",
+      "bundler"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 8,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "react",
+    "name": "React",
+    "category": "framework",
+    "description": "Component-based library for building user interfaces. Covers JSX, props, state, hooks and rendering.",
+    "aliases": [
+      "reactjs",
+      "react.js",
+      "hooks"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 40,
+    "marketDemand": 0.75
+  },
+  {
+    "slug": "redux",
+    "name": "Redux",
+    "category": "framework",
+    "description": "Predictable global state management for JavaScript apps, commonly used with React.",
+    "aliases": [
+      "redux toolkit",
+      "state management"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "next-js",
+    "name": "Next.js",
+    "category": "framework",
+    "description": "React framework with file-based routing, server-side rendering and API routes.",
+    "aliases": [
+      "nextjs",
+      "next",
+      "ssr"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "vue",
+    "name": "Vue.js",
+    "category": "framework",
+    "description": "Progressive front-end framework with reactive data binding and single-file components.",
+    "aliases": [
+      "vuejs",
+      "vue.js"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 30,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "angular",
+    "name": "Angular",
+    "category": "framework",
+    "description": "Full front-end framework by Google, built on TypeScript with dependency injection and RxJS.",
+    "aliases": [
+      "angularjs",
+      "angular"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 40,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "web-accessibility",
+    "name": "Web Accessibility",
+    "category": "concept",
+    "description": "Making websites usable for people with disabilities through semantic HTML, ARIA and WCAG guidelines.",
+    "aliases": [
+      "a11y",
+      "wcag",
+      "accessibility"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "frontend-testing",
+    "name": "Frontend Testing",
+    "category": "concept",
+    "description": "Testing user interfaces with unit, component and end-to-end tests using tools like Jest and Cypress.",
+    "aliases": [
+      "jest",
+      "testing library",
+      "cypress",
+      "unit testing"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "node-js",
+    "name": "Node.js",
+    "category": "framework",
+    "description": "JavaScript runtime for running code on servers. Covers modules, the event loop, file access and building services.",
+    "aliases": [
+      "node",
+      "nodejs",
+      "node.js"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 30,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "express",
+    "name": "Express.js",
+    "category": "framework",
+    "description": "Minimal Node.js web framework for routing, middleware and building HTTP APIs.",
+    "aliases": [
+      "expressjs",
+      "express.js"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "rest-api-design",
+    "name": "REST API Design",
+    "category": "concept",
+    "description": "Designing resource-oriented HTTP APIs with proper methods, status codes, versioning and error handling.",
+    "aliases": [
+      "rest",
+      "restful api",
+      "api design"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "graphql",
+    "name": "GraphQL",
+    "category": "framework",
+    "description": "Query language for APIs that lets clients request exactly the fields they need.",
+    "aliases": [
+      "graphql",
+      "gql"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.25
+  },
+  {
+    "slug": "mongodb",
+    "name": "MongoDB",
+    "category": "database",
+    "description": "Document-oriented NoSQL database that stores JSON-like records. Covers CRUD, indexes and aggregation.",
+    "aliases": [
+      "mongo",
+      "nosql",
+      "mongo db"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 20,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "mongoose",
+    "name": "Mongoose",
+    "category": "framework",
+    "description": "Node.js library that adds schemas, validation and models on top of MongoDB.",
+    "aliases": [
+      "mongoose odm",
+      "odm"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 10,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "postgresql",
+    "name": "PostgreSQL",
+    "category": "database",
+    "description": "Open-source relational database with strong SQL support, indexes, transactions and JSON types.",
+    "aliases": [
+      "postgres",
+      "psql",
+      "pg"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "redis",
+    "name": "Redis",
+    "category": "database",
+    "description": "In-memory data store used for caching, sessions and queues.",
+    "aliases": [
+      "redis cache",
+      "caching"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "authentication-jwt",
+    "name": "Authentication and JWT",
+    "category": "concept",
+    "description": "Verifying users and protecting API routes with password hashing, sessions and JSON Web Tokens.",
+    "aliases": [
+      "jwt",
+      "auth",
+      "authentication",
+      "sessions"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 12,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "web-security",
+    "name": "Web Security",
+    "category": "concept",
+    "description": "Protecting web apps against common attacks such as XSS, CSRF and injection, following the OWASP guidance.",
+    "aliases": [
+      "owasp",
+      "xss",
+      "csrf",
+      "cors"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "websockets",
+    "name": "WebSockets",
+    "category": "concept",
+    "description": "Two-way real-time communication between browser and server, used for chat and live updates.",
+    "aliases": [
+      "websocket",
+      "socket.io",
+      "real-time"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 10,
+    "marketDemand": 0.2
+  },
+  {
+    "slug": "django",
+    "name": "Django",
+    "category": "framework",
+    "description": "Batteries-included Python web framework with an ORM, admin site and built-in authentication.",
+    "aliases": [
+      "django",
+      "python web framework"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 35,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "flask",
+    "name": "Flask",
+    "category": "framework",
+    "description": "Lightweight Python web framework for small services and APIs.",
+    "aliases": [
+      "flask",
+      "microframework"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 20,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "fastapi",
+    "name": "FastAPI",
+    "category": "framework",
+    "description": "Modern Python framework for building typed, async HTTP APIs with automatic documentation.",
+    "aliases": [
+      "fast api",
+      "fastapi"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 20,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "java",
+    "name": "Java",
+    "category": "programming",
+    "description": "Statically typed, object-oriented language used widely for enterprise back ends and Android.",
+    "aliases": [
+      "java",
+      "jvm",
+      "jdk"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 45,
+    "marketDemand": 0.55
+  },
+  {
+    "slug": "spring-boot",
+    "name": "Spring Boot",
+    "category": "framework",
+    "description": "Java framework for building production-ready web services with auto-configuration and dependency injection.",
+    "aliases": [
+      "spring",
+      "springboot",
+      "spring framework"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 40,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "backend-testing",
+    "name": "Backend Testing",
+    "category": "concept",
+    "description": "Writing unit and integration tests for server code and HTTP APIs.",
+    "aliases": [
+      "api testing",
+      "integration testing",
+      "supertest",
+      "pytest"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "figma",
+    "name": "Figma",
+    "category": "tool",
+    "description": "Collaborative design tool for creating interface mockups, components and clickable prototypes.",
+    "aliases": [
+      "figma",
+      "ui design",
+      "prototyping"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.4
   }
 ]
