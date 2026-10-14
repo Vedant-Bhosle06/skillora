@@ -225,6 +225,161 @@ function validateAll({ skills, edges, roles }) {
   return { errors, warnings, orphans, prereqCount: prereqs.length };
 }
 
+// ---------- Seeding ----------
+
+// Load B's models through B's own node_modules so mongoose is a single instance
+function loadApi() {
+  const dotenv = require(require.resolve('dotenv', { paths: [API] }));
+  dotenv.config({ path: path.join(API, '.env'), quiet: true });
+  return {
+    mongoose: require(require.resolve('mongoose', { paths: [API] })),
+    axios: require(require.resolve('axios', { paths: [API] })),
+    Skill: require(path.join(API, 'models', 'Skill')),
+    SkillEdge: require(path.join(API, 'models', 'SkillEdge')),
+    Role: require(path.join(API, 'models', 'Role')),
+    markAllPathsStale: require(path.join(API, 'utils', 'markPathStale')).markAllPathsStale
+  };
+}
+
+// Only write documents that are new or differ from the DB. Mongoose's automatic
+// updatedAt would otherwise make every re-run look like a modification, so
+// timestamps are managed here instead (createdAt on insert, updatedAt on change).
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+async function upsertChanged(Model, label, items, { filterOf, setOf, current, hasUpdatedAt }) {
+  const now = new Date();
+  const ops = [];
+  let unchanged = 0;
+  for (const item of items) {
+    const set = setOf(item);
+    const existing = current(item);
+    if (existing && Object.keys(set).every((k) => same(existing[k], set[k]))) {
+      unchanged++;
+      continue;
+    }
+    if (hasUpdatedAt) set.updatedAt = now;
+    ops.push({
+      updateOne: {
+        filter: filterOf(item),
+        update: { $set: set, $setOnInsert: { createdAt: now } },
+        upsert: true,
+        timestamps: false
+      }
+    });
+  }
+  const res = ops.length ? await Model.bulkWrite(ops) : { upsertedCount: 0, modifiedCount: 0 };
+  console.log(`${label}: ${res.upsertedCount} upserted, ${res.modifiedCount} modified, ${unchanged} unchanged`);
+  return { upserted: res.upsertedCount, modified: res.modifiedCount, unchanged };
+}
+
+async function seedSkills(Skill, skills) {
+  const existing = new Map((await Skill.find().lean()).map((d) => [d.slug, d]));
+  const res = await upsertChanged(Skill, 'Skills', skills, {
+    hasUpdatedAt: true,
+    filterOf: (s) => ({ slug: s.slug }),
+    current: (s) => existing.get(s.slug),
+    setOf: (s) => ({
+      name: s.name,
+      category: s.category,
+      description: s.description || '',
+      aliases: s.aliases || [],
+      baseDifficulty: s.baseDifficulty,
+      // bulkWrite skips the pre-save hook, so apply the estHours default here
+      estHours: s.estHours != null ? s.estHours : s.baseDifficulty * 8,
+      marketDemand: s.marketDemand
+    })
+  });
+  const docs = await Skill.find({}, { slug: 1 }).lean();
+  return { idBySlug: new Map(docs.map((d) => [d.slug, d._id])), res };
+}
+
+async function seedEdges(SkillEdge, edges, idBySlug) {
+  const keyOf = (src, tgt, type) => `${src}|${tgt}|${type}`;
+  const existing = new Map((await SkillEdge.find().lean()).map((d) => [keyOf(d.sourceSkillId, d.targetSkillId, d.type), d]));
+  const ids = (e) => [idBySlug.get(e.sourceSkillId), idBySlug.get(e.targetSkillId)];
+  return upsertChanged(SkillEdge, 'Edges', edges, {
+    hasUpdatedAt: false,
+    filterOf: (e) => {
+      const [sourceSkillId, targetSkillId] = ids(e);
+      return { sourceSkillId, targetSkillId, type: e.type };
+    },
+    current: (e) => existing.get(keyOf(...ids(e), e.type)),
+    setOf: (e) => ({ group: e.group || null, source: e.source || '' })
+  });
+}
+
+async function seedRoles(Role, roles, idBySlug) {
+  const existing = new Map((await Role.find().lean()).map((d) => [d.slug, d]));
+  return upsertChanged(Role, 'Roles', roles, {
+    hasUpdatedAt: true,
+    filterOf: (r) => ({ slug: r.slug }),
+    current: (r) => {
+      const d = existing.get(r.slug);
+      // Strip subdocument _ids so the comparison only covers seeded fields
+      return d && { ...d, requiredSkills: d.requiredSkills.map(({ anyOf, label, minProficiency }) => ({ anyOf, label, minProficiency })) };
+    },
+    setOf: (r) => ({
+      title: r.title,
+      description: r.description || '',
+      category: r.category,
+      demandScore: r.demandScore != null ? r.demandScore : 0.5,
+      requiredSkills: r.requiredSkills.map((rs) => ({
+        anyOf: rs.anyOf.map((slug) => idBySlug.get(slug)),
+        label: rs.label || '',
+        minProficiency: rs.minProficiency
+      }))
+    })
+  });
+}
+
+// Best effort: the Python service may not be running
+async function reloadPythonGraph(axios) {
+  const url = `${process.env.PYTHON_SERVICE_URL || 'http://localhost:5001'}/graph/reload`;
+  try {
+    await axios.post(url, {}, { headers: { 'X-Internal-Key': process.env.INTERNAL_API_KEY }, timeout: 3000 });
+    console.log(`Python graph reloaded (${url})`);
+    return true;
+  } catch (err) {
+    console.warn(`WARN  Python graph reload failed (${url}): ${err.message}`);
+    return false;
+  }
+}
+
+async function seed(opts, data, validation) {
+  const { mongoose, axios, Skill, SkillEdge, Role, markAllPathsStale } = loadApi();
+
+  section('Connecting');
+  if (!process.env.MONGO_URI) throw new Error('MONGO_URI is not set (check skillora-api/.env)');
+  await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 15000 });
+  console.log(`Connected to database "${mongoose.connection.name}"`);
+  await Promise.all([Skill.init(), SkillEdge.init(), Role.init()]);
+  console.log('Indexes ensured');
+
+  try {
+    section('Upserting');
+    const { idBySlug, res: skillRes } = await seedSkills(Skill, data.skills);
+    const edgeRes = await seedEdges(SkillEdge, data.edges, idBySlug);
+    const roleRes = await seedRoles(Role, data.roles, idBySlug);
+
+    section('Post-seed');
+    await markAllPathsStale();
+    console.log('Active computed paths marked stale');
+    let reloaded = null;
+    if (opts.reload) reloaded = await reloadPythonGraph(axios);
+    else console.log('Python reload skipped (--no-reload)');
+
+    section('Summary');
+    const row = (label, n, r) => console.log(`${label.padEnd(8)} ${String(n).padStart(4)} in file | ${r.upserted} upserted, ${r.modified} modified, ${r.unchanged} unchanged`);
+    row('Skills', data.skills.length, skillRes);
+    row('Edges', data.edges.length, edgeRes);
+    row('Roles', data.roles.length, roleRes);
+    console.log(`Orphan skills: ${validation.orphans.length}`);
+    if (reloaded === false) console.log('Python graph NOT reloaded; restart or reload the path service manually.');
+  } finally {
+    await mongoose.disconnect();
+  }
+}
+
 // ---------- Main ----------
 
 async function main() {
@@ -249,9 +404,13 @@ async function main() {
     console.log('\nDry run: no database connection made.');
     return;
   }
+
+  await seed(opts, data, result);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
