@@ -1097,5 +1097,468 @@
     "baseDifficulty": 2,
     "estHours": 15,
     "marketDemand": 0.4
+  },
+  {
+    "slug": "cloud-fundamentals",
+    "name": "Cloud Fundamentals",
+    "category": "concept",
+    "description": "Core cloud ideas such as regions, virtual machines, storage, shared responsibility and pricing models.",
+    "aliases": [
+      "cloud computing",
+      "iaas",
+      "paas",
+      "cloud basics"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "aws",
+    "name": "Amazon Web Services",
+    "category": "cloud",
+    "description": "Amazon cloud platform. Covers core services such as EC2, S3, IAM, VPC and RDS.",
+    "aliases": [
+      "aws",
+      "amazon web services",
+      "ec2",
+      "s3"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 40,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "azure",
+    "name": "Microsoft Azure",
+    "category": "cloud",
+    "description": "Microsoft cloud platform. Covers virtual machines, storage, networking and Azure Active Directory.",
+    "aliases": [
+      "azure",
+      "microsoft azure"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 40,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "gcp",
+    "name": "Google Cloud Platform",
+    "category": "cloud",
+    "description": "Google cloud platform. Covers Compute Engine, Cloud Storage, networking and IAM.",
+    "aliases": [
+      "gcp",
+      "google cloud"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 40,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "iam-cloud-security",
+    "name": "Cloud IAM and Security",
+    "category": "concept",
+    "description": "Managing identities, roles and permissions in the cloud with least-privilege access.",
+    "aliases": [
+      "iam",
+      "cloud security",
+      "least privilege"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "serverless",
+    "name": "Serverless",
+    "category": "concept",
+    "description": "Running code on managed functions such as AWS Lambda without managing servers.",
+    "aliases": [
+      "lambda",
+      "functions",
+      "faas",
+      "cloud functions"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "docker",
+    "name": "Docker",
+    "category": "tool",
+    "description": "Packaging applications into containers. Covers images, Dockerfiles, volumes and networking.",
+    "aliases": [
+      "containers",
+      "docker",
+      "containerization"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.75
+  },
+  {
+    "slug": "docker-compose",
+    "name": "Docker Compose",
+    "category": "tool",
+    "description": "Defining and running multi-container applications with a single YAML file.",
+    "aliases": [
+      "compose",
+      "docker compose"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 8,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "kubernetes",
+    "name": "Kubernetes",
+    "category": "tool",
+    "description": "Container orchestrator. Covers pods, deployments, services, config and scaling.",
+    "aliases": [
+      "k8s",
+      "kubernetes",
+      "kube"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 40,
+    "marketDemand": 0.55
+  },
+  {
+    "slug": "helm",
+    "name": "Helm",
+    "category": "tool",
+    "description": "Package manager for Kubernetes that bundles manifests into reusable, versioned charts.",
+    "aliases": [
+      "helm charts",
+      "k8s package manager"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 10,
+    "marketDemand": 0.15
+  },
+  {
+    "slug": "gitops-argocd",
+    "name": "GitOps and Argo CD",
+    "category": "tool",
+    "description": "Managing cluster state from Git using a controller such as Argo CD.",
+    "aliases": [
+      "gitops",
+      "argocd",
+      "argo cd",
+      "flux"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 12,
+    "marketDemand": 0.15
+  },
+  {
+    "slug": "ci-cd-concepts",
+    "name": "CI/CD Concepts",
+    "category": "concept",
+    "description": "Automating build, test and release steps with continuous integration and delivery pipelines.",
+    "aliases": [
+      "ci/cd",
+      "continuous integration",
+      "continuous delivery",
+      "pipelines"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 10,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "github-actions",
+    "name": "GitHub Actions",
+    "category": "tool",
+    "description": "CI/CD automation built into GitHub, defined with YAML workflow files.",
+    "aliases": [
+      "actions",
+      "gh actions",
+      "workflows"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "jenkins",
+    "name": "Jenkins",
+    "category": "tool",
+    "description": "Self-hosted automation server for building CI/CD pipelines with plugins and Jenkinsfiles.",
+    "aliases": [
+      "jenkins",
+      "jenkinsfile"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "terraform",
+    "name": "Terraform",
+    "category": "tool",
+    "description": "Infrastructure as code tool for declaring and provisioning cloud resources with HCL files.",
+    "aliases": [
+      "tf",
+      "iac",
+      "infrastructure as code",
+      "hcl"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "ansible",
+    "name": "Ansible",
+    "category": "tool",
+    "description": "Agentless configuration management and automation tool driven by YAML playbooks.",
+    "aliases": [
+      "ansible",
+      "configuration management",
+      "playbooks"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "nginx",
+    "name": "Nginx",
+    "category": "tool",
+    "description": "Web server and reverse proxy used for routing traffic, load balancing and TLS termination.",
+    "aliases": [
+      "nginx",
+      "reverse proxy",
+      "load balancer"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 10,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "monitoring-prometheus-grafana",
+    "name": "Monitoring (Prometheus and Grafana)",
+    "category": "tool",
+    "description": "Collecting metrics with Prometheus and building dashboards and alerts in Grafana.",
+    "aliases": [
+      "prometheus",
+      "grafana",
+      "observability",
+      "metrics"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "logging-elk",
+    "name": "Logging (ELK Stack)",
+    "category": "tool",
+    "description": "Centralized log collection, search and visualization with Elasticsearch, Logstash and Kibana.",
+    "aliases": [
+      "elk",
+      "elasticsearch",
+      "logstash",
+      "kibana",
+      "logs"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.25
+  },
+  {
+    "slug": "sre-practices",
+    "name": "SRE Practices",
+    "category": "concept",
+    "description": "Site reliability engineering methods such as SLOs, error budgets, on-call and postmortems.",
+    "aliases": [
+      "sre",
+      "site reliability",
+      "slo",
+      "error budgets"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 20,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "go",
+    "name": "Go",
+    "category": "programming",
+    "description": "Compiled language from Google known for simple syntax, concurrency and fast tooling.",
+    "aliases": [
+      "golang",
+      "go lang"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 35,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "system-design",
+    "name": "System Design",
+    "category": "concept",
+    "description": "Designing scalable systems. Covers load balancing, caching, databases, queues and trade-offs.",
+    "aliases": [
+      "architecture",
+      "scalability",
+      "distributed systems"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 30,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "git",
+    "name": "Git",
+    "category": "tool",
+    "description": "Distributed version control for tracking changes to code. Covers commits, branches, merging and resolving conflicts.",
+    "aliases": [
+      "version control"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 10,
+    "marketDemand": 0.85
+  },
+  {
+    "slug": "github-collaboration",
+    "name": "GitHub Collaboration",
+    "category": "tool",
+    "description": "Working with others through GitHub using forks, pull requests, code review and issues.",
+    "aliases": [
+      "github",
+      "pull requests",
+      "gh"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 8,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "linux",
+    "name": "Linux",
+    "category": "tool",
+    "description": "Using a Linux system from the command line. Covers the file system, permissions, processes and package management.",
+    "aliases": [
+      "unix",
+      "linux command line"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 20,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "bash-scripting",
+    "name": "Bash Scripting",
+    "category": "programming",
+    "description": "Automating tasks with shell scripts. Covers variables, conditionals, loops, pipes and text processing tools.",
+    "aliases": [
+      "shell",
+      "shell scripting",
+      "sh"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "networking-basics",
+    "name": "Networking Basics",
+    "category": "concept",
+    "description": "Core networking concepts such as IP addressing, DNS, TCP and UDP, ports and firewalls.",
+    "aliases": [
+      "tcp/ip",
+      "dns",
+      "networking"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "http-web-fundamentals",
+    "name": "HTTP and Web Fundamentals",
+    "category": "concept",
+    "description": "How the web works. Covers HTTP methods, status codes, headers, cookies and the client-server model.",
+    "aliases": [
+      "http",
+      "web basics",
+      "rest basics"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 10,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "json-yaml",
+    "name": "JSON and YAML",
+    "category": "concept",
+    "description": "Reading and writing the JSON and YAML data formats used for APIs and configuration files.",
+    "aliases": [
+      "json",
+      "yaml",
+      "data formats"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 5,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "data-structures-algorithms",
+    "name": "Data Structures and Algorithms",
+    "category": "concept",
+    "description": "Core data structures such as arrays, hash maps, trees and graphs, plus sorting, searching and complexity analysis.",
+    "aliases": [
+      "dsa",
+      "algorithms",
+      "data structures"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 40,
+    "marketDemand": 0.55
+  },
+  {
+    "slug": "oop",
+    "name": "Object-Oriented Programming",
+    "category": "concept",
+    "description": "Designing programs with classes, objects, inheritance, encapsulation and polymorphism.",
+    "aliases": [
+      "object oriented",
+      "oop",
+      "classes"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.65
+  },
+  {
+    "slug": "agile-scrum",
+    "name": "Agile and Scrum",
+    "category": "concept",
+    "description": "Iterative team delivery practices such as sprints, standups, backlogs and retrospectives.",
+    "aliases": [
+      "agile",
+      "scrum",
+      "sprints"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 8,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "technical-communication",
+    "name": "Technical Communication",
+    "category": "soft-skill",
+    "description": "Explaining technical work clearly in writing and conversation, including documentation, design notes and status updates.",
+    "aliases": [
+      "documentation",
+      "technical writing",
+      "communication"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 10,
+    "marketDemand": 0.5
   }
 ]
