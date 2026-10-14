@@ -1,0 +1,1437 @@
+[
+  {
+    "sourceSkillId": "git",
+    "targetSkillId": "github-collaboration",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "linux",
+    "targetSkillId": "bash-scripting",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "networking-basics",
+    "targetSkillId": "http-web-fundamentals",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "excel",
+    "targetSkillId": "excel-advanced",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "excel",
+    "targetSkillId": "power-bi",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "power-bi",
+    "targetSkillId": "dax",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "excel-advanced",
+    "targetSkillId": "dax",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "jupyter",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "numpy",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "pandas",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "matplotlib-seaborn",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "numpy",
+    "targetSkillId": "matplotlib-seaborn",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "pandas",
+    "targetSkillId": "data-cleaning",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "pandas",
+    "targetSkillId": "exploratory-data-analysis",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "statistics",
+    "targetSkillId": "exploratory-data-analysis",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "statistics",
+    "targetSkillId": "data-visualization",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "data-visualization",
+    "targetSkillId": "data-storytelling",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "statistics",
+    "targetSkillId": "r-programming",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "statistics",
+    "targetSkillId": "hypothesis-testing",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "probability",
+    "targetSkillId": "hypothesis-testing",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "hypothesis-testing",
+    "targetSkillId": "ab-testing",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "machine-learning",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "statistics",
+    "targetSkillId": "machine-learning",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "linear-algebra",
+    "targetSkillId": "machine-learning",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "numpy",
+    "targetSkillId": "machine-learning",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "machine-learning",
+    "targetSkillId": "scikit-learn",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "pandas",
+    "targetSkillId": "scikit-learn",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "machine-learning",
+    "targetSkillId": "feature-engineering",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "machine-learning",
+    "targetSkillId": "deep-learning",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "calculus",
+    "targetSkillId": "deep-learning",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "tensorflow",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "numpy",
+    "targetSkillId": "tensorflow",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "pytorch",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "numpy",
+    "targetSkillId": "pytorch",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "machine-learning",
+    "targetSkillId": "nlp",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "deep-learning",
+    "targetSkillId": "computer-vision",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "deep-learning",
+    "targetSkillId": "transformers-llms",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "nlp",
+    "targetSkillId": "transformers-llms",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "llm-app-development",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "llm-app-development",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "json-yaml",
+    "targetSkillId": "llm-app-development",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "statistics",
+    "targetSkillId": "time-series",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "pandas",
+    "targetSkillId": "time-series",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-analyst"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "pyspark",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "sql",
+    "targetSkillId": "pyspark",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "sql",
+    "targetSkillId": "data-modeling",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "sql",
+    "targetSkillId": "data-warehousing",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "data-modeling",
+    "targetSkillId": "data-warehousing",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "etl-pipelines",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "sql",
+    "targetSkillId": "etl-pipelines",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "airflow",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "etl-pipelines",
+    "targetSkillId": "airflow",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "sql",
+    "targetSkillId": "dbt",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "sql",
+    "targetSkillId": "snowflake",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "data-warehousing",
+    "targetSkillId": "snowflake",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "sql",
+    "targetSkillId": "bigquery",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "data-warehousing",
+    "targetSkillId": "bigquery",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "linux",
+    "targetSkillId": "kafka",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "networking-basics",
+    "targetSkillId": "kafka",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/data-engineer"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "mlflow",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/mlops"
+  },
+  {
+    "sourceSkillId": "machine-learning",
+    "targetSkillId": "mlflow",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/mlops"
+  },
+  {
+    "sourceSkillId": "machine-learning",
+    "targetSkillId": "mlops",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/mlops"
+  },
+  {
+    "sourceSkillId": "mlflow",
+    "targetSkillId": "mlops",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/mlops"
+  },
+  {
+    "sourceSkillId": "docker",
+    "targetSkillId": "mlops",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/mlops"
+  },
+  {
+    "sourceSkillId": "ci-cd-concepts",
+    "targetSkillId": "mlops",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/mlops"
+  },
+  {
+    "sourceSkillId": "html",
+    "targetSkillId": "css",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "css",
+    "targetSkillId": "responsive-design",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "css",
+    "targetSkillId": "tailwind",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "css",
+    "targetSkillId": "bootstrap",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "html",
+    "targetSkillId": "javascript",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "javascript",
+    "targetSkillId": "dom-manipulation",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "javascript",
+    "targetSkillId": "es6-plus",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "es6-plus",
+    "targetSkillId": "async-javascript",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "javascript",
+    "targetSkillId": "typescript",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "es6-plus",
+    "targetSkillId": "typescript",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "javascript",
+    "targetSkillId": "npm",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "npm",
+    "targetSkillId": "build-tools-vite",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "es6-plus",
+    "targetSkillId": "react",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "dom-manipulation",
+    "targetSkillId": "react",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "npm",
+    "targetSkillId": "react",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "react",
+    "targetSkillId": "redux",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "react",
+    "targetSkillId": "next-js",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "node-js",
+    "targetSkillId": "next-js",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "javascript",
+    "targetSkillId": "vue",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "es6-plus",
+    "targetSkillId": "vue",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "typescript",
+    "targetSkillId": "angular",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "html",
+    "targetSkillId": "web-accessibility",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "css",
+    "targetSkillId": "web-accessibility",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "javascript",
+    "targetSkillId": "frontend-testing",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "npm",
+    "targetSkillId": "frontend-testing",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/frontend"
+  },
+  {
+    "sourceSkillId": "async-javascript",
+    "targetSkillId": "node-js",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/nodejs"
+  },
+  {
+    "sourceSkillId": "npm",
+    "targetSkillId": "node-js",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/nodejs"
+  },
+  {
+    "sourceSkillId": "node-js",
+    "targetSkillId": "express",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/nodejs"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "express",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/nodejs"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "rest-api-design",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "json-yaml",
+    "targetSkillId": "rest-api-design",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "rest-api-design",
+    "targetSkillId": "graphql",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "json-yaml",
+    "targetSkillId": "mongodb",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/nodejs"
+  },
+  {
+    "sourceSkillId": "mongodb",
+    "targetSkillId": "mongoose",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/nodejs"
+  },
+  {
+    "sourceSkillId": "node-js",
+    "targetSkillId": "mongoose",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/nodejs"
+  },
+  {
+    "sourceSkillId": "sql",
+    "targetSkillId": "postgresql",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "authentication-jwt",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "web-security",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "authentication-jwt",
+    "targetSkillId": "web-security",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "websockets",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "javascript",
+    "targetSkillId": "websockets",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "django",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/python"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "django",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/python"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "flask",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/python"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "flask",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/python"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "fastapi",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/python"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "fastapi",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/python"
+  },
+  {
+    "sourceSkillId": "java",
+    "targetSkillId": "spring-boot",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/java"
+  },
+  {
+    "sourceSkillId": "oop",
+    "targetSkillId": "spring-boot",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/java"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "spring-boot",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/java"
+  },
+  {
+    "sourceSkillId": "rest-api-design",
+    "targetSkillId": "backend-testing",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "technical-communication",
+    "targetSkillId": "figma",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "networking-basics",
+    "targetSkillId": "cloud-fundamentals",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "linux",
+    "targetSkillId": "cloud-fundamentals",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "cloud-fundamentals",
+    "targetSkillId": "aws",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "cloud-fundamentals",
+    "targetSkillId": "azure",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "cloud-fundamentals",
+    "targetSkillId": "gcp",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "cloud-fundamentals",
+    "targetSkillId": "iam-cloud-security",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "cloud-fundamentals",
+    "targetSkillId": "serverless",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "serverless",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "linux",
+    "targetSkillId": "docker",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "docker",
+    "targetSkillId": "docker-compose",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "json-yaml",
+    "targetSkillId": "docker-compose",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "docker",
+    "targetSkillId": "kubernetes",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/kubernetes"
+  },
+  {
+    "sourceSkillId": "networking-basics",
+    "targetSkillId": "kubernetes",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/kubernetes"
+  },
+  {
+    "sourceSkillId": "json-yaml",
+    "targetSkillId": "kubernetes",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/kubernetes"
+  },
+  {
+    "sourceSkillId": "kubernetes",
+    "targetSkillId": "helm",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/kubernetes"
+  },
+  {
+    "sourceSkillId": "kubernetes",
+    "targetSkillId": "gitops-argocd",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/kubernetes"
+  },
+  {
+    "sourceSkillId": "git",
+    "targetSkillId": "gitops-argocd",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/kubernetes"
+  },
+  {
+    "sourceSkillId": "git",
+    "targetSkillId": "ci-cd-concepts",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "agile-scrum",
+    "targetSkillId": "ci-cd-concepts",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "ci-cd-concepts",
+    "targetSkillId": "github-actions",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "github-collaboration",
+    "targetSkillId": "github-actions",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "json-yaml",
+    "targetSkillId": "github-actions",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "ci-cd-concepts",
+    "targetSkillId": "jenkins",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "linux",
+    "targetSkillId": "jenkins",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "git",
+    "targetSkillId": "terraform",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "linux",
+    "targetSkillId": "ansible",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "json-yaml",
+    "targetSkillId": "ansible",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "linux",
+    "targetSkillId": "nginx",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "nginx",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "linux",
+    "targetSkillId": "monitoring-prometheus-grafana",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "monitoring-prometheus-grafana",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "linux",
+    "targetSkillId": "logging-elk",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "json-yaml",
+    "targetSkillId": "logging-elk",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "monitoring-prometheus-grafana",
+    "targetSkillId": "sre-practices",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "http-web-fundamentals",
+    "targetSkillId": "system-design",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/system-design"
+  },
+  {
+    "sourceSkillId": "technical-communication",
+    "targetSkillId": "system-design",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/system-design"
+  },
+  {
+    "sourceSkillId": "sql",
+    "targetSkillId": "system-design",
+    "type": "prerequisite_of",
+    "group": null,
+    "source": "roadmap.sh/system-design"
+  },
+  {
+    "sourceSkillId": "tensorflow",
+    "targetSkillId": "deep-learning",
+    "type": "prerequisite_of",
+    "group": "dl-framework",
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "pytorch",
+    "targetSkillId": "deep-learning",
+    "type": "prerequisite_of",
+    "group": "dl-framework",
+    "source": "Coursera Machine Learning Specialization syllabus; roadmap.sh/ai-data-scientist"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "oop",
+    "type": "prerequisite_of",
+    "group": "oop-language",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "java",
+    "targetSkillId": "oop",
+    "type": "prerequisite_of",
+    "group": "oop-language",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "javascript",
+    "targetSkillId": "oop",
+    "type": "prerequisite_of",
+    "group": "oop-language",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "data-structures-algorithms",
+    "type": "prerequisite_of",
+    "group": "dsa-language",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "java",
+    "targetSkillId": "data-structures-algorithms",
+    "type": "prerequisite_of",
+    "group": "dsa-language",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "javascript",
+    "targetSkillId": "data-structures-algorithms",
+    "type": "prerequisite_of",
+    "group": "dsa-language",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "express",
+    "targetSkillId": "authentication-jwt",
+    "type": "prerequisite_of",
+    "group": "backend-runtime",
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "django",
+    "targetSkillId": "authentication-jwt",
+    "type": "prerequisite_of",
+    "group": "backend-runtime",
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "fastapi",
+    "targetSkillId": "authentication-jwt",
+    "type": "prerequisite_of",
+    "group": "backend-runtime",
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "spring-boot",
+    "targetSkillId": "authentication-jwt",
+    "type": "prerequisite_of",
+    "group": "backend-runtime",
+    "source": "roadmap.sh/backend"
+  },
+  {
+    "sourceSkillId": "aws",
+    "targetSkillId": "terraform",
+    "type": "prerequisite_of",
+    "group": "iac-cloud",
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "azure",
+    "targetSkillId": "terraform",
+    "type": "prerequisite_of",
+    "group": "iac-cloud",
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "gcp",
+    "targetSkillId": "terraform",
+    "type": "prerequisite_of",
+    "group": "iac-cloud",
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "github-actions",
+    "targetSkillId": "gitops-argocd",
+    "type": "prerequisite_of",
+    "group": "cicd-tool",
+    "source": "roadmap.sh/kubernetes"
+  },
+  {
+    "sourceSkillId": "jenkins",
+    "targetSkillId": "gitops-argocd",
+    "type": "prerequisite_of",
+    "group": "cicd-tool",
+    "source": "roadmap.sh/kubernetes"
+  },
+  {
+    "sourceSkillId": "pandas",
+    "targetSkillId": "feature-engineering",
+    "type": "prerequisite_of",
+    "group": "ml-data-lib",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "pyspark",
+    "targetSkillId": "feature-engineering",
+    "type": "prerequisite_of",
+    "group": "ml-data-lib",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "python",
+    "targetSkillId": "sre-practices",
+    "type": "prerequisite_of",
+    "group": "scripting",
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "go",
+    "targetSkillId": "sre-practices",
+    "type": "prerequisite_of",
+    "group": "scripting",
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "bash-scripting",
+    "targetSkillId": "sre-practices",
+    "type": "prerequisite_of",
+    "group": "scripting",
+    "source": "roadmap.sh/devops"
+  },
+  {
+    "sourceSkillId": "matplotlib-seaborn",
+    "targetSkillId": "data-storytelling",
+    "type": "prerequisite_of",
+    "group": "dataviz-lib",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "tableau",
+    "targetSkillId": "data-storytelling",
+    "type": "prerequisite_of",
+    "group": "dataviz-lib",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "power-bi",
+    "targetSkillId": "data-storytelling",
+    "type": "prerequisite_of",
+    "group": "dataviz-lib",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "mongodb",
+    "targetSkillId": "redis",
+    "type": "prerequisite_of",
+    "group": "db-for-cache",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "postgresql",
+    "targetSkillId": "redis",
+    "type": "prerequisite_of",
+    "group": "db-for-cache",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "snowflake",
+    "targetSkillId": "dbt",
+    "type": "prerequisite_of",
+    "group": "warehouse",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "bigquery",
+    "targetSkillId": "dbt",
+    "type": "prerequisite_of",
+    "group": "warehouse",
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "numpy",
+    "targetSkillId": "pandas",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "matplotlib-seaborn",
+    "targetSkillId": "pandas",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "calculus",
+    "targetSkillId": "linear-algebra",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "logging-elk",
+    "targetSkillId": "monitoring-prometheus-grafana",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "ansible",
+    "targetSkillId": "terraform",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "responsive-design",
+    "targetSkillId": "tailwind",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "aws",
+    "targetSkillId": "iam-cloud-security",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "jupyter",
+    "targetSkillId": "pandas",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "probability",
+    "targetSkillId": "statistics",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "pytorch",
+    "targetSkillId": "tensorflow",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "fastapi",
+    "targetSkillId": "flask",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "github-actions",
+    "targetSkillId": "jenkins",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "express",
+    "targetSkillId": "mongodb",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "react",
+    "targetSkillId": "typescript",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "react",
+    "targetSkillId": "tailwind",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "bigquery",
+    "targetSkillId": "snowflake",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "kafka",
+    "targetSkillId": "pyspark",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "airflow",
+    "targetSkillId": "dbt",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "data-cleaning",
+    "targetSkillId": "exploratory-data-analysis",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "feature-engineering",
+    "targetSkillId": "scikit-learn",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "kubernetes",
+    "targetSkillId": "monitoring-prometheus-grafana",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  },
+  {
+    "sourceSkillId": "power-bi",
+    "targetSkillId": "tableau",
+    "type": "corequisite_with",
+    "group": null,
+    "source": "expert judgment"
+  }
+]
