@@ -154,3 +154,38 @@ def astar_search(store: GraphStore, p: Problem, k: int, max_states: int,
             g2 = g + cost[s]
             heapq.heappush(heap, (g2 + h(nxt), -g2, next(tie), nxt))
     return SearchResult(goals, expanded, capped, initial_h)
+
+
+def closure(store: GraphStore, p: Problem, option: str,
+            memo: dict[str, frozenset[str]] | None = None) -> frozenset[str]:
+    """Skills to learn for `option`: itself plus unknown mandatory ancestors,
+    taking the cheapest member (by its own closure cost) of each unsatisfied group."""
+    memo = {} if memo is None else memo
+    if option in memo:
+        return memo[option]
+    result = {option}
+    if p.held.get(option, 0) < 1:
+        for x in store.mandatory[option]:
+            if p.held.get(x, 0) < 1:
+                result |= closure(store, p, x, memo)
+        for members in store.groups[option].values():
+            if any(p.held.get(x, 0) >= 1 for x in members):
+                continue
+            best = min((closure(store, p, x, memo) for x in members if x in p.relevant),
+                       key=lambda c: (sum(p.cost[s] for s in c), sorted(c)))
+            result |= best
+    memo[option] = frozenset(result)
+    return memo[option]
+
+
+def greedy_fallback(store: GraphStore, p: Problem) -> frozenset[str]:
+    """Cheapest-closure option per unmet requirement; used when the state cap hits with no goal."""
+    memo: dict[str, frozenset[str]] = {}
+    chosen: set[str] = set()
+    for r in p.unmet:
+        if set(r.any_of) & chosen:
+            continue
+        best = min((closure(store, p, o, memo) for o in dict.fromkeys(r.any_of)),
+                   key=lambda c: (sum(p.cost[s] for s in c), sorted(c)))
+        chosen |= best
+    return frozenset(chosen)
