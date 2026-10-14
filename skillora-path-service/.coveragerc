@@ -1,0 +1,8 @@
+[run]
+omit =
+    tests/*
+    .venv/*
+    tools/*
+
+[report]
+fail_under = 80
