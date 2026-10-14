@@ -97,12 +97,17 @@ def _unlocked(s: str, learned: frozenset[str], p: Problem, store: GraphStore) ->
 
 
 def astar_search(store: GraphStore, p: Problem, k: int, max_states: int,
-                 prune: bool = True) -> SearchResult:
-    """Collect up to 3k minimal goal sets in non-decreasing cost order."""
+                 prune: bool = True, use_heuristic: bool = True) -> SearchResult:
+    """Collect up to 3k minimal goal sets in non-decreasing cost order.
+
+    With use_heuristic=False this is Dijkstra: the same code with h == 0.
+    """
     cost = p.cost
     unmet_opts = [set(r.any_of) for r in p.unmet]
 
     def h(learned: frozenset[str]) -> float:
+        if not use_heuristic:
+            return 0.0
         return sum(cost[s] for s in p.singles if s not in learned)
 
     def is_goal(learned: frozenset[str]) -> bool:
