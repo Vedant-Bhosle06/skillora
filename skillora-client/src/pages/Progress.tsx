@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button, Card, ProgressBar, StatTile, StatusBadge, PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import { Button, Card, ProgressBar, ProgressRing, StatTile, StatusBadge, PageLoader, ErrorState, EmptyState } from "@/components/ui";
 import { qk, useCompleteSkill, useGraph, useSkillsCatalog } from "@/api/queries";
 import { toApiError } from "@/api/client";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
 import { categoryColor, categoryLabel, formatDate, formatHours } from "@/lib/format";
-import { completedForRole, remainingSteps, selectedRankedPath } from "@/lib/pathMetrics";
+import { completedForRole, progressFraction, remainingSteps, selectedRankedPath, totalHours } from "@/lib/pathMetrics";
 import { computeStepStatuses } from "@/lib/pathStatus";
 import { heldRankMap, refId } from "@/lib/requirements";
 import { useToast } from "@/context/ToastContext";
@@ -113,20 +113,22 @@ export default function Progress() {
 
   const done = completed.length;
   const total = done + steps.length;
+  const remainingHours = totalHours(steps);
 
   // Domain breakdown: completed and remaining items grouped by category label.
   const domainStats = useMemo(() => {
-    const map = new Map<string, { domain: string; doneCnt: number; total: number }>();
-    const bump = (cat: string, isDone: boolean) => {
+    const map = new Map<string, { domain: string; doneCnt: number; total: number; remainingHours: number }>();
+    const bump = (cat: string, hoursLeft: number | null) => {
       if (!cat) return;
       const domain = categoryLabel(cat);
-      const entry = map.get(domain) ?? { domain, doneCnt: 0, total: 0 };
+      const entry = map.get(domain) ?? { domain, doneCnt: 0, total: 0, remainingHours: 0 };
       entry.total += 1;
-      if (isDone) entry.doneCnt += 1;
+      if (hoursLeft === null) entry.doneCnt += 1;
+      else entry.remainingHours += hoursLeft;
       map.set(domain, entry);
     };
-    completed.forEach(c => bump(completedCategory(c), true));
-    steps.forEach(s => bump(stepCategory(s.skillId), false));
+    completed.forEach(c => bump(completedCategory(c), null));
+    steps.forEach(s => bump(stepCategory(s.skillId), s.estCost));
     return [...map.values()];
   }, [completed, steps, catalog.byId]);
   const domains = domainStats.map(d => d.domain);
@@ -188,7 +190,12 @@ export default function Progress() {
 
         {/* ── Stats row ───────────────────────────────────────────────────── */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <StatTile label="Completed" value={`${done}/${total}`} />
+          <StatTile label="Completed" value={`${done}/${total}`} sub="skills on this path" />
+          <StatTile label="Remaining" value={formatHours(remainingHours)} sub={`${steps.length} skill${steps.length === 1 ? "" : "s"} to go`} />
+          <div className="rounded-xl border border-primary/30 p-4 bg-primary/5 flex items-center justify-between gap-2">
+            <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Path progress</p>
+            <ProgressRing value={progressFraction(done, steps.length)} size={64} stroke={6} />
+          </div>
         </div>
 
         {/* ── Progress bar ────────────────────────────────────────────────── */}
@@ -250,7 +257,8 @@ export default function Progress() {
                 }`}
               >
                 <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1 truncate">{ds.domain}</p>
-                <p className="font-display font-800 text-lg text-foreground mb-2">{ds.doneCnt}/{ds.total}</p>
+                <p className="font-display font-800 text-lg text-foreground mb-0.5">{ds.doneCnt}/{ds.total}</p>
+                <p className="text-xs text-muted-foreground mb-2">{ds.remainingHours > 0 ? `${formatHours(ds.remainingHours)} left` : "Done"}</p>
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-primary rounded-full transition-all duration-500"
