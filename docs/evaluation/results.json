@@ -1,0 +1,1849 @@
+{
+  "parameters": {
+    "k": 3,
+    "alpha": 0.7,
+    "beta": 0.3,
+    "shuffles": 20,
+    "shuffleSeedBase": 42,
+    "shuffleSeedRule": "mulberry32(shuffleSeedBase + scenarioIndex), scenarioIndex 0-based"
+  },
+  "scenarios": [
+    {
+      "scenarioName": "S1 Complete beginner to Data Analyst",
+      "role": "data-analyst",
+      "held": [],
+      "paths": {
+        "systemPath": [
+          "tableau",
+          "statistics",
+          "sql",
+          "python",
+          "pandas"
+        ],
+        "baselinePath": [
+          "python",
+          "sql",
+          "statistics",
+          "pandas",
+          "power-bi",
+          "excel"
+        ],
+        "humanExpertPath": [
+          "sql",
+          "statistics",
+          "python",
+          "pandas",
+          "excel",
+          "power-bi"
+        ]
+      },
+      "metrics": {
+        "systemHours": 110,
+        "baselineHours": 115,
+        "timeSavedPct": 4.35,
+        "redundantSkillsAvoided": 0,
+        "systemOrderViolations": 0,
+        "baselineOrderViolations": 1.2,
+        "expertJaccard": 0.57,
+        "expertKendallTau": 0.67,
+        "statesExpandedAStar": 57,
+        "statesExpandedDijkstra": 57
+      },
+      "baselineShuffleViolations": [
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        1,
+        1,
+        0,
+        2,
+        1,
+        1,
+        2,
+        2,
+        1,
+        1,
+        2,
+        0,
+        2,
+        0
+      ],
+      "searchEfficiency": {
+        "closure": {
+          "statesToPrimary": 24,
+          "statesExpanded": 57,
+          "elapsedMs": 1.6,
+          "capped": false
+        },
+        "simple": {
+          "statesToPrimary": 24,
+          "statesExpanded": 57,
+          "elapsedMs": 0.9,
+          "capped": false
+        },
+        "dijkstra": {
+          "statesToPrimary": 57,
+          "statesExpanded": 57,
+          "elapsedMs": 0.8,
+          "capped": false
+        }
+      },
+      "systemAlgorithm": "a_star",
+      "returnedPaths": [
+        {
+          "rank": 1,
+          "type": "primary",
+          "totalLearningCost": 110,
+          "marketDemandAvg": 0.72,
+          "compositeScore": 0.754,
+          "steps": [
+            {
+              "slug": "tableau",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Chosen for 'BI tool' — Tableau route is 5h cheaper than Excel → Power BI route."
+            },
+            {
+              "slug": "statistics",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 15,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "sql",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 30,
+              "rationale": "Required for this role (intermediate)."
+            },
+            {
+              "slug": "python",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 40,
+              "rationale": "Required for this role (intermediate). Prerequisite for Pandas."
+            },
+            {
+              "slug": "pandas",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Required for this role (beginner)."
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "type": "alternative",
+          "totalLearningCost": 115,
+          "marketDemandAvg": 0.767,
+          "compositeScore": 0.77,
+          "steps": [
+            {
+              "slug": "excel",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Prerequisite for Power BI."
+            },
+            {
+              "slug": "power-bi",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Alternative for 'BI tool': Power BI (higher market demand 0.8 vs 0.5)."
+            },
+            {
+              "slug": "statistics",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 15,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "sql",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 30,
+              "rationale": "Required for this role (intermediate)."
+            },
+            {
+              "slug": "python",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 40,
+              "rationale": "Required for this role (intermediate). Prerequisite for Pandas."
+            },
+            {
+              "slug": "pandas",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Required for this role (beginner)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scenarioName": "S2 Python beginner with SQL to Data Analyst",
+      "role": "data-analyst",
+      "held": [
+        {
+          "slug": "python",
+          "proficiency": "beginner"
+        },
+        {
+          "slug": "sql",
+          "proficiency": "intermediate"
+        }
+      ],
+      "paths": {
+        "systemPath": [
+          "tableau",
+          "statistics",
+          "python",
+          "pandas"
+        ],
+        "baselinePath": [
+          "python",
+          "sql",
+          "statistics",
+          "pandas",
+          "power-bi",
+          "excel"
+        ],
+        "humanExpertPath": [
+          "python",
+          "statistics",
+          "pandas",
+          "excel",
+          "power-bi"
+        ]
+      },
+      "metrics": {
+        "systemHours": 60,
+        "baselineHours": 115,
+        "timeSavedPct": 47.83,
+        "redundantSkillsAvoided": 1,
+        "systemOrderViolations": 0,
+        "baselineOrderViolations": 1.05,
+        "expertJaccard": 0.5,
+        "expertKendallTau": 0.33,
+        "statesExpandedAStar": 37,
+        "statesExpandedDijkstra": 37
+      },
+      "baselineShuffleViolations": [
+        2,
+        1,
+        0,
+        1,
+        2,
+        0,
+        2,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "searchEfficiency": {
+        "closure": {
+          "statesToPrimary": 16,
+          "statesExpanded": 37,
+          "elapsedMs": 0.5,
+          "capped": false
+        },
+        "simple": {
+          "statesToPrimary": 16,
+          "statesExpanded": 37,
+          "elapsedMs": 0.4,
+          "capped": false
+        },
+        "dijkstra": {
+          "statesToPrimary": 37,
+          "statesExpanded": 37,
+          "elapsedMs": 0.4,
+          "capped": false
+        }
+      },
+      "systemAlgorithm": "a_star",
+      "returnedPaths": [
+        {
+          "rank": 1,
+          "type": "primary",
+          "totalLearningCost": 60,
+          "marketDemandAvg": 0.675,
+          "compositeScore": 0.744,
+          "steps": [
+            {
+              "slug": "tableau",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Chosen for 'BI tool' — Tableau route is 5h cheaper than Excel → Power BI route."
+            },
+            {
+              "slug": "statistics",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 15,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "python",
+              "fromRank": 1,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Upgrade from beginner to intermediate — required by the role. Prerequisite for Pandas."
+            },
+            {
+              "slug": "pandas",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Required for this role (beginner)."
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "type": "alternative",
+          "totalLearningCost": 65,
+          "marketDemandAvg": 0.74,
+          "compositeScore": 0.778,
+          "steps": [
+            {
+              "slug": "excel",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Prerequisite for Power BI."
+            },
+            {
+              "slug": "power-bi",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Alternative for 'BI tool': Power BI (higher market demand 0.8 vs 0.5)."
+            },
+            {
+              "slug": "statistics",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 15,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "python",
+              "fromRank": 1,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Upgrade from beginner to intermediate — required by the role. Prerequisite for Pandas."
+            },
+            {
+              "slug": "pandas",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Required for this role (beginner)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scenarioName": "S3 Python and stats to Machine Learning Engineer",
+      "role": "machine-learning-engineer",
+      "held": [
+        {
+          "slug": "python",
+          "proficiency": "intermediate"
+        },
+        {
+          "slug": "statistics",
+          "proficiency": "beginner"
+        }
+      ],
+      "paths": {
+        "systemPath": [
+          "git",
+          "numpy",
+          "linux",
+          "docker",
+          "calculus",
+          "linear-algebra",
+          "pandas",
+          "pytorch",
+          "machine-learning",
+          "mlflow",
+          "feature-engineering",
+          "scikit-learn",
+          "deep-learning"
+        ],
+        "baselinePath": [
+          "python",
+          "machine-learning",
+          "statistics",
+          "linear-algebra",
+          "numpy",
+          "scikit-learn",
+          "pandas",
+          "feature-engineering",
+          "deep-learning",
+          "calculus",
+          "tensorflow",
+          "git",
+          "docker",
+          "linux",
+          "mlflow"
+        ],
+        "humanExpertPath": [
+          "git",
+          "numpy",
+          "pandas",
+          "calculus",
+          "linear-algebra",
+          "machine-learning",
+          "scikit-learn",
+          "feature-engineering",
+          "pytorch",
+          "deep-learning",
+          "linux",
+          "docker",
+          "mlflow"
+        ]
+      },
+      "metrics": {
+        "systemHours": 218.5,
+        "baselineHours": 273.5,
+        "timeSavedPct": 20.11,
+        "redundantSkillsAvoided": 2,
+        "systemOrderViolations": 0,
+        "baselineOrderViolations": 5.5,
+        "expertJaccard": 1,
+        "expertKendallTau": 0.36,
+        "statesExpandedAStar": 2823,
+        "statesExpandedDijkstra": 2823
+      },
+      "baselineShuffleViolations": [
+        6,
+        6,
+        5,
+        4,
+        7,
+        4,
+        4,
+        6,
+        5,
+        7,
+        5,
+        7,
+        8,
+        5,
+        3,
+        6,
+        4,
+        6,
+        6,
+        6
+      ],
+      "searchEfficiency": {
+        "closure": {
+          "statesToPrimary": 433,
+          "statesExpanded": 2823,
+          "elapsedMs": 20.9,
+          "capped": false
+        },
+        "simple": {
+          "statesToPrimary": 1147,
+          "statesExpanded": 2823,
+          "elapsedMs": 17.6,
+          "capped": false
+        },
+        "dijkstra": {
+          "statesToPrimary": 2616,
+          "statesExpanded": 2823,
+          "elapsedMs": 17.7,
+          "capped": false
+        }
+      },
+      "systemAlgorithm": "a_star",
+      "returnedPaths": [
+        {
+          "rank": 1,
+          "type": "primary",
+          "totalLearningCost": 218.5,
+          "marketDemandAvg": 0.535,
+          "compositeScore": 0.84,
+          "steps": [
+            {
+              "slug": "git",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "numpy",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Prerequisite for Machine Learning, PyTorch. Often learned alongside Pandas."
+            },
+            {
+              "slug": "linux",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Prerequisite for Docker."
+            },
+            {
+              "slug": "docker",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "calculus",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Prerequisite for Deep Learning. Often learned alongside Linear Algebra."
+            },
+            {
+              "slug": "linear-algebra",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Prerequisite for Machine Learning. Often learned alongside Calculus."
+            },
+            {
+              "slug": "pandas",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Prerequisite for Feature Engineering, scikit-learn. (any one of Pandas / PySpark is needed for Feature Engineering — this one is cheapest). Often learned alongside NumPy."
+            },
+            {
+              "slug": "pytorch",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 30,
+              "rationale": "Chosen for 'DL framework' — same effort as the NumPy → TensorFlow route. Prerequisite for Deep Learning. (any one of PyTorch / TensorFlow is needed for Deep Learning — this one is cheapest)."
+            },
+            {
+              "slug": "machine-learning",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 50,
+              "rationale": "Required for this role (intermediate). Prerequisite for Deep Learning, Feature Engineering, MLflow, scikit-learn."
+            },
+            {
+              "slug": "mlflow",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 6,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "feature-engineering",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Required for this role (intermediate). Often learned alongside scikit-learn."
+            },
+            {
+              "slug": "scikit-learn",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Required for this role (intermediate). Often learned alongside Feature Engineering."
+            },
+            {
+              "slug": "deep-learning",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 22.5,
+              "rationale": "Required for this role (beginner)."
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "type": "alternative",
+          "totalLearningCost": 218.5,
+          "marketDemandAvg": 0.527,
+          "compositeScore": 0.842,
+          "steps": [
+            {
+              "slug": "git",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "numpy",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Prerequisite for Machine Learning, TensorFlow. Often learned alongside Pandas."
+            },
+            {
+              "slug": "linux",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Prerequisite for Docker."
+            },
+            {
+              "slug": "docker",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "calculus",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Prerequisite for Deep Learning. Often learned alongside Linear Algebra."
+            },
+            {
+              "slug": "linear-algebra",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Prerequisite for Machine Learning. Often learned alongside Calculus."
+            },
+            {
+              "slug": "pandas",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Prerequisite for Feature Engineering, scikit-learn. (any one of Pandas / PySpark is needed for Feature Engineering — this one is cheapest). Often learned alongside NumPy."
+            },
+            {
+              "slug": "tensorflow",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 30,
+              "rationale": "Chosen for 'DL framework' — same effort as the NumPy → PyTorch route. Prerequisite for Deep Learning. (any one of PyTorch / TensorFlow is needed for Deep Learning — this one is cheapest)."
+            },
+            {
+              "slug": "machine-learning",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 50,
+              "rationale": "Required for this role (intermediate). Prerequisite for Deep Learning, Feature Engineering, MLflow, scikit-learn."
+            },
+            {
+              "slug": "mlflow",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 6,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "feature-engineering",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Required for this role (intermediate). Often learned alongside scikit-learn."
+            },
+            {
+              "slug": "scikit-learn",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Required for this role (intermediate). Often learned alongside Feature Engineering."
+            },
+            {
+              "slug": "deep-learning",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 22.5,
+              "rationale": "Required for this role (beginner)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scenarioName": "S4 Frontend basics to Full-Stack MERN Developer",
+      "role": "full-stack-mern-developer",
+      "held": [
+        {
+          "slug": "html",
+          "proficiency": "intermediate"
+        },
+        {
+          "slug": "css",
+          "proficiency": "intermediate"
+        },
+        {
+          "slug": "javascript",
+          "proficiency": "beginner"
+        }
+      ],
+      "paths": {
+        "systemPath": [
+          "json-yaml",
+          "npm",
+          "bootstrap",
+          "git",
+          "dom-manipulation",
+          "es6-plus",
+          "async-javascript",
+          "networking-basics",
+          "http-web-fundamentals",
+          "rest-api-design",
+          "mongodb",
+          "node-js",
+          "mongoose",
+          "express",
+          "authentication-jwt",
+          "react"
+        ],
+        "baselinePath": [
+          "react",
+          "es6-plus",
+          "javascript",
+          "html",
+          "dom-manipulation",
+          "npm",
+          "node-js",
+          "async-javascript",
+          "express",
+          "http-web-fundamentals",
+          "networking-basics",
+          "mongodb",
+          "json-yaml",
+          "mongoose",
+          "rest-api-design",
+          "authentication-jwt",
+          "git",
+          "css",
+          "tailwind"
+        ],
+        "humanExpertPath": [
+          "git",
+          "es6-plus",
+          "dom-manipulation",
+          "npm",
+          "react",
+          "async-javascript",
+          "node-js",
+          "networking-basics",
+          "http-web-fundamentals",
+          "express",
+          "json-yaml",
+          "mongodb",
+          "mongoose",
+          "rest-api-design",
+          "authentication-jwt",
+          "bootstrap"
+        ]
+      },
+      "metrics": {
+        "systemHours": 178.5,
+        "baselineHours": 232,
+        "timeSavedPct": 23.06,
+        "redundantSkillsAvoided": 3,
+        "systemOrderViolations": 0,
+        "baselineOrderViolations": 8.05,
+        "expertJaccard": 1,
+        "expertKendallTau": 0.25,
+        "statesExpandedAStar": 32130,
+        "statesExpandedDijkstra": 34353
+      },
+      "baselineShuffleViolations": [
+        6,
+        9,
+        11,
+        8,
+        11,
+        11,
+        6,
+        5,
+        10,
+        9,
+        6,
+        9,
+        7,
+        4,
+        9,
+        9,
+        8,
+        9,
+        7,
+        7
+      ],
+      "searchEfficiency": {
+        "closure": {
+          "statesToPrimary": 482,
+          "statesExpanded": 32130,
+          "elapsedMs": 275.2,
+          "capped": false
+        },
+        "simple": {
+          "statesToPrimary": 2846,
+          "statesExpanded": 33298,
+          "elapsedMs": 301,
+          "capped": false
+        },
+        "dijkstra": {
+          "statesToPrimary": 29607,
+          "statesExpanded": 34353,
+          "elapsedMs": 290.3,
+          "capped": false
+        }
+      },
+      "systemAlgorithm": "a_star",
+      "returnedPaths": [
+        {
+          "rank": 1,
+          "type": "primary",
+          "totalLearningCost": 178.5,
+          "marketDemandAvg": 0.588,
+          "compositeScore": 0.82,
+          "steps": [
+            {
+              "slug": "json-yaml",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 2.5,
+              "rationale": "Prerequisite for MongoDB, REST API Design."
+            },
+            {
+              "slug": "npm",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 3,
+              "rationale": "Prerequisite for Node.js, React."
+            },
+            {
+              "slug": "bootstrap",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Chosen for 'CSS framework' — Bootstrap route is 1h cheaper than Tailwind CSS route."
+            },
+            {
+              "slug": "git",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "dom-manipulation",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 6,
+              "rationale": "Prerequisite for React."
+            },
+            {
+              "slug": "es6-plus",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 6,
+              "rationale": "Prerequisite for Asynchronous JavaScript, React."
+            },
+            {
+              "slug": "async-javascript",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Prerequisite for Node.js."
+            },
+            {
+              "slug": "networking-basics",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Prerequisite for HTTP and Web Fundamentals."
+            },
+            {
+              "slug": "http-web-fundamentals",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Prerequisite for Authentication and JWT, Express.js, REST API Design."
+            },
+            {
+              "slug": "rest-api-design",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 15,
+              "rationale": "Required for this role (intermediate)."
+            },
+            {
+              "slug": "mongodb",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Required for this role (intermediate). Prerequisite for Mongoose. Often learned alongside Express.js."
+            },
+            {
+              "slug": "node-js",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 30,
+              "rationale": "Required for this role (intermediate). Prerequisite for Express.js, Mongoose."
+            },
+            {
+              "slug": "mongoose",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "express",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 15,
+              "rationale": "Required for this role (intermediate). Prerequisite for Authentication and JWT. (any one of Django / Express.js / FastAPI / Spring Boot is needed for Authentication and JWT — chosen for this route). Often learned alongside MongoDB."
+            },
+            {
+              "slug": "authentication-jwt",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 6,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "react",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 40,
+              "rationale": "Required for this role (intermediate)."
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "type": "alternative",
+          "totalLearningCost": 179.5,
+          "marketDemandAvg": 0.597,
+          "compositeScore": 0.821,
+          "steps": [
+            {
+              "slug": "json-yaml",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 2.5,
+              "rationale": "Prerequisite for MongoDB, REST API Design."
+            },
+            {
+              "slug": "npm",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 3,
+              "rationale": "Prerequisite for Node.js, React."
+            },
+            {
+              "slug": "git",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "dom-manipulation",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 6,
+              "rationale": "Prerequisite for React."
+            },
+            {
+              "slug": "es6-plus",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 6,
+              "rationale": "Prerequisite for Asynchronous JavaScript, React."
+            },
+            {
+              "slug": "tailwind",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 6,
+              "rationale": "Alternative for 'CSS framework': Tailwind CSS (higher market demand 0.5 vs 0.35). Often learned alongside React."
+            },
+            {
+              "slug": "async-javascript",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Prerequisite for Node.js."
+            },
+            {
+              "slug": "networking-basics",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Prerequisite for HTTP and Web Fundamentals."
+            },
+            {
+              "slug": "http-web-fundamentals",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Prerequisite for Authentication and JWT, Express.js, REST API Design."
+            },
+            {
+              "slug": "rest-api-design",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 15,
+              "rationale": "Required for this role (intermediate)."
+            },
+            {
+              "slug": "mongodb",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Required for this role (intermediate). Prerequisite for Mongoose. Often learned alongside Express.js."
+            },
+            {
+              "slug": "node-js",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 30,
+              "rationale": "Required for this role (intermediate). Prerequisite for Express.js, Mongoose."
+            },
+            {
+              "slug": "mongoose",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "express",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 15,
+              "rationale": "Required for this role (intermediate). Prerequisite for Authentication and JWT. (any one of Django / Express.js / FastAPI / Spring Boot is needed for Authentication and JWT — chosen for this route). Often learned alongside MongoDB."
+            },
+            {
+              "slug": "authentication-jwt",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 6,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "react",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 40,
+              "rationale": "Required for this role (intermediate). Often learned alongside Tailwind CSS."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scenarioName": "S5 Linux and Git basics to DevOps Engineer",
+      "role": "devops-engineer",
+      "held": [
+        {
+          "slug": "linux",
+          "proficiency": "beginner"
+        },
+        {
+          "slug": "git",
+          "proficiency": "beginner"
+        }
+      ],
+      "paths": {
+        "systemPath": [
+          "json-yaml",
+          "agile-scrum",
+          "git",
+          "networking-basics",
+          "http-web-fundamentals",
+          "ci-cd-concepts",
+          "linux",
+          "cloud-fundamentals",
+          "bash-scripting",
+          "monitoring-prometheus-grafana",
+          "jenkins",
+          "aws",
+          "terraform",
+          "docker",
+          "kubernetes"
+        ],
+        "baselinePath": [
+          "linux",
+          "bash-scripting",
+          "git",
+          "docker",
+          "kubernetes",
+          "networking-basics",
+          "json-yaml",
+          "ci-cd-concepts",
+          "agile-scrum",
+          "github-actions",
+          "github-collaboration",
+          "terraform",
+          "aws",
+          "cloud-fundamentals",
+          "monitoring-prometheus-grafana",
+          "http-web-fundamentals"
+        ],
+        "humanExpertPath": [
+          "linux",
+          "git",
+          "bash-scripting",
+          "networking-basics",
+          "json-yaml",
+          "docker",
+          "kubernetes",
+          "agile-scrum",
+          "ci-cd-concepts",
+          "github-collaboration",
+          "github-actions",
+          "cloud-fundamentals",
+          "aws",
+          "terraform",
+          "http-web-fundamentals",
+          "monitoring-prometheus-grafana"
+        ]
+      },
+      "metrics": {
+        "systemHours": 155,
+        "baselineHours": 171,
+        "timeSavedPct": 9.36,
+        "redundantSkillsAvoided": 0,
+        "systemOrderViolations": 0,
+        "baselineOrderViolations": 6.5,
+        "expertJaccard": 0.82,
+        "expertKendallTau": 0.21,
+        "statesExpandedAStar": 16763,
+        "statesExpandedDijkstra": 16763
+      },
+      "baselineShuffleViolations": [
+        9,
+        6,
+        5,
+        6,
+        4,
+        5,
+        9,
+        8,
+        8,
+        6,
+        7,
+        6,
+        6,
+        6,
+        7,
+        5,
+        9,
+        5,
+        8,
+        5
+      ],
+      "searchEfficiency": {
+        "closure": {
+          "statesToPrimary": 6656,
+          "statesExpanded": 16763,
+          "elapsedMs": 120.7,
+          "capped": false
+        },
+        "simple": {
+          "statesToPrimary": 8192,
+          "statesExpanded": 16763,
+          "elapsedMs": 121.2,
+          "capped": false
+        },
+        "dijkstra": {
+          "statesToPrimary": 16285,
+          "statesExpanded": 16763,
+          "elapsedMs": 115.3,
+          "capped": false
+        }
+      },
+      "systemAlgorithm": "a_star",
+      "returnedPaths": [
+        {
+          "rank": 1,
+          "type": "primary",
+          "totalLearningCost": 155,
+          "marketDemandAvg": 0.59,
+          "compositeScore": 0.819,
+          "steps": [
+            {
+              "slug": "json-yaml",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 2.5,
+              "rationale": "Prerequisite for Kubernetes."
+            },
+            {
+              "slug": "agile-scrum",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 4,
+              "rationale": "Prerequisite for CI/CD Concepts."
+            },
+            {
+              "slug": "git",
+              "fromRank": 1,
+              "toRank": 2,
+              "estCost": 5,
+              "rationale": "Upgrade from beginner to intermediate — required by the role. Prerequisite for CI/CD Concepts, Terraform."
+            },
+            {
+              "slug": "networking-basics",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Prerequisite for Cloud Fundamentals, HTTP and Web Fundamentals, Kubernetes."
+            },
+            {
+              "slug": "http-web-fundamentals",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Prerequisite for Monitoring (Prometheus and Grafana)."
+            },
+            {
+              "slug": "ci-cd-concepts",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 10,
+              "rationale": "Required for this role (intermediate). Prerequisite for Jenkins."
+            },
+            {
+              "slug": "linux",
+              "fromRank": 1,
+              "toRank": 2,
+              "estCost": 10,
+              "rationale": "Upgrade from beginner to intermediate — required by the role. Prerequisite for Bash Scripting, Cloud Fundamentals, Docker, Jenkins, Monitoring (Prometheus and Grafana)."
+            },
+            {
+              "slug": "cloud-fundamentals",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 6,
+              "rationale": "Prerequisite for Amazon Web Services."
+            },
+            {
+              "slug": "bash-scripting",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "monitoring-prometheus-grafana",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Required for this role (beginner). Often learned alongside Kubernetes."
+            },
+            {
+              "slug": "jenkins",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 15,
+              "rationale": "Chosen for 'CI tool' — Agile and Scrum → CI/CD Concepts → Jenkins route is 3.5h cheaper than JSON and YAML → Agile and Scrum → GitHub Collaboration → CI/CD Concepts → GitHub Actions route."
+            },
+            {
+              "slug": "aws",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 20,
+              "rationale": "Chosen for 'Cloud platform' — same effort as the Networking Basics → Cloud Fundamentals → Google Cloud Platform route. Prerequisite for Terraform. (any one of Amazon Web Services / Google Cloud Platform / Microsoft Azure is needed for Terraform — this one is cheapest)."
+            },
+            {
+              "slug": "terraform",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "docker",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Required for this role (intermediate). Prerequisite for Kubernetes."
+            },
+            {
+              "slug": "kubernetes",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 20,
+              "rationale": "Required for this role (beginner). Often learned alongside Monitoring (Prometheus and Grafana)."
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "type": "alternative",
+          "totalLearningCost": 156,
+          "marketDemandAvg": 0.6,
+          "compositeScore": 0.82,
+          "steps": [
+            {
+              "slug": "json-yaml",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 2.5,
+              "rationale": "Prerequisite for GitHub Actions, Kubernetes."
+            },
+            {
+              "slug": "agile-scrum",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 4,
+              "rationale": "Prerequisite for CI/CD Concepts."
+            },
+            {
+              "slug": "git",
+              "fromRank": 1,
+              "toRank": 2,
+              "estCost": 5,
+              "rationale": "Upgrade from beginner to intermediate — required by the role. Prerequisite for CI/CD Concepts, GitHub Collaboration, Terraform."
+            },
+            {
+              "slug": "github-collaboration",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 4,
+              "rationale": "Prerequisite for GitHub Actions."
+            },
+            {
+              "slug": "networking-basics",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Prerequisite for Cloud Fundamentals, HTTP and Web Fundamentals, Kubernetes."
+            },
+            {
+              "slug": "http-web-fundamentals",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Prerequisite for Monitoring (Prometheus and Grafana)."
+            },
+            {
+              "slug": "ci-cd-concepts",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 10,
+              "rationale": "Required for this role (intermediate). Prerequisite for GitHub Actions."
+            },
+            {
+              "slug": "linux",
+              "fromRank": 1,
+              "toRank": 2,
+              "estCost": 10,
+              "rationale": "Upgrade from beginner to intermediate — required by the role. Prerequisite for Bash Scripting, Cloud Fundamentals, Docker, Monitoring (Prometheus and Grafana)."
+            },
+            {
+              "slug": "cloud-fundamentals",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 6,
+              "rationale": "Prerequisite for Amazon Web Services."
+            },
+            {
+              "slug": "bash-scripting",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "monitoring-prometheus-grafana",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Required for this role (beginner). Often learned alongside Kubernetes."
+            },
+            {
+              "slug": "github-actions",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 12,
+              "rationale": "Alternative for 'CI tool': GitHub Actions (higher market demand 0.45 vs 0.3)."
+            },
+            {
+              "slug": "aws",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 20,
+              "rationale": "Chosen for 'Cloud platform' — same effort as the Networking Basics → Cloud Fundamentals → Google Cloud Platform route. Prerequisite for Terraform. (any one of Amazon Web Services / Google Cloud Platform / Microsoft Azure is needed for Terraform — this one is cheapest)."
+            },
+            {
+              "slug": "terraform",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "docker",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Required for this role (intermediate). Prerequisite for Kubernetes."
+            },
+            {
+              "slug": "kubernetes",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 20,
+              "rationale": "Required for this role (beginner). Often learned alongside Monitoring (Prometheus and Grafana)."
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "type": "alternative",
+          "totalLearningCost": 155,
+          "marketDemandAvg": 0.57,
+          "compositeScore": 0.825,
+          "steps": [
+            {
+              "slug": "json-yaml",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 2.5,
+              "rationale": "Prerequisite for Kubernetes."
+            },
+            {
+              "slug": "agile-scrum",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 4,
+              "rationale": "Prerequisite for CI/CD Concepts."
+            },
+            {
+              "slug": "git",
+              "fromRank": 1,
+              "toRank": 2,
+              "estCost": 5,
+              "rationale": "Upgrade from beginner to intermediate — required by the role. Prerequisite for CI/CD Concepts, Terraform."
+            },
+            {
+              "slug": "networking-basics",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Prerequisite for Cloud Fundamentals, HTTP and Web Fundamentals, Kubernetes."
+            },
+            {
+              "slug": "http-web-fundamentals",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Prerequisite for Monitoring (Prometheus and Grafana)."
+            },
+            {
+              "slug": "ci-cd-concepts",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 10,
+              "rationale": "Required for this role (intermediate). Prerequisite for Jenkins."
+            },
+            {
+              "slug": "linux",
+              "fromRank": 1,
+              "toRank": 2,
+              "estCost": 10,
+              "rationale": "Upgrade from beginner to intermediate — required by the role. Prerequisite for Bash Scripting, Cloud Fundamentals, Docker, Jenkins, Monitoring (Prometheus and Grafana)."
+            },
+            {
+              "slug": "cloud-fundamentals",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 6,
+              "rationale": "Prerequisite for Microsoft Azure."
+            },
+            {
+              "slug": "bash-scripting",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "monitoring-prometheus-grafana",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Required for this role (beginner). Often learned alongside Kubernetes."
+            },
+            {
+              "slug": "jenkins",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 15,
+              "rationale": "Chosen for 'CI tool' — Agile and Scrum → CI/CD Concepts → Jenkins route is 3.5h cheaper than JSON and YAML → Agile and Scrum → GitHub Collaboration → CI/CD Concepts → GitHub Actions route."
+            },
+            {
+              "slug": "docker",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Required for this role (intermediate). Prerequisite for Kubernetes."
+            },
+            {
+              "slug": "kubernetes",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 20,
+              "rationale": "Required for this role (beginner). Often learned alongside Monitoring (Prometheus and Grafana)."
+            },
+            {
+              "slug": "azure",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 20,
+              "rationale": "Chosen for 'Cloud platform' — same effort as the Networking Basics → Cloud Fundamentals → Amazon Web Services route. Prerequisite for Terraform. (any one of Amazon Web Services / Google Cloud Platform / Microsoft Azure is needed for Terraform — this one is cheapest)."
+            },
+            {
+              "slug": "terraform",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 12.5,
+              "rationale": "Required for this role (beginner)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scenarioName": "S6 Analyst with strong SQL to Data Engineer",
+      "role": "data-engineer",
+      "held": [
+        {
+          "slug": "python",
+          "proficiency": "intermediate"
+        },
+        {
+          "slug": "sql",
+          "proficiency": "advanced"
+        },
+        {
+          "slug": "excel",
+          "proficiency": "advanced"
+        }
+      ],
+      "paths": {
+        "systemPath": [
+          "git",
+          "linux",
+          "pyspark",
+          "data-modeling",
+          "data-warehousing",
+          "bigquery",
+          "etl-pipelines",
+          "airflow"
+        ],
+        "baselinePath": [
+          "python",
+          "sql",
+          "data-modeling",
+          "data-warehousing",
+          "etl-pipelines",
+          "airflow",
+          "snowflake",
+          "pyspark",
+          "git",
+          "linux"
+        ],
+        "humanExpertPath": [
+          "git",
+          "linux",
+          "data-modeling",
+          "data-warehousing",
+          "snowflake",
+          "etl-pipelines",
+          "airflow",
+          "pyspark"
+        ]
+      },
+      "metrics": {
+        "systemHours": 117.5,
+        "baselineHours": 205,
+        "timeSavedPct": 42.68,
+        "redundantSkillsAvoided": 2,
+        "systemOrderViolations": 0,
+        "baselineOrderViolations": 3.85,
+        "expertJaccard": 0.78,
+        "expertKendallTau": 0.62,
+        "statesExpandedAStar": 118,
+        "statesExpandedDijkstra": 118
+      },
+      "baselineShuffleViolations": [
+        3,
+        5,
+        2,
+        6,
+        5,
+        5,
+        2,
+        5,
+        1,
+        4,
+        2,
+        6,
+        6,
+        3,
+        4,
+        4,
+        2,
+        2,
+        6,
+        4
+      ],
+      "searchEfficiency": {
+        "closure": {
+          "statesToPrimary": 72,
+          "statesExpanded": 118,
+          "elapsedMs": 0.8,
+          "capped": false
+        },
+        "simple": {
+          "statesToPrimary": 72,
+          "statesExpanded": 118,
+          "elapsedMs": 0.7,
+          "capped": false
+        },
+        "dijkstra": {
+          "statesToPrimary": 118,
+          "statesExpanded": 118,
+          "elapsedMs": 0.7,
+          "capped": false
+        }
+      },
+      "systemAlgorithm": "a_star",
+      "returnedPaths": [
+        {
+          "rank": 1,
+          "type": "primary",
+          "totalLearningCost": 117.5,
+          "marketDemandAvg": 0.494,
+          "compositeScore": 0.837,
+          "steps": [
+            {
+              "slug": "git",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "linux",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "pyspark",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 15,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "data-modeling",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Required for this role (intermediate). Prerequisite for Data Warehousing."
+            },
+            {
+              "slug": "data-warehousing",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 25,
+              "rationale": "Required for this role (intermediate). Prerequisite for BigQuery."
+            },
+            {
+              "slug": "bigquery",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 7.5,
+              "rationale": "Chosen for 'Cloud warehouse' — Data Modeling → Data Warehousing → BigQuery route is 2.5h cheaper than Data Modeling → Data Warehousing → Snowflake route."
+            },
+            {
+              "slug": "etl-pipelines",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 25,
+              "rationale": "Required for this role (intermediate). Prerequisite for Apache Airflow."
+            },
+            {
+              "slug": "airflow",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Required for this role (beginner)."
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "type": "alternative",
+          "totalLearningCost": 120,
+          "marketDemandAvg": 0.5,
+          "compositeScore": 0.85,
+          "steps": [
+            {
+              "slug": "git",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 5,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "linux",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "pyspark",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 15,
+              "rationale": "Required for this role (beginner)."
+            },
+            {
+              "slug": "data-modeling",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 20,
+              "rationale": "Required for this role (intermediate). Prerequisite for Data Warehousing."
+            },
+            {
+              "slug": "data-warehousing",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 25,
+              "rationale": "Required for this role (intermediate). Prerequisite for Snowflake."
+            },
+            {
+              "slug": "snowflake",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Alternative for 'Cloud warehouse': Snowflake (higher market demand 0.35 vs 0.3)."
+            },
+            {
+              "slug": "etl-pipelines",
+              "fromRank": 0,
+              "toRank": 2,
+              "estCost": 25,
+              "rationale": "Required for this role (intermediate). Prerequisite for Apache Airflow."
+            },
+            {
+              "slug": "airflow",
+              "fromRank": 0,
+              "toRank": 1,
+              "estCost": 10,
+              "rationale": "Required for this role (beginner)."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "sensitivity": {
+    "scenarioName": "S2 Python beginner with SQL to Data Analyst",
+    "default": {
+      "alpha": 0.7,
+      "beta": 0.3,
+      "paths": [
+        {
+          "rank": 1,
+          "type": "primary",
+          "totalLearningCost": 60,
+          "marketDemandAvg": 0.675,
+          "compositeScore": 0.744,
+          "steps": [
+            "tableau",
+            "statistics",
+            "python",
+            "pandas"
+          ]
+        },
+        {
+          "rank": 2,
+          "type": "alternative",
+          "totalLearningCost": 65,
+          "marketDemandAvg": 0.74,
+          "compositeScore": 0.778,
+          "steps": [
+            "excel",
+            "power-bi",
+            "statistics",
+            "python",
+            "pandas"
+          ]
+        }
+      ]
+    },
+    "alternative": {
+      "alpha": 0.4,
+      "beta": 0.6,
+      "paths": [
+        {
+          "rank": 1,
+          "type": "primary",
+          "totalLearningCost": 65,
+          "marketDemandAvg": 0.74,
+          "compositeScore": 0.556,
+          "steps": [
+            "excel",
+            "power-bi",
+            "statistics",
+            "python",
+            "pandas"
+          ]
+        },
+        {
+          "rank": 2,
+          "type": "alternative",
+          "totalLearningCost": 60,
+          "marketDemandAvg": 0.675,
+          "compositeScore": 0.564,
+          "steps": [
+            "tableau",
+            "statistics",
+            "python",
+            "pandas"
+          ]
+        }
+      ]
+    },
+    "rankingChanged": true
+  }
+}
