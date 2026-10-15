@@ -96,7 +96,7 @@ What a run does:
 
 **Deletions are not propagated.** Removing a record from the JSON does not delete it from the database. Remove skills, edges or roles through the admin UI (or the admin API), which also keeps dependent data consistent.
 
-MongoDB collection names (as created by the Mongoose models): `skills`, `skilledges`, `roles`. Note that the edges collection is `skilledges`, not `skill_edges`.
+MongoDB collection names (pinned in the Mongoose models, matching the spec): `skills`, `skill_edges`, `roles`.
 
 ## Adding to the dataset safely
 

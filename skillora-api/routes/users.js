@@ -109,15 +109,16 @@ router.post('/me/skills/complete', auth, async (req, res) => {
   if (!user.targetRoleId) throw new AppError(400, 'No target role set');
   if (!user.activePathId) throw new AppError(400, 'No active path');
 
+  // Checked before the path lookup: once completed, the skill drops out of the recomputed path
+  const alreadyDone = user.completedSkills.some(c =>
+    c.skillId.toString() === skillId && String(c.targetRoleId) === String(user.targetRoleId));
+  if (alreadyDone) throw new AppError(409, 'Skill already completed for this target role');
+
   const pathDoc = await ComputedPath.findById(user.activePathId).lean();
   if (!pathDoc) throw new AppError(400, 'No active path');
   const selectedPath = pathDoc.paths.find(p => p.rank === (user.selectedPathRank || 1));
   const step = selectedPath?.steps.find(s => s.skillId.toString() === skillId);
   if (!step) throw new AppError(400, 'Skill is not a step of the selected path');
-
-  const alreadyDone = user.completedSkills.some(c =>
-    c.skillId.toString() === skillId && String(c.targetRoleId) === String(user.targetRoleId));
-  if (alreadyDone) throw new AppError(409, 'Skill already completed for this target role');
 
   // Completion is always saved, even if the recompute fails
   await User.findByIdAndUpdate(req.user.id, {

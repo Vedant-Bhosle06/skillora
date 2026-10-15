@@ -25,7 +25,7 @@ const computedPathSchema = new mongoose.Schema({
   algorithm:    { type: String, enum: ['a_star', 'dijkstra', 'greedy_fallback'] },
   alpha:        { type: Number, default: 0.7 },
   beta:         { type: Number, default: 0.3 },
-  stats:        { statesExpanded: Number, elapsedMs: Number },
+  stats:        { statesExpanded: Number, statesToPrimary: Number, elapsedMs: Number, capped: Boolean },
   status:       { type: String, enum: ['active', 'stale', 'archived'], default: 'active' },
   paths:        [pathSchema]
 });
@@ -34,4 +34,4 @@ const computedPathSchema = new mongoose.Schema({
 computedPathSchema.index({ userId: 1, status: 1 });
 computedPathSchema.index({ userId: 1, generatedAt: -1 });
 
-module.exports = mongoose.model('ComputedPath', computedPathSchema);
+module.exports = mongoose.model('ComputedPath', computedPathSchema, 'computed_paths');

@@ -14,4 +14,4 @@ skillEdgeSchema.index({ sourceSkillId: 1, targetSkillId: 1, type: 1 }, { unique:
 skillEdgeSchema.index({ sourceSkillId: 1 });
 skillEdgeSchema.index({ targetSkillId: 1 });
 
-module.exports = mongoose.model('SkillEdge', skillEdgeSchema);
+module.exports = mongoose.model('SkillEdge', skillEdgeSchema, 'skill_edges');

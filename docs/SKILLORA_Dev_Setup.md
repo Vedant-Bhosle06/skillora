@@ -76,7 +76,7 @@ node scripts/seed.js
 node scripts/seed.js --dry-run   # validate the dataset only, no DB connection
 ```
 
-> This populates the `skills`, `skilledges`, and `roles` collections.
+> This populates the `skills`, `skill_edges`, and `roles` collections.
 > Run it only once (it is idempotent — safe to re-run if needed).
 
 ---

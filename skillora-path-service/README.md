@@ -107,7 +107,7 @@ Create `skillora-path-service/.env` from the `[PYTHON SERVICE]` section of `../.
 | `PYTHON_PORT` | no | 5001 | Port used in the uvicorn command |
 | `MONGO_DB` | no | database in the URI | Override the database name |
 | `SKILLS_COLLECTION` | no | `skills` | |
-| `EDGES_COLLECTION` | no | `skilledges` | Mongoose's default name for the `SkillEdge` model |
+| `EDGES_COLLECTION` | no | `skill_edges` | Pinned in the `SkillEdge` Mongoose model (matches the spec) |
 | `MAX_STATES` | no | 200000 | Search safety cap |
 | `COST_BOUND_RATIO` | no | 1.5 | Default near-optimal bound for alternatives |
 

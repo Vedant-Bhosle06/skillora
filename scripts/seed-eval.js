@@ -4,7 +4,7 @@
 // Usage (from repo root; the Python path service must be running):
 //   node scripts/seed-eval.js
 //
-// Writes: MongoDB `evaluationscenarios` (upsert by scenarioName), docs/evaluation/results.json,
+// Writes: MongoDB `evaluation_scenarios` (upsert by scenarioName), docs/evaluation/results.json,
 //         docs/evaluation/metrics-table.md. Re-running is idempotent.
 
 const fs = require('fs');

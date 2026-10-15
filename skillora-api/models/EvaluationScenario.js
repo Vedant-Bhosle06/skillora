@@ -21,4 +21,4 @@ const evalSchema = new mongoose.Schema({
   }
 }, { timestamps: { createdAt: true, updatedAt: false } });
 
-module.exports = mongoose.model('EvaluationScenario', evalSchema);
+module.exports = mongoose.model('EvaluationScenario', evalSchema, 'evaluation_scenarios');

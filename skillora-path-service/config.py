@@ -23,7 +23,7 @@ def skills_collection() -> str:
 
 
 def edges_collection() -> str:
-    return os.getenv("EDGES_COLLECTION", "skilledges")
+    return os.getenv("EDGES_COLLECTION", "skill_edges")
 
 
 def internal_api_key() -> str:
