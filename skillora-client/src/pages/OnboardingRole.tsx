@@ -1,17 +1,54 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Badge, DemandBar, Card, Modal, PageLoader, ErrorState, EmptyState } from "@/components/ui";
-import { useRoles } from "@/api/queries";
-import type { Role } from "@/api/types";
+import { useRoleDetail, useRoles } from "@/api/queries";
+import type { Role, RoleDetail } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
 import { useApp } from "@/context/AppContext";
 import { useToast } from "@/context/ToastContext";
-import { categoryLabel } from "@/lib/format";
-import { heldRankMap, roleMatch } from "@/lib/requirements";
+import { categoryLabel, rankLabel } from "@/lib/format";
+import { RANK, heldRankMap, requirementStatus, roleMatch } from "@/lib/requirements";
 
 type SortKey = "demand" | "az";
 
-const demandPct = (role: Role) => Math.round(role.demandScore * 100);
+type DetailRequirement = RoleDetail["requiredSkills"][number];
+
+const demandPct = (role: Pick<Role, "demandScore">) => Math.round(role.demandScore * 100);
+
+function optionName(opt: DetailRequirement["anyOfSkills"][number]): string {
+  return opt.name ?? opt.slug ?? "Unknown skill";
+}
+
+function RequirementRow({ req, held }: { req: DetailRequirement; held: Map<string, number> }) {
+  const status = requirementStatus(req, held);
+  const isGroup = req.anyOfSkills.length > 1;
+  const title = req.label || (req.anyOfSkills[0] ? optionName(req.anyOfSkills[0]) : "Unknown skill");
+  const bestOption = req.anyOfSkills.find(o => o._id === status.bestOptionId);
+
+  let badge: React.ReactNode;
+  if (status.met) {
+    badge = <Badge variant="completed">✓ Have it{isGroup && bestOption ? ` (${optionName(bestOption)})` : ""}</Badge>;
+  } else if (status.bestRank > 0) {
+    badge = <Badge variant="in-progress">Have {rankLabel(status.bestRank)} — need {rankLabel(RANK[req.minProficiency])}</Badge>;
+  } else {
+    badge = <Badge variant="locked">Need it</Badge>;
+  }
+
+  return (
+    <div className="flex items-start justify-between gap-3 py-2 border-b border-border last:border-0">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`text-sm ${status.met ? "text-foreground" : "text-muted-foreground"}`}>{title}</span>
+          <Badge variant="outline">min {rankLabel(RANK[req.minProficiency])}</Badge>
+        </div>
+        {isGroup && (
+          <p className="text-xs text-muted-foreground mt-0.5">Any one of: {req.anyOfSkills.map(optionName).join(" / ")}</p>
+        )}
+      </div>
+      <div className="shrink-0">{badge}</div>
+    </div>
+  );
+}
 
 export default function OnboardingRole() {
   const navigate = useNavigate();
@@ -25,7 +62,8 @@ export default function OnboardingRole() {
   const [sort, setSort] = useState<SortKey>("demand");
 
   const held = useMemo(() => heldRankMap(user), [user]);
-  const drawerRole = rolesQuery.data?.find(r => r._id === drawer);
+  const drawerQuery = useRoleDetail(drawer);
+  const drawerTitle = drawerQuery.data?.title ?? rolesQuery.data?.find(r => r._id === drawer)?.title ?? "";
 
   const visibleRoles = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -155,17 +193,33 @@ export default function OnboardingRole() {
       </div>
 
       {/* Role detail drawer */}
-      <Modal open={!!drawer} onClose={() => setDrawer(null)} title={drawerRole?.title ?? ""} className="max-w-md">
-        {drawerRole && (
+      <Modal open={!!drawer} onClose={() => setDrawer(null)} title={drawerTitle} className="max-w-md">
+        {drawerQuery.isPending ? (
+          <PageLoader label="Loading role…" />
+        ) : drawerQuery.isError ? (
+          <ErrorState title="Couldn't load this role" message={drawerQuery.error.message} onRetry={() => drawerQuery.refetch()} />
+        ) : (
           <div>
-            <div className="flex items-center gap-4 mb-5">
-              <p className="flex-1 text-sm text-muted-foreground">{drawerRole.description}</p>
-              <Badge variant={demandPct(drawerRole) >= 90 ? "demand" : "default"}>Demand {demandPct(drawerRole)}%</Badge>
+            <div className="flex items-start gap-4 mb-5">
+              <p className="flex-1 text-sm text-muted-foreground">{drawerQuery.data.description}</p>
+              <Badge variant={demandPct(drawerQuery.data) >= 90 ? "demand" : "default"}>Demand {demandPct(drawerQuery.data)}%</Badge>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {roleMatch(drawerRole, held).met}/{drawerRole.requiredSkills.length} requirements met
-            </p>
-            <Button className="w-full mt-5" onClick={() => { setSelected(drawerRole._id); setDrawer(null); }}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Required Skills</p>
+              <p className="text-xs text-muted-foreground">
+                {roleMatch(drawerQuery.data, held).met}/{drawerQuery.data.requiredSkills.length} met
+              </p>
+            </div>
+            {drawerQuery.data.requiredSkills.length === 0 ? (
+              <EmptyState icon="✓" title="No requirements" description="This role has no required skills yet." />
+            ) : (
+              <div className="flex flex-col gap-2">
+                {drawerQuery.data.requiredSkills.map((req, i) => (
+                  <RequirementRow key={req._id ?? i} req={req} held={held} />
+                ))}
+              </div>
+            )}
+            <Button className="w-full mt-5" onClick={() => { setSelected(drawerQuery.data._id); setDrawer(null); }}>
               Select this role →
             </Button>
           </div>
