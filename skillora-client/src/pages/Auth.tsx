@@ -8,8 +8,8 @@ function validateEmail(e: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 }
 
-export default function Auth() {
-  const [mode, setMode] = useState<"login" | "register">("login");
+export default function Auth({ mode: initialMode }: { mode: "login" | "register" }) {
+  const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
