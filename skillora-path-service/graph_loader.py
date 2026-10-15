@@ -88,16 +88,24 @@ def load_from_mongo(db: Any, skills_collection: str | None = None,
     return build_graph(skills, edges)
 
 
-def load_from_mongo_uri() -> GraphStore:
-    """Default production loader: connect, read, close."""
-    from pymongo import MongoClient
+_client = None
 
-    client = MongoClient(config.mongo_uri(), serverSelectionTimeoutMS=5000)
-    try:
-        db = client[config.mongo_db()] if config.mongo_db() else client.get_default_database()
-        return load_from_mongo(db)
-    finally:
-        client.close()
+
+def _mongo_client():
+    """One MongoClient per process: connecting (SRV/TLS handshake) is the slow part,
+    so reloads reuse it instead of reconnecting every time."""
+    global _client
+    if _client is None:
+        from pymongo import MongoClient
+        _client = MongoClient(config.mongo_uri(), serverSelectionTimeoutMS=5000)
+    return _client
+
+
+def load_from_mongo_uri() -> GraphStore:
+    """Default production loader: read skills + edges over the shared client."""
+    client = _mongo_client()
+    db = client[config.mongo_db()] if config.mongo_db() else client.get_default_database()
+    return load_from_mongo(db)
 
 
 def load_from_json(data_dir: str | Path) -> GraphStore:
