@@ -1,11 +1,12 @@
 import React, { ReactNode, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, Card, EmptyState, ErrorState, Input, Modal, PageLoader, StatTile } from "@/components/ui";
-import { useAdminEdges, useAdminMetrics, useDeleteSkill, useRoles, useSkillsCatalog } from "@/api/queries";
+import { Badge, Button, Card, EmptyState, ErrorState, Input, Modal, PageLoader, Select, StatTile } from "@/components/ui";
+import { useAdminEdges, useAdminMetrics, useDeleteEdge, useDeleteSkill, useRoles, useSkillsCatalog } from "@/api/queries";
 import { ApiError } from "@/api/client";
 import type { GraphMetrics, Role, Skill, SkillEdge } from "@/api/types";
 import { categoryLabel, formatHours, formatPercent } from "@/lib/format";
 import { useToast } from "@/context/ToastContext";
+import EdgeForm from "@/pages/admin/EdgeForm";
 import SkillForm from "@/pages/admin/SkillForm";
 
 type Tab = "health" | "skills" | "edges" | "roles";
@@ -105,7 +106,7 @@ export default function Admin() {
         )}
 
         {tab === "skills" && <SkillsTab skills={skills} />}
-        {tab === "edges" && <EdgesList edges={edges} byId={catalog.byId} />}
+        {tab === "edges" && <EdgesTab skills={skills} byId={catalog.byId} />}
         {tab === "roles" && <RolesList roles={roles} byId={catalog.byId} />}
       </div>
     </div>
@@ -338,18 +339,121 @@ function SkillsTab({ skills }: { skills: Skill[] }) {
   );
 }
 
-function EdgesList({ edges, byId }: { edges: SkillEdge[]; byId: Map<string, Skill> }) {
-  if (edges.length === 0) return <EmptyState icon="🔗" title="No edges yet" description="Connect two skills to add a prerequisite." />;
+function EdgesTab({ skills, byId }: { skills: Skill[]; byId: Map<string, Skill> }) {
+  const { showToast } = useToast();
+  const deleteEdge = useDeleteEdge();
+  const [filterSkillId, setFilterSkillId] = useState("");
+  // No filter shares the cache entry the page header counts; a filter calls GET /admin/edges?skillId=.
+  const edgesQuery = useAdminEdges(filterSkillId || undefined);
+  const [formEdge, setFormEdge] = useState<SkillEdge | "new" | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<SkillEdge | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+
+  const sortedSkills = useMemo(() => [...skills].sort((a, b) => a.name.localeCompare(b.name)), [skills]);
+  const nameOf = (id: string) => byId.get(id)?.name ?? id;
+  const edges = [...(edgesQuery.data ?? [])].sort(
+    (a, b) => nameOf(a.targetSkillId).localeCompare(nameOf(b.targetSkillId)) || nameOf(a.sourceSkillId).localeCompare(nameOf(b.sourceSkillId)),
+  );
+
+  function openDelete(edge: SkillEdge) {
+    setDeleteError("");
+    setDeleteTarget(edge);
+  }
+
+  function handleDelete() {
+    if (!deleteTarget) return;
+    deleteEdge.mutate(deleteTarget._id, {
+      onSuccess: () => {
+        setDeleteTarget(null);
+        showToast("Edge removed — learners' paths will be recalculated", "success");
+      },
+      onError: (err) => setDeleteError(err.message),
+    });
+  }
+
   return (
-    <Card className="divide-y divide-border">
-      {edges.map(edge => (
-        <div key={edge._id} className="flex items-center gap-2 px-4 py-3 text-sm">
-          <span className="font-500 text-foreground">{byId.get(edge.sourceSkillId)?.name ?? edge.sourceSkillId}</span>
-          <span className="text-muted-foreground">{edge.type === "prerequisite_of" ? "→" : "↔"}</span>
-          <span className="font-500 text-foreground">{byId.get(edge.targetSkillId)?.name ?? edge.targetSkillId}</span>
+    <div>
+      <div className="flex items-end gap-3 mb-4 flex-wrap">
+        <div className="w-64">
+          <Select label="Filter by skill" value={filterSkillId} onChange={e => setFilterSkillId(e.target.value)}>
+            <option value="">All skills</option>
+            {sortedSkills.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+          </Select>
         </div>
-      ))}
-    </Card>
+        {edgesQuery.data && <span className="text-xs text-muted-foreground font-mono pb-2.5">{edgesQuery.data.length} edges</span>}
+        <Button size="sm" className="ml-auto" onClick={() => setFormEdge("new")}>+ Add edge</Button>
+      </div>
+      <p className="text-xs text-muted-foreground mb-4">
+        The server rejects any prerequisite that would create a cycle. "A → B" means A is a prerequisite of B.
+      </p>
+
+      {edgesQuery.isPending ? (
+        <PageLoader label="Loading edges…" />
+      ) : edgesQuery.error ? (
+        <ErrorState title="Couldn't load edges" message={edgesQuery.error.message} onRetry={() => edgesQuery.refetch()} />
+      ) : edges.length === 0 ? (
+        <EmptyState
+          icon="🔗"
+          title={filterSkillId ? "No edges for this skill" : "No edges yet"}
+          description="Connect two skills to add a prerequisite."
+        />
+      ) : (
+        <Card className="divide-y divide-border">
+          {edges.map(edge => (
+            <div key={edge._id} className="flex items-center justify-between gap-3 px-4 py-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-sm flex-wrap">
+                  <span className="font-500 text-foreground">{nameOf(edge.sourceSkillId)}</span>
+                  <span className="text-muted-foreground">{edge.type === "prerequisite_of" ? "→" : "↔"}</span>
+                  <span className="font-500 text-foreground">{nameOf(edge.targetSkillId)}</span>
+                  <Badge variant={edge.type === "prerequisite_of" ? "in-progress" : "advanced"}>
+                    {edge.type === "prerequisite_of" ? "prerequisite" : "co-requisite"}
+                  </Badge>
+                  {edge.group && <Badge variant="intermediate" className="font-mono">OR: {edge.group}</Badge>}
+                </div>
+                {edge.source && <p className="text-xs text-muted-foreground truncate mt-0.5">{edge.source}</p>}
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <button onClick={() => setFormEdge(edge)} className="text-xs text-muted-foreground hover:text-primary transition-colors">Edit</button>
+                <button onClick={() => openDelete(edge)} className="text-xs text-muted-foreground hover:text-red-500 transition-colors">Remove</button>
+              </div>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      <Modal open={formEdge !== null} onClose={() => setFormEdge(null)} title={formEdge === "new" ? "Add Graph Edge" : "Edit Graph Edge"}>
+        {formEdge !== null && (
+          <EdgeForm
+            key={formEdge === "new" ? "new" : formEdge._id}
+            edge={formEdge === "new" ? undefined : formEdge}
+            skills={sortedSkills}
+            byId={byId}
+            onCancel={() => setFormEdge(null)}
+            onDone={() => {
+              showToast(`Edge ${formEdge === "new" ? "added" : "updated"} — learners' paths will be recalculated`, "success");
+              setFormEdge(null);
+            }}
+          />
+        )}
+      </Modal>
+
+      <ConfirmDeleteModal
+        open={deleteTarget !== null}
+        title="Remove edge"
+        error={deleteError}
+        pending={deleteEdge.isPending}
+        onConfirm={handleDelete}
+        onClose={() => setDeleteTarget(null)}
+      >
+        <p>
+          Remove the edge <span className="font-600 text-foreground">{deleteTarget && nameOf(deleteTarget.sourceSkillId)}</span>
+          {deleteTarget?.type === "prerequisite_of" ? " → " : " ↔ "}
+          <span className="font-600 text-foreground">{deleteTarget && nameOf(deleteTarget.targetSkillId)}</span>? This cannot be undone.
+        </p>
+        <p>All learners' paths are recalculated afterwards.</p>
+      </ConfirmDeleteModal>
+    </div>
   );
 }
 
