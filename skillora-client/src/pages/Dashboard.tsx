@@ -1,8 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Button, StatusBadge, Card, StatTile, ProgressBar, PageLoader, ErrorState } from "@/components/ui";
+import { Button, StatusBadge, Card, StatTile, PageLoader, ErrorState, ProgressRing } from "@/components/ui";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
+import { formatDate, formatHours } from "@/lib/format";
+import { completedForRole, estWeeks, pathLabel, progressFraction, remainingSteps, selectedRankedPath, totalHours } from "@/lib/pathMetrics";
+import { refId } from "@/lib/requirements";
 import { paths, skills, roles } from "@/data/mock";
 import { useApp } from "@/context/AppContext";
 import { useToast } from "@/context/ToastContext";
@@ -40,9 +43,16 @@ export default function Dashboard() {
   const primaryPath = paths.find(p => p.id === selectedPath) ?? paths[0];
   const altPaths = paths.filter(p => p.id !== primaryPath.id && p.roleId === currentRole);
 
-  const completed = primaryPath.nodes.filter(n => n.status === "completed").length;
-  const total = primaryPath.nodes.length;
-  const remainingHours = primaryPath.nodes.filter(n => n.status !== "completed").reduce((a, n) => a + n.estimatedHours, 0);
+  // Steps completed for this role are filtered out even if a stale path still lists them.
+  const completed = useMemo(() => completedForRole(user), [user]);
+  const completedIds = useMemo(
+    () => new Set(completed.map(c => refId(c.skillId)).filter((id): id is string => !!id)),
+    [completed]
+  );
+  const currentPath = selectedRankedPath(pathDoc, user.selectedPathRank);
+  const remaining = useMemo(() => remainingSteps(currentPath, completedIds), [currentPath, completedIds]);
+  const remainingHours = totalHours(remaining);
+  const weeks = estWeeks(remainingHours);
 
   function getSkill(id: string) {
     return skills.find(s => s.id === id);
@@ -64,23 +74,37 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div>
               <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-1">Active Path</p>
-              <h1 className="font-display font-800 text-2xl text-foreground">{user.targetRoleId?.title ?? role?.title}</h1>
+              <h1 className="font-display font-800 text-2xl text-foreground">{user.targetRoleId?.title}</h1>
+              <p className="text-xs font-mono text-muted-foreground mt-1">
+                {pathDoc.algorithm === "a_star" ? "A*" : pathDoc.algorithm} · {pathDoc.stats.statesExpanded} states · {pathDoc.stats.elapsedMs.toFixed(1)} ms · generated {formatDate(pathDoc.generatedAt)}
+              </p>
+              {pathDoc.stats.capped && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Search limit reached — best routes found so far</p>
+              )}
+              {pathDoc.algorithm === "greedy_fallback" && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Approximate route (search limit reached)</p>
+              )}
             </div>
-            <div className="flex gap-2">
-              <Button variant="secondary" size="sm" onClick={() => navigate("/alternatives")}>Compare paths</Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" size="sm" onClick={() => navigate("/dashboard/alternatives")}>Compare paths</Button>
               <Button variant="secondary" size="sm" onClick={() => navigate("/graph")}>View graph</Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/onboarding/role")}>Change role</Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            <StatTile label="Path" value={primaryPath.name.split("—")[1]?.trim() ?? "Core"} />
-            <StatTile label="Total hours" value={`${remainingHours}h`} sub="remaining" />
-            <StatTile label="Progress" value={`${completed}/${total}`} sub="skills done" accent />
-            <StatTile label="Est. finish" value="~4 months" sub="at 15h/week" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatTile label="Path" value={currentPath ? pathLabel(currentPath.rank) : "—"} sub={`${pathDoc.paths.length} route${pathDoc.paths.length === 1 ? "" : "s"} found`} />
+            <StatTile label="Remaining" value={formatHours(remainingHours)} sub={`${remaining.length} skill${remaining.length === 1 ? "" : "s"} to go`} />
+            <div className="rounded-xl border border-border p-4 bg-card flex items-center justify-between gap-2">
+              <div>
+                <p className="text-xs font-mono uppercase tracking-wider mb-1 text-muted-foreground">Progress</p>
+                <p className="font-display font-800 text-2xl text-foreground">{completed.length}/{completed.length + remaining.length}</p>
+                <p className="text-xs mt-0.5 text-muted-foreground">skills done</p>
+              </div>
+              <ProgressRing value={progressFraction(completed.length, remaining.length)} size={64} stroke={6} />
+            </div>
+            <StatTile label="Est. finish" value={weeks === 0 ? "Done" : `~${weeks} week${weeks === 1 ? "" : "s"}`} sub="at 10h/week" />
           </div>
-
-          <ProgressBar value={completed} max={total} />
-          <p className="text-xs font-mono text-muted-foreground mt-1.5">{Math.round((completed / total) * 100)}% complete</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
