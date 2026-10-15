@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Button, Card, ProgressBar, ProgressRing, ProficiencyBadge, StatTile, StatusBadge, PageLoader, ErrorState, EmptyState,
+  Button, Card, Modal, ProgressBar, ProgressRing, ProficiencyBadge, StatTile, StatusBadge, PageLoader, ErrorState, EmptyState,
 } from "@/components/ui";
-import { qk, useCompleteSkill, useGraph, useSkillsCatalog } from "@/api/queries";
+import { qk, useCompleteSkill, useGraph, useSkillDetail, useSkillsCatalog } from "@/api/queries";
 import { toApiError } from "@/api/client";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
@@ -139,6 +139,19 @@ export default function Progress() {
 
   const [domainFilter, setDomainFilter] = useState<string | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [historyScope, setHistoryScope] = useState<"all" | "role">("all");
+  const [detailEntryId, setDetailEntryId] = useState<string | null>(null);
+
+  // Completion history across every role (or just this one), newest first.
+  const history = useMemo(() => {
+    const roleId = user.targetRoleId?._id;
+    return user.completedSkills
+      .filter(c => historyScope === "all" || c.targetRoleId === roleId)
+      .sort((a, b) => b.completedAt.localeCompare(a.completedAt));
+  }, [user, historyScope]);
+  const detailEntry = user.completedSkills.find(c => c._id === detailEntryId) ?? null;
+  const skillDetail = useSkillDetail(refId(detailEntry?.skillId));
+  const closeDetail = useCallback(() => setDetailEntryId(null), []);
 
   function toggleRow(key: string) {
     setExpandedRows(prev => {
@@ -488,7 +501,78 @@ export default function Progress() {
             )
           )}
         </div>
+
+        {/* ── Completion History ──────────────────────────────────────────── */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display font-700 text-base text-foreground">Completion History</h2>
+          <div className="flex gap-1 bg-muted rounded-lg p-0.5">
+            {(["all", "role"] as const).map(scope => (
+              <button
+                key={scope}
+                onClick={() => setHistoryScope(scope)}
+                className={`px-2.5 py-1 rounded-md text-xs font-mono font-500 transition-all ${
+                  historyScope === scope ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {scope === "all" ? "All roles" : "This role"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <Card className="divide-y divide-border mb-10">
+          {history.length === 0 && (
+            <p className="text-sm text-muted-foreground p-4 text-center">No skills completed yet.</p>
+          )}
+          {history.map(entry => {
+            const category = completedCategory(entry);
+            return (
+              <div key={entry._id} className="flex items-center gap-2 px-4 py-3 flex-wrap">
+                <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="text-sm text-foreground font-500">{entry.skillId?.name ?? "Deleted skill"}</span>
+                  {category && <CategoryBadge category={category} />}
+                  <ProficiencyBadge level={entry.proficiency} />
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="font-mono text-xs text-muted-foreground">{formatDate(entry.completedAt)}</span>
+                  {entry.skillId && (
+                    <button onClick={() => setDetailEntryId(entry._id)} className="text-xs text-primary hover:underline font-500">
+                      View details
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </Card>
       </div>
+
+      {/* ── Skill detail modal ──────────────────────────────────────────────── */}
+      <Modal open={!!detailEntry} onClose={closeDetail} title={detailEntry?.skillId?.name ?? "Skill details"}>
+        {detailEntry && (
+          skillDetail.isPending ? (
+            <PageLoader label="Loading skill…" />
+          ) : skillDetail.error ? (
+            <ErrorState title="Couldn't load this skill" message={toApiError(skillDetail.error).message} onRetry={() => void skillDetail.refetch()} />
+          ) : skillDetail.data ? (
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <CategoryBadge category={skillDetail.data.category} />
+              </div>
+              <SkillDetail
+                description={skillDetail.data.description}
+                hours={skillDetail.data.estHours}
+                prerequisites={prerequisiteGroups(
+                  skillDetail.data._id,
+                  skillDetail.data.edges.map(e => ({ source: e.sourceSkillId, target: e.targetSkillId, type: e.type, group: e.group }))
+                ).map(options => options.map(skillName).join(" or "))}
+                completedAt={detailEntry.completedAt}
+                proficiency={detailEntry.proficiency}
+              />
+            </div>
+          ) : null
+        )}
+      </Modal>
     </div>
   );
 }
