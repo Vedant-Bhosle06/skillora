@@ -1,10 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Badge, DemandBar, Card, Modal, PageLoader, ErrorState, EmptyState } from "@/components/ui";
-import { useRoleDetail, useRoles } from "@/api/queries";
+import { useRoleDetail, useRoles, useSetTargetRole } from "@/api/queries";
 import type { Role, RoleDetail } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
-import { useApp } from "@/context/AppContext";
 import { useToast } from "@/context/ToastContext";
 import { categoryLabel, rankLabel } from "@/lib/format";
 import { RANK, heldRankMap, requirementStatus, roleMatch } from "@/lib/requirements";
@@ -52,10 +51,10 @@ function RequirementRow({ req, held }: { req: DetailRequirement; held: Map<strin
 
 export default function OnboardingRole() {
   const navigate = useNavigate();
-  const { setCurrentRole } = useApp();
   const { showToast } = useToast();
   const { user } = useAuth();
   const rolesQuery = useRoles();
+  const setTargetRole = useSetTargetRole();
   const [selected, setSelected] = useState<string | null>(() => user?.targetRoleId?._id ?? null);
   const [drawer, setDrawer] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -77,9 +76,13 @@ export default function OnboardingRole() {
 
   function handleSelect() {
     if (!selected) { showToast("Choose a target role to continue", "warning"); return; }
-    setCurrentRole(selected);
-    showToast("Path generated — your roadmap is ready!", "success");
-    navigate("/dashboard");
+    setTargetRole.mutate(selected, {
+      onSuccess: () => {
+        showToast("Target role set — computing your roadmap…", "success");
+        navigate("/dashboard");
+      },
+      onError: (err) => showToast(err.message, "error"),
+    });
   }
 
   return (
@@ -186,8 +189,8 @@ export default function OnboardingRole() {
 
         <div className="flex justify-between items-center">
           <button onClick={() => navigate("/onboarding/skills")} className="text-sm text-muted-foreground hover:text-foreground">← Back</button>
-          <Button size="lg" onClick={handleSelect} disabled={!selected}>
-            Generate my path →
+          <Button size="lg" onClick={handleSelect} disabled={!selected || setTargetRole.isPending}>
+            {setTargetRole.isPending ? "Saving…" : "Generate my path →"}
           </Button>
         </div>
       </div>
