@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { startTransition, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Input, Card, Badge, ProficiencyBadge, Modal, EmptyState, PageLoader, ErrorState } from "@/components/ui";
 import { useAuth, useCurrentUser } from "@/auth/AuthContext";
@@ -47,8 +47,9 @@ export default function Settings() {
 
   async function handleSignOut() {
     setSigningOut(true);
+    // Leave the guarded page first, or RequireAuth sends us to /login once the session clears.
+    navigate("/", { replace: true });
     await logout();
-    navigate("/");
     showToast("Signed out", "info");
   }
 
@@ -59,8 +60,12 @@ export default function Settings() {
     }
     deleteAccount.mutate(undefined, {
       onSuccess: () => {
-        clearSession();
-        navigate("/");
+        // React Router renders navigations as transitions; clear the session in the same one
+        // so RequireAuth never sees the signed-out state on /settings and redirects to /login.
+        startTransition(() => {
+          navigate("/", { replace: true });
+          clearSession();
+        });
         showToast("Your account has been deleted", "success");
       },
       onError: (err) => showToast(err.message, "error"),
