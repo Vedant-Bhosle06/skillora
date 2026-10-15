@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button, StatusBadge, Card, StatTile, PageLoader, ErrorState, ProgressRing } from "@/components/ui";
+import { useGraph, useSkillsCatalog } from "@/api/queries";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
-import { formatDate, formatHours } from "@/lib/format";
+import { formatDate, formatHours, rankLabel } from "@/lib/format";
 import { completedForRole, estWeeks, pathLabel, progressFraction, remainingSteps, selectedRankedPath, totalHours } from "@/lib/pathMetrics";
-import { refId } from "@/lib/requirements";
-import { paths, skills, roles } from "@/data/mock";
+import { computeStepStatuses } from "@/lib/pathStatus";
+import { heldRankMap, refId } from "@/lib/requirements";
+import { paths, roles } from "@/data/mock";
 import { useApp } from "@/context/AppContext";
 import { useToast } from "@/context/ToastContext";
 import type { NodeStatus } from "@/data/mock";
@@ -52,11 +54,16 @@ export default function Dashboard() {
   const currentPath = selectedRankedPath(pathDoc, user.selectedPathRank);
   const remaining = useMemo(() => remainingSteps(currentPath, completedIds), [currentPath, completedIds]);
   const remainingHours = totalHours(remaining);
-  const weeks = estWeeks(remainingHours);
 
-  function getSkill(id: string) {
-    return skills.find(s => s.id === id);
-  }
+  const catalog = useSkillsCatalog();
+  const graph = useGraph("full");
+  const held = useMemo(() => heldRankMap(user), [user]);
+  const steps = useMemo(
+    () => computeStepStatuses(remaining, graph.data?.edges, held),
+    [remaining, graph.data, held]
+  );
+  const skillName = (id: string) => catalog.byId.get(id)?.name ?? "Unknown skill";
+  const weeks = estWeeks(remainingHours);
 
   if (isLoading) return <PageLoader label="Loading your roadmap…" />;
   if (loadError) return <ErrorState title="Couldn't load your roadmap" message={loadError.message} onRetry={reload} />;
@@ -112,50 +119,70 @@ export default function Dashboard() {
           <div className="lg:col-span-2">
             <h2 className="font-display font-700 text-base text-foreground mb-4">Learning Roadmap</h2>
             <div className="flex flex-col">
-              {primaryPath.nodes.map((node, i) => {
-                const skill = getSkill(node.skillId);
-                if (!skill) return null;
-                const isLast = i === primaryPath.nodes.length - 1;
+              {completed.map((c, i) => {
+                const isLast = i === completed.length - 1 && steps.length === 0;
+                return (
+                  <div key={c._id} className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      {statusIcon("completed")}
+                      {!isLast && <div className={`w-0.5 flex-1 min-h-8 my-1 ${connectorColor("completed")}`} />}
+                    </div>
+                    <div className="flex-1 pb-6">
+                      <div className="rounded-xl border p-4 border-emerald-200 dark:border-emerald-800/40 bg-emerald-50/50 dark:bg-emerald-900/10">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="font-display font-700 text-sm text-foreground">{c.skillId?.name ?? "Deleted skill"}</h3>
+                          <StatusBadge status="completed" />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Completed {formatDate(c.completedAt)}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {steps.map((step, i) => {
+                const skill = catalog.byId.get(step.skillId);
+                const isLast = i === steps.length - 1;
 
                 return (
-                  <div key={node.skillId} className="flex gap-4">
+                  <div key={step.skillId} className="flex gap-4">
                     {/* Timeline column */}
                     <div className="flex flex-col items-center">
-                      {statusIcon(node.status)}
-                      {!isLast && <div className={`w-0.5 flex-1 min-h-8 my-1 ${connectorColor(node.status)}`} />}
+                      {statusIcon(step.status)}
+                      {!isLast && <div className={`w-0.5 flex-1 min-h-8 my-1 ${connectorColor(step.status)}`} />}
                     </div>
 
                     {/* Content */}
-                    <div className={`flex-1 pb-6 ${node.status === "locked" ? "opacity-50" : ""}`}>
+                    <div className={`flex-1 pb-6 ${step.status === "locked" ? "opacity-50" : ""}`}>
                       <div className={`rounded-xl border p-4 ${
-                        node.status === "in-progress" ? "border-primary bg-primary/5 shadow-sm" :
-                        node.status === "completed"   ? "border-emerald-200 dark:border-emerald-800/40 bg-emerald-50/50 dark:bg-emerald-900/10" :
-                        "border-border bg-card"
+                        step.status === "in-progress" ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-card"
                       }`}>
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs text-muted-foreground">#{node.order}</span>
-                            <h3 className="font-display font-700 text-sm text-foreground">{skill.name}</h3>
+                            <span className="font-mono text-xs text-muted-foreground">#{step.order}</span>
+                            <h3 className="font-display font-700 text-sm text-foreground">{skill?.name ?? "Unknown skill"}</h3>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
-                            <span className="font-mono text-xs text-muted-foreground">{node.estimatedHours}h</span>
-                            <StatusBadge status={node.status} />
+                            <span className="font-mono text-xs text-muted-foreground">{formatHours(step.estCost)}</span>
+                            <StatusBadge status={step.status} />
                           </div>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-2">{skill.description}</p>
-                        <p className="text-xs text-muted-foreground italic mb-1.5">"{node.rationale}"</p>
-                        <Link
-                          to="/progress"
-                          className="text-xs text-primary hover:underline font-500"
-                        >
-                          See what's covered →
-                        </Link>
-                        {(node.status === "unlocked" || node.status === "in-progress") && (
-                          <div className="mt-3">
-                            <Button size="sm" onClick={() => showToast(`Started: ${skill.name}`, "info")}>
-                              {node.status === "in-progress" ? "Continue →" : "Start now →"}
-                            </Button>
-                          </div>
+                        <span className="inline-block text-[11px] font-mono px-2 py-0.5 rounded-full bg-muted text-muted-foreground mb-2">
+                          {rankLabel(step.fromRank)} → {rankLabel(step.toRank)}
+                        </span>
+                        {skill?.description && <p className="text-xs text-muted-foreground mb-2">{skill.description}</p>}
+                        {step.rationale && (
+                          <p className="text-xs text-muted-foreground italic mb-1.5">
+                            <span className="not-italic font-600 text-foreground">Why this skill? </span>{step.rationale}
+                          </p>
+                        )}
+                        {step.status === "locked" && step.blockedBy.length > 0 && (
+                          <p className="text-xs text-muted-foreground">Needs: {step.blockedBy.map(skillName).join(", ")}</p>
+                        )}
+                        {step.status !== "locked" && (
+                          <Link to="/progress" className="text-xs text-primary hover:underline font-500">
+                            Mark complete in Progress →
+                          </Link>
                         )}
                       </div>
                     </div>
