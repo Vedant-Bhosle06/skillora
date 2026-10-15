@@ -122,7 +122,7 @@ const schemas = {
       algorithm: { type: 'string', enum: ['a_star', 'dijkstra', 'greedy_fallback'] },
       alpha: { type: 'number' },
       beta: { type: 'number' },
-      stats: { type: 'object', properties: { statesExpanded: { type: 'integer' }, elapsedMs: { type: 'number' } } },
+      stats: { type: 'object', properties: { statesExpanded: { type: 'integer' }, statesToPrimary: { type: 'integer' }, elapsedMs: { type: 'number' }, capped: { type: 'boolean' } } },
       status: { type: 'string', enum: ['active', 'stale', 'archived'] },
       paths: {
         type: 'array',
@@ -489,7 +489,15 @@ const paths = {
   '/api/admin/graph/metrics': {
     get: adminOp('Admin', 'API-N-31: Graph health metrics (proxies API-P-3)', {
       responses: {
-        200: ok({ type: 'object', additionalProperties: true }),
+        200: ok({
+          type: 'object',
+          properties: {
+            nodeCount: { type: 'integer' }, prerequisiteEdgeCount: { type: 'integer' }, corequisiteEdgeCount: { type: 'integer' },
+            groupCount: { type: 'integer' }, isDAG: { type: 'boolean' }, cycle: { type: 'array', items: { type: 'string' }, nullable: true },
+            orphanCount: { type: 'integer' }, orphans: { type: 'array', items: { type: 'string' } },
+            avgDegree: { type: 'number' }, roots: { type: 'array', items: { type: 'string' } }, maxDepth: { type: 'integer' }
+          }
+        }),
         ...pick(401, 403, 503)
       }
     })

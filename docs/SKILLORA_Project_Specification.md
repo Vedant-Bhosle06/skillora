@@ -212,7 +212,7 @@ Semantics: a skill can be learned once **all** of its mandatory prerequisites ar
   algorithm: "a_star" | "dijkstra" | "greedy_fallback",
   alpha: Number,                // composite score weight for normalized learning cost (default 0.7)
   beta: Number,                 // composite score weight for (1 - market demand) (default 0.3)
-  stats: { statesExpanded: Number, elapsedMs: Number },
+  stats: { statesExpanded: Number, statesToPrimary: Number, elapsedMs: Number, capped: Boolean },  // capped = hit the 200k-state cap
   status: "active" | "stale" | "archived",
   paths: [
     {
@@ -364,8 +364,13 @@ CRUD for D1's dataset. All admin routes check `users.role === "admin"` server-si
 | **API-P-3** | `/graph/metrics` | GET | Graph stats for admin/debug (orphan nodes, cycle check, avg degree) | `networkx.is_directed_acyclic_graph`, degree/isolate utilities on the `prerequisite_of` subgraph | in-memory graph |
 | **API-P-4** | `/health` | GET | Liveness check (no key required) | — | none |
 | **API-P-5** | `/graph/reload` | POST | Reload `skills`/`skill_edges` from MongoDB into memory | called by Node after admin writes | reads `skills`, `skill_edges` |
+| **API-P-6** | `/graph/validate-order` | POST | Count prerequisite-order violations in a given step list | `validate_order()`; used only by `scripts/seed-eval.js` | in-memory graph |
 
 (API-P-2 was merged into API-P-1 in v4.0.)
+
+**Error responses (all Python endpoints):** `403` missing/wrong `X-Internal-Key`; `422` invalid body or unknown skill IDs; `503` graph not loaded. The Node API maps any failure to `503` for the client and logs the cause.
+
+**API-P-3 response fields:** `nodeCount`, `prerequisiteEdgeCount`, `corequisiteEdgeCount`, `groupCount`, `isDAG`, `cycle`, `orphanCount`, `orphans`, `avgDegree`, `roots`, `maxDepth`.
 
 **Request body for API-P-1:**
 ```json
@@ -387,7 +392,7 @@ CRUD for D1's dataset. All admin routes check `users.role === "admin"` server-si
 ```json
 {
   "algorithm": "a_star",
-  "stats": { "statesExpanded": 412, "elapsedMs": 38 },
+  "stats": { "statesExpanded": 412, "statesToPrimary": 97, "elapsedMs": 38, "capped": false },
   "paths": [
     { "rank": 1, "type": "primary", "totalLearningCost": 60, "marketDemandAvg": 0.675, "compositeScore": 0.744,
       "steps": [ { "skillId": "<ObjectId>", "order": 1, "fromRank": 0, "toRank": 1, "estCost": 12.5,
@@ -412,7 +417,8 @@ The Python service never touches `users` or `computed_paths` — the Node.js Web
    - *Dijkstra mode*: `h = 0`, same code — used as the evaluation baseline for search efficiency.
 6. **Primary + alternatives.** With a consistent heuristic, goal states are popped in increasing cost order. Keep popping until `3k` goal states are collected or the queue is empty, **discarding any goal set that is a strict superset of one already found** (it only adds an unnecessary skill). Score each candidate: `compositeScore = α·(cost / maxCost) + β·(1 − marketDemandAvg)`; sort ascending; return the top *k* (rank 1 = primary).
 7. **Step order.** For each returned skill set, order the steps by `networkx.lexicographical_topological_sort` on the induced prerequisite subgraph, breaking ties by lower `estCost` first. Every returned path passes `validate_order()`: for each step, all of its mandatory prerequisites and ≥1 per group are held or appear at an earlier step.
-8. **Size guard.** If more than **200,000** states are expanded, stop and return a single path: all unmet requirements (cheapest option per OR-group) plus their unknown prerequisites (cheapest option per prerequisite group), ordered as in step 7, with `algorithm: "greedy_fallback"`.
+8. **Size guard.** If more than **200,000** states are expanded, stop. If at least one plan was already found, return the plans found so far with `stats.capped: true`. Only if *no* plan was found, return a single path: all unmet requirements (cheapest option per OR-group) plus their unknown prerequisites (cheapest option per prerequisite group), ordered as in step 7, with `algorithm: "greedy_fallback"`.
+9. **Already qualified.** If every requirement is already met, return one primary path with `steps: []` and `totalLearningCost: 0`.
 
 ---
 
