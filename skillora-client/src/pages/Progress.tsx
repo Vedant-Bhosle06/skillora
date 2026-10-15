@@ -8,7 +8,7 @@ import { qk, useCompleteSkill, useGraph, usePathHistory, useRoles, useSkillDetai
 import { toApiError } from "@/api/client";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
-import { categoryColor, categoryLabel, formatDate, formatDateTime, formatHours, rankLabel } from "@/lib/format";
+import { categoryColor, categoryLabel, formatDate, formatDateTime, formatHours, pluralize, rankLabel } from "@/lib/format";
 import { completedForRole, progressFraction, remainingSteps, selectedRankedPath, totalHours } from "@/lib/pathMetrics";
 import { computeStepStatuses, prerequisiteGroups } from "@/lib/pathStatus";
 import { heldRankMap, refId } from "@/lib/requirements";
@@ -307,7 +307,7 @@ export default function Progress() {
         <div className="mb-8">
           <ProgressBar value={done} max={Math.max(total, 1)} />
           <div className="flex justify-between text-xs font-mono text-muted-foreground mt-1.5">
-            <span>{done} skills done</span>
+            <span>{pluralize(done, "skill")} done</span>
             <span>{steps.length} remaining</span>
           </div>
         </div>
