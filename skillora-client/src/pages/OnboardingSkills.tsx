@@ -2,9 +2,11 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, ProficiencyBadge, Card, PageLoader, ErrorState, EmptyState } from "@/components/ui";
 import type { Proficiency, Skill } from "@/api/types";
-import { useSkillsCatalog, useSkillSearch } from "@/api/queries";
+import { useSaveSkills, useSkillsCatalog, useSkillSearch } from "@/api/queries";
+import { useAuth } from "@/auth/AuthContext";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { categoryLabel, formatHours } from "@/lib/format";
+import { refId } from "@/lib/requirements";
 import { useToast } from "@/context/ToastContext";
 
 const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"];
@@ -15,7 +17,15 @@ export default function OnboardingSkills() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<SelectedSkill[]>([]);
+  const { user } = useAuth();
+  // Pre-filled from the saved profile, so the page also works for re-editing from Settings.
+  const [selected, setSelected] = useState<SelectedSkill[]>(() =>
+    (user?.currentSkills ?? []).flatMap(s => {
+      const skillId = refId(s.skillId);
+      return skillId ? [{ skillId, proficiency: s.proficiency }] : [];
+    })
+  );
+  const saveSkills = useSaveSkills();
   const debounced = useDebouncedValue(search.trim());
 
   const catalog = useSkillsCatalog();
@@ -48,9 +58,12 @@ export default function OnboardingSkills() {
     setSelected(prev => prev.map(s => s.skillId === skillId ? { ...s, proficiency: level } : s));
   }
 
-  function handleNext() {
-    if (selected.length === 0) { showToast("Select at least one skill to continue", "warning"); return; }
-    navigate("/onboarding/role");
+  // The endpoint replaces the whole list, so always send every selected skill.
+  function save(skills: SelectedSkill[]) {
+    saveSkills.mutate(skills, {
+      onSuccess: () => navigate("/onboarding/role"),
+      onError: (err) => showToast(err.message, "error"),
+    });
   }
 
   function renderSkillCard(skill: Skill) {
@@ -191,9 +204,14 @@ export default function OnboardingSkills() {
           </Card>
         )}
 
-        <div className="flex justify-end">
-          <Button size="lg" onClick={handleNext}>
-            Next: Pick your role →
+        <div className="flex justify-end items-center gap-3">
+          {selected.length === 0 && (
+            <Button size="lg" variant="secondary" disabled={saveSkills.isPending} onClick={() => save([])}>
+              I'm starting from scratch →
+            </Button>
+          )}
+          <Button size="lg" disabled={selected.length === 0 || saveSkills.isPending} onClick={() => save(selected)}>
+            {saveSkills.isPending ? "Saving…" : "Next: Pick your role →"}
           </Button>
         </div>
       </div>
