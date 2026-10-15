@@ -118,11 +118,12 @@ export default function Navbar() {
               </>
             )}
           </div>
-        ) : (
+        ) : status === "anonymous" ? (
+          // Still holding a token while /users/me loads or the API is unreachable: not signed out.
           <Link to="/login" className="px-3 py-1.5 text-sm font-500 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity">
             Sign in
           </Link>
-        )}
+        ) : null}
 
         {/* Mobile hamburger */}
         {signedIn && (

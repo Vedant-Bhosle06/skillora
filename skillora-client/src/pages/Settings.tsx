@@ -7,6 +7,7 @@ import { refId } from "@/lib/requirements";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
 import type { Proficiency } from "@/api/types";
+import { pluralize } from "@/lib/format";
 
 const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"];
 
@@ -178,7 +179,7 @@ export default function Settings() {
         {tab === "skills" && (
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">{currentSkills.length} skills in your profile</p>
+              <p className="text-sm text-muted-foreground">{pluralize(currentSkills.length, "skill")} in your profile</p>
               <Button size="sm" variant="secondary" onClick={() => navigate("/onboarding/skills")}>Edit in wizard →</Button>
             </div>
 
@@ -201,12 +202,14 @@ export default function Settings() {
                         <span className="font-600 text-sm text-foreground">{skill.name}</span>
                         <span className="text-xs text-muted-foreground ml-2">{skill.category}</span>
                       </div>
-                      <button onClick={() => setRemoveTarget({ id: skillId, name: skill.name })} className="text-xs text-muted-foreground hover:text-red-500">Remove</button>
+                      <button onClick={() => setRemoveTarget({ id: skillId, name: skill.name })} aria-label={`Remove ${skill.name}`} className="text-xs text-muted-foreground hover:text-red-500">Remove</button>
                     </div>
                     <div className="flex gap-1.5">
                       {proficiencyLevels.map(level => (
                         <button
                           key={level}
+                          aria-label={`Set ${skill.name} to ${level}`}
+                          aria-pressed={us.proficiency === level}
                           disabled={updateProficiency.isPending || us.proficiency === level}
                           onClick={() => setProficiency(skillId, level)}
                           className={`px-2.5 py-1 rounded-full text-xs font-mono transition-all disabled:cursor-default ${
