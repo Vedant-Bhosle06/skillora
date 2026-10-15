@@ -1,16 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button, Card, ProgressBar, ProgressRing, StatTile, StatusBadge, PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import {
+  Button, Card, ProgressBar, ProgressRing, ProficiencyBadge, StatTile, StatusBadge, PageLoader, ErrorState, EmptyState,
+} from "@/components/ui";
 import { qk, useCompleteSkill, useGraph, useSkillsCatalog } from "@/api/queries";
 import { toApiError } from "@/api/client";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
-import { categoryColor, categoryLabel, formatDate, formatHours } from "@/lib/format";
+import { categoryColor, categoryLabel, formatDate, formatHours, rankLabel } from "@/lib/format";
 import { completedForRole, progressFraction, remainingSteps, selectedRankedPath, totalHours } from "@/lib/pathMetrics";
-import { computeStepStatuses } from "@/lib/pathStatus";
+import { computeStepStatuses, prerequisiteGroups } from "@/lib/pathStatus";
 import { heldRankMap, refId } from "@/lib/requirements";
 import { useToast } from "@/context/ToastContext";
+import type { Proficiency } from "@/api/types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -24,6 +27,77 @@ function CategoryBadge({ category }: { category: string }) {
     >
       {categoryLabel(category)}
     </span>
+  );
+}
+
+// ── Expanded skill detail ─────────────────────────────────────────────────────
+
+interface SkillDetailProps {
+  description?: string;
+  rationale?: string;
+  fromRank?: number;
+  toRank?: number;
+  hours: number;
+  /** One entry per requirement; OR-groups are already joined with "or". */
+  prerequisites: string[];
+  completedAt?: string;
+  proficiency?: Proficiency;
+}
+
+function SkillDetail({ description, rationale, fromRank, toRank, hours, prerequisites, completedAt, proficiency }: SkillDetailProps) {
+  return (
+    <div className="flex flex-col gap-3 pt-3 pb-1">
+      {rationale && (
+        <p className="text-xs text-muted-foreground italic">
+          <span className="not-italic font-600 text-foreground">Why this skill? </span>{rationale}
+        </p>
+      )}
+      {description && <p className="text-sm text-foreground">{description}</p>}
+
+      <div>
+        <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1">Prerequisites</p>
+        <p className="text-sm text-foreground">{prerequisites.length > 0 ? prerequisites.join(" · ") : "None"}</p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-border">
+        {fromRank !== undefined && toRank !== undefined && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground">Level:</span>
+            <span className="font-mono text-xs text-foreground">{rankLabel(fromRank)} → {rankLabel(toRank)}</span>
+          </div>
+        )}
+        {proficiency && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground">Proficiency:</span>
+            <ProficiencyBadge level={proficiency} />
+          </div>
+        )}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">Estimated:</span>
+          <span className="font-mono text-xs text-foreground">{formatHours(hours)}</span>
+        </div>
+        {completedAt && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground">Completed:</span>
+            <span className="font-mono text-xs text-foreground">{formatDate(completedAt)}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Chevron({ open, onClick }: { open: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground transition-all ${open ? "rotate-180" : ""}`}
+      aria-label={open ? "Collapse" : "Expand"}
+    >
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
   );
 }
 
@@ -64,6 +138,19 @@ export default function Progress() {
   );
 
   const [domainFilter, setDomainFilter] = useState<string | null>(null);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  function toggleRow(key: string) {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  const prerequisiteNames = (id: string) =>
+    prerequisiteGroups(id, graph.data?.edges).map(options => options.map(skillName).join(" or "));
 
   const qc = useQueryClient();
   const complete = useCompleteSkill();
@@ -283,6 +370,9 @@ export default function Progress() {
           )}
           {visibleCompleted.map(c => {
             const category = completedCategory(c);
+            const id = refId(c.skillId);
+            const skill = id ? catalog.byId.get(id) : undefined;
+            const isExpanded = expandedRows.has(c._id);
             return (
               <div key={c._id} className="rounded-xl border transition-all border-emerald-200 dark:border-emerald-800/40 bg-emerald-50/40 dark:bg-emerald-900/10">
                 <div className="flex items-center gap-3 p-3">
@@ -296,8 +386,21 @@ export default function Progress() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <StatusBadge status="completed" />
+                    <Chevron open={isExpanded} onClick={() => toggleRow(c._id)} />
                   </div>
                 </div>
+
+                {isExpanded && (
+                  <div className="px-4 pb-4 border-t border-border/60">
+                    <SkillDetail
+                      description={skill?.description}
+                      hours={skill?.estHours ?? 0}
+                      prerequisites={id ? prerequisiteNames(id) : []}
+                      completedAt={c.completedAt}
+                      proficiency={c.proficiency}
+                    />
+                  </div>
+                )}
               </div>
             );
           })}
@@ -309,6 +412,7 @@ export default function Progress() {
             const category = stepCategory(step.skillId);
             const isLocked = step.status === "locked";
             const lockHint = isLocked ? `Complete ${step.blockedBy.map(skillName).join(", ")} first` : undefined;
+            const isExpanded = expandedRows.has(step.skillId);
 
             return (
               <div
@@ -341,7 +445,7 @@ export default function Progress() {
                       <span className="font-600 text-sm text-foreground">{skillName(step.skillId)}</span>
                       {category && <CategoryBadge category={category} />}
                     </div>
-                    {step.rationale && (
+                    {step.rationale && !isExpanded && (
                       <p className="text-xs text-muted-foreground italic mt-0.5 truncate">"{step.rationale}"</p>
                     )}
                   </div>
@@ -350,8 +454,22 @@ export default function Progress() {
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="font-mono text-xs text-muted-foreground hidden sm:inline">{formatHours(step.estCost)}</span>
                     <StatusBadge status={step.status} />
+                    <Chevron open={isExpanded} onClick={() => toggleRow(step.skillId)} />
                   </div>
                 </div>
+
+                {isExpanded && (
+                  <div className="px-4 pb-4 border-t border-border/60">
+                    <SkillDetail
+                      description={catalog.byId.get(step.skillId)?.description}
+                      rationale={step.rationale}
+                      fromRank={step.fromRank}
+                      toRank={step.toRank}
+                      hours={step.estCost}
+                      prerequisites={prerequisiteNames(step.skillId)}
+                    />
+                  </div>
+                )}
               </div>
             );
           })}

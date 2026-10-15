@@ -42,3 +42,22 @@ export function computeStepStatuses(
   if (next) next.status = 'in-progress';
   return views;
 }
+
+/**
+ * Prerequisites of a skill as AND-of-OR lists: each inner list is one requirement,
+ * with a single id for a mandatory prerequisite or several ids for an OR-group.
+ */
+export function prerequisiteGroups(
+  skillId: string,
+  edges: ReadonlyArray<Pick<GraphEdge, 'source' | 'target' | 'type' | 'group'>> | undefined,
+): string[][] {
+  if (!edges) return [];
+  const mandatory: string[][] = [];
+  const groups = new Map<string, string[]>();
+  for (const e of edges) {
+    if (e.type !== 'prerequisite_of' || e.target !== skillId) continue;
+    if (e.group == null) mandatory.push([e.source]);
+    else groups.set(e.group, [...(groups.get(e.group) ?? []), e.source]);
+  }
+  return [...mandatory, ...groups.values()];
+}

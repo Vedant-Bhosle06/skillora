@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GraphEdge, PathStep } from '@/api/types';
-import { computeStepStatuses } from '@/lib/pathStatus';
+import { computeStepStatuses, prerequisiteGroups } from '@/lib/pathStatus';
 
 function step(skillId: string, order: number, fromRank = 0, toRank = 1): PathStep {
   return { skillId, order, fromRank, toRank, estCost: 10, rationale: '' };
@@ -67,5 +67,23 @@ describe('computeStepStatuses', () => {
   it('sorts by order', () => {
     const views = computeStepStatuses([step('b', 2), step('a', 1)], [], new Map());
     expect(views.map((v) => v.skillId)).toEqual(['a', 'b']);
+  });
+});
+
+describe('prerequisiteGroups', () => {
+  it('lists mandatory prerequisites first, then one entry per OR-group', () => {
+    const graph: GraphEdge[] = [
+      prereq('bi-a', 'dashboarding', 'bi'),
+      prereq('stats', 'dashboarding'),
+      prereq('bi-b', 'dashboarding', 'bi'),
+      { source: 'sql', target: 'dashboarding', type: 'corequisite_with', group: null },
+      prereq('python', 'pandas'),
+    ];
+    expect(prerequisiteGroups('dashboarding', graph)).toEqual([['stats'], ['bi-a', 'bi-b']]);
+  });
+
+  it('returns nothing without edges or prerequisites', () => {
+    expect(prerequisiteGroups('pandas', undefined)).toEqual([]);
+    expect(prerequisiteGroups('python', edges)).toEqual([]);
   });
 });
