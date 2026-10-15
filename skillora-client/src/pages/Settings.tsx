@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Input, Card, Badge, ProficiencyBadge, Modal, EmptyState } from "@/components/ui";
-import { roles } from "@/data/mock";
-import { useApp } from "@/context/AppContext";
+import { Button, Input, Card, Badge, ProficiencyBadge, Modal, EmptyState, PageLoader, ErrorState } from "@/components/ui";
 import { useAuth, useCurrentUser } from "@/auth/AuthContext";
-import { useDeleteAccount, useRemoveSkill, useUpdateProficiency } from "@/api/queries";
+import { useDeleteAccount, useRemoveSkill, useRoles, useSetTargetRole, useUpdateProficiency } from "@/api/queries";
 import { refId } from "@/lib/requirements";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
@@ -13,7 +11,6 @@ import type { Proficiency } from "@/api/types";
 const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"];
 
 export default function Settings() {
-  const { currentRole, setCurrentRole } = useApp();
   const { logout, clearSession } = useAuth();
   const deleteAccount = useDeleteAccount();
   const me = useCurrentUser();
@@ -31,7 +28,22 @@ export default function Settings() {
   const [signingOut, setSigningOut] = useState(false);
   const [tab, setTab] = useState<"account" | "skills" | "role">("account");
 
-  const role = roles.find(r => r.id === currentRole);
+  const rolesQuery = useRoles();
+  const setTargetRole = useSetTargetRole();
+  const currentRoleId = refId(me.targetRoleId);
+  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  const chosenRoleId = selectedRoleId ?? currentRoleId;
+
+  function handleSaveRole() {
+    if (!chosenRoleId) return;
+    setTargetRole.mutate(chosenRoleId, {
+      onSuccess: () => {
+        setSelectedRoleId(null);
+        showToast("Target role updated — your roadmap will be recomputed", "success");
+      },
+      onError: (err) => showToast(err.message, "error"),
+    });
+  }
 
   async function handleSignOut() {
     setSigningOut(true);
@@ -228,26 +240,48 @@ export default function Settings() {
 
         {tab === "role" && (
           <div className="flex flex-col gap-4">
-            <p className="text-sm text-muted-foreground">Current target role: <strong className="text-foreground">{role?.title}</strong></p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {roles.map(r => (
-                <Card
-                  key={r.id}
-                  hover
-                  onClick={() => setCurrentRole(r.id)}
-                  className={`p-3 transition-all ${currentRole === r.id ? "ring-2 ring-primary border-primary" : ""}`}
+            <p className="text-sm text-muted-foreground">
+              Current target role: <strong className="text-foreground">{me.targetRoleId?.title ?? "None selected"}</strong>
+            </p>
+            {rolesQuery.isLoading ? (
+              <PageLoader label="Loading roles…" />
+            ) : rolesQuery.error ? (
+              <ErrorState title="Couldn't load roles" message={rolesQuery.error.message} onRetry={() => rolesQuery.refetch()} />
+            ) : !rolesQuery.data?.length ? (
+              <EmptyState icon="🎯" title="No roles available" description="An administrator hasn't added any target roles yet." />
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {rolesQuery.data.map(r => (
+                    <Card
+                      key={r._id}
+                      hover
+                      onClick={() => setSelectedRoleId(r._id)}
+                      className={`p-3 transition-all ${chosenRoleId === r._id ? "ring-2 ring-primary border-primary" : ""}`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-600 text-sm text-foreground">{r.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {r.category ?? "general"} · {Math.round(r.demandScore * 100)}% demand
+                          </p>
+                        </div>
+                        {currentRoleId === r._id
+                          ? <Badge variant="in-progress">current</Badge>
+                          : chosenRoleId === r._id && <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs">✓</div>}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+                <Button
+                  onClick={handleSaveRole}
+                  disabled={!chosenRoleId || chosenRoleId === currentRoleId || setTargetRole.isPending}
+                  className="self-start"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-600 text-sm text-foreground">{r.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{r.avgSalary} avg · {r.openings.toLocaleString()} jobs</p>
-                    </div>
-                    {currentRole === r.id && <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs">✓</div>}
-                  </div>
-                </Card>
-              ))}
-            </div>
-            <Button onClick={() => { showToast("Target role updated!", "success"); }} className="self-start">Save role</Button>
+                  {setTargetRole.isPending ? "Saving…" : "Save role"}
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>
