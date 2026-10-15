@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { categoryColor, categoryLabel, formatDate, formatHours, formatPercent, rankLabel } from '@/lib/format';
+import { categoryColor, categoryLabel, formatDate, formatDateTime, formatHours, formatPercent, rankLabel } from '@/lib/format';
 
 describe('formatHours', () => {
   it('keeps one decimal', () => expect(formatHours(12.5)).toBe('12.5h'));
@@ -17,6 +17,17 @@ describe('formatPercent', () => {
     expect(formatPercent(0.876)).toBe('88%');
     expect(formatPercent(0)).toBe('0%');
     expect(formatPercent(1)).toBe('100%');
+  });
+});
+
+describe('formatDateTime', () => {
+  it('formats a valid ISO date with its time', () => {
+    const iso = '2026-10-15T10:00:00.000Z';
+    expect(formatDateTime(iso)).toBe(new Date(iso).toLocaleString());
+  });
+  it('returns a dash for missing or invalid input', () => {
+    expect(formatDateTime(null)).toBe('—');
+    expect(formatDateTime('not a date')).toBe('—');
   });
 });
 
