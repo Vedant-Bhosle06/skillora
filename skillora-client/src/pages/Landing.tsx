@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, StatTile, Card } from "@/components/ui";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/auth/AuthContext";
 
 const stats = [
   { label: "Skills Mapped",    value: "2,400+",  sub: "and growing" },
@@ -25,13 +25,12 @@ const roadmapTeaser = [
 ];
 
 export default function Landing() {
-  const { isLoggedIn, setLoggedIn, setOnboardingDone } = useApp();
+  const { status } = useAuth();
+  const signedIn = status === "authenticated";
   const navigate = useNavigate();
 
-  function handleDemo() {
-    setLoggedIn(true);
-    setOnboardingDone(true);
-    navigate("/dashboard");
+  function scrollToHowItWorks() {
+    document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
   }
 
   return (
@@ -52,12 +51,12 @@ export default function Landing() {
               SKILLORA maps your existing skills onto a knowledge graph, finds your target role, and builds a personalized, ordered learning roadmap — not a random course list.
             </p>
             <div className="flex flex-wrap gap-3">
-              {isLoggedIn ? (
+              {signedIn ? (
                 <Button size="lg" onClick={() => navigate("/dashboard")}>Open Dashboard →</Button>
               ) : (
                 <>
-                  <Button size="lg" onClick={() => navigate("/auth")}>Get started free →</Button>
-                  <Button size="lg" variant="ghost" onClick={handleDemo}>View demo</Button>
+                  <Button size="lg" onClick={() => navigate("/register")}>Get started free →</Button>
+                  <Button size="lg" variant="ghost" onClick={() => navigate("/login")}>Sign in</Button>
                 </>
               )}
             </div>
@@ -105,7 +104,7 @@ export default function Landing() {
       </section>
 
       {/* How it works */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
+      <section id="how-it-works" className="scroll-mt-6 max-w-6xl mx-auto px-6 py-20">
         <div className="text-center mb-14">
           <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-3">How it works</p>
           <h2 className="font-display font-800 text-4xl text-foreground">Three steps to your next role</h2>
@@ -127,8 +126,8 @@ export default function Landing() {
           <h2 className="font-display font-800 text-4xl text-primary-foreground mb-4">Start mapping your growth today</h2>
           <p className="text-primary-foreground/70 mb-8 text-lg">Free forever for individual learners.</p>
           <div className="flex justify-center gap-3">
-            <Button size="lg" variant="secondary" onClick={() => navigate("/auth")}>Create free account</Button>
-            <Button size="lg" className="bg-white/10 text-white border border-white/20 hover:bg-white/20" onClick={handleDemo}>Live demo</Button>
+            <Button size="lg" variant="secondary" onClick={() => navigate("/register")}>Create free account</Button>
+            <Button size="lg" className="bg-white/10 text-white border border-white/20 hover:bg-white/20" onClick={scrollToHowItWorks}>How it works</Button>
           </div>
         </div>
       </section>

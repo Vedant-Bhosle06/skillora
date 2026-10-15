@@ -7,7 +7,7 @@ import { useToast } from "@/context/ToastContext";
 
 export default function OnboardingRole() {
   const navigate = useNavigate();
-  const { setCurrentRole, setOnboardingDone } = useApp();
+  const { setCurrentRole } = useApp();
   const { showToast } = useToast();
   const [selected, setSelected] = useState<string | null>(null);
   const [drawer, setDrawer] = useState<string | null>(null);
@@ -18,7 +18,6 @@ export default function OnboardingRole() {
   function handleSelect() {
     if (!selected) { showToast("Choose a target role to continue", "warning"); return; }
     setCurrentRole(selected);
-    setOnboardingDone(true);
     showToast("Path generated — your roadmap is ready!", "success");
     navigate("/dashboard");
   }

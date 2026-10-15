@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Input, Card, Badge, ProficiencyBadge, Modal, Divider } from "@/components/ui";
 import { skills, userSkills as defaultUserSkills, roles } from "@/data/mock";
 import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/auth/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
 import type { Proficiency, UserSkill } from "@/data/mock";
@@ -10,7 +11,8 @@ import type { Proficiency, UserSkill } from "@/data/mock";
 const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"];
 
 export default function Settings() {
-  const { currentRole, setCurrentRole, setLoggedIn } = useApp();
+  const { currentRole, setCurrentRole } = useApp();
+  const { logout } = useAuth();
   const { darkMode, toggleDark } = useTheme();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -28,14 +30,15 @@ export default function Settings() {
     showToast("Settings saved successfully", "success");
   }
 
-  function handleDeleteAccount() {
+  async function handleDeleteAccount() {
     if (deleteConfirm !== "DELETE") {
       showToast("Type DELETE to confirm", "error");
       return;
     }
-    setLoggedIn(false);
+    // Temporary: signs out only. Real deletion (DELETE /api/users/me) is wired in Phase 6.
+    await logout();
     navigate("/");
-    showToast("Account deleted. We're sorry to see you go.", "info");
+    showToast("Signed out. Account deletion isn't connected yet.", "info");
   }
 
   function setProficiency(skillId: string, level: Proficiency) {

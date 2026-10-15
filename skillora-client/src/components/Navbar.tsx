@@ -19,7 +19,7 @@ function isActive(pathname: string, to: string) {
 
 export default function Navbar() {
   const { status, user, isAdmin, logout } = useAuth();
-  const isLoggedIn = status === "authenticated" && user !== null;
+  const signedIn = status === "authenticated" && user !== null;
   const { darkMode, toggleDark } = useTheme();
   const { showToast } = useToast();
   const { pathname } = useLocation();
@@ -62,7 +62,7 @@ export default function Navbar() {
       </Link>
 
       {/* Desktop nav */}
-      {isLoggedIn && (
+      {signedIn && (
         <div className="hidden md:flex items-center gap-1 flex-1">
           {filteredLinks.map(l => (
             <Link
@@ -90,7 +90,7 @@ export default function Navbar() {
           {darkMode ? "☀" : "☽"}
         </button>
 
-        {isLoggedIn ? (
+        {signedIn ? (
           <div className="relative">
             <button
               onClick={() => setAvatarOpen(o => !o)}
@@ -124,7 +124,7 @@ export default function Navbar() {
         )}
 
         {/* Mobile hamburger */}
-        {isLoggedIn && (
+        {signedIn && (
           <button onClick={() => setMenuOpen(o => !o)} className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-foreground">
             ☰
           </button>
@@ -132,7 +132,7 @@ export default function Navbar() {
       </div>
 
       {/* Mobile menu */}
-      {menuOpen && isLoggedIn && (
+      {menuOpen && signedIn && (
         <div className="absolute top-14 left-0 right-0 bg-card border-b border-border shadow-lg p-3 flex flex-col gap-1 md:hidden z-40">
           {filteredLinks.map(l => (
             <Link

@@ -1,15 +1,11 @@
 import React, { useState } from "react";
-import { Button, Badge, Card, Input, Modal, StatTile, EmptyState } from "@/components/ui";
+import { Button, Badge, Card, Input, Modal, StatTile } from "@/components/ui";
 import { skills as initialSkills, roles as initialRoles, graphEdges as initialEdges } from "@/data/mock";
 import type { Skill, Role } from "@/data/mock";
-import { useApp } from "@/context/AppContext";
 import { useToast } from "@/context/ToastContext";
-import { useNavigate } from "react-router-dom";
 
 export default function Admin() {
-  const { isAdmin } = useApp();
   const { showToast } = useToast();
-  const navigate = useNavigate();
   const [tab, setTab] = useState<"skills" | "edges" | "roles" | "health">("health");
   const [skills, setSkills] = useState(initialSkills);
   const [edges, setEdges] = useState(initialEdges);
@@ -20,14 +16,6 @@ export default function Admin() {
   const [newSkill, setNewSkill] = useState({ name: "", category: "", description: "", estimatedHours: 30, learningOutcomes: "" });
   const [newEdge, setNewEdge] = useState({ source: "", target: "" });
   const [edgeError, setEdgeError] = useState("");
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <EmptyState icon="🔒" title="Access Restricted" description="Admin panel is only available to administrators." action={<Button onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>} />
-      </div>
-    );
-  }
 
   // Graph health metrics
   const allSkillIds = new Set(skills.map(s => s.id));
