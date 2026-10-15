@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { categoryColor, categoryLabel, formatDate, formatDateTime, formatHours, formatPercent, rankLabel } from '@/lib/format';
+import { categoryColor, categoryLabel, formatDate, formatDateTime, formatHours, formatPercent, pluralize, rankLabel } from '@/lib/format';
 
 describe('formatHours', () => {
   it('keeps one decimal', () => expect(formatHours(12.5)).toBe('12.5h'));
@@ -69,4 +69,15 @@ describe('rankLabel', () => {
     expect([0, 1, 2, 3].map(rankLabel)).toEqual(['New', 'Beginner', 'Intermediate', 'Advanced']);
   });
   it('falls back to New for out-of-range values', () => expect(rankLabel(7)).toBe('New'));
+});
+
+describe('pluralize', () => {
+  it('uses the singular only for exactly one', () => {
+    expect(pluralize(1, 'edge')).toBe('1 edge');
+    expect(pluralize(0, 'edge')).toBe('0 edges');
+    expect(pluralize(183, 'edge')).toBe('183 edges');
+  });
+  it('accepts an irregular plural', () => {
+    expect(pluralize(2, 'category', 'categories')).toBe('2 categories');
+  });
 });

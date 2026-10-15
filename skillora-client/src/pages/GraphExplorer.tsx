@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import { Button, PageLoader, ErrorState, EmptyState, activateOnKey } from "@/components/ui";
 import SkillDetailPanel from "@/components/SkillDetailPanel";
 import { useActivePath, useGraph, type GraphScope } from "@/api/queries";
 import { toApiError } from "@/api/client";
@@ -297,7 +297,9 @@ export default function GraphExplorer() {
                   }}
                   onMouseLeave={() => { setHoveredNode(null); setTooltip(null); }}
                   onClick={() => { setSelectedId(node.id); setTooltip(null); }}
+                  onKeyDown={activateOnKey(() => { setSelectedId(node.id); setTooltip(null); })}
                   role="button"
+                  tabIndex={0}
                   aria-label={node.name}
                   style={{ cursor: "pointer" }}
                 >

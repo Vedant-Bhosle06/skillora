@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Button, Card, Modal, ProgressBar, ProgressRing, ProficiencyBadge, StatTile, StatusBadge, PageLoader, ErrorState, EmptyState,
+  Button, Card, Modal, ProgressBar, ProgressRing, ProficiencyBadge, StatTile, StatusBadge, PageLoader, ErrorState, EmptyState, activateOnKey,
 } from "@/components/ui";
 import { qk, useCompleteSkill, useGraph, usePathHistory, useRoles, useSkillDetail, useSkillsCatalog } from "@/api/queries";
 import { toApiError } from "@/api/client";
@@ -357,6 +357,10 @@ export default function Progress() {
               <div
                 key={ds.domain}
                 onClick={() => setDomainFilter(ds.domain === domainFilter ? null : ds.domain)}
+                onKeyDown={activateOnKey(() => setDomainFilter(ds.domain === domainFilter ? null : ds.domain))}
+                role="button"
+                tabIndex={0}
+                aria-pressed={domainFilter === ds.domain}
                 className={`bg-card border rounded-xl p-3 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 ${
                   domainFilter === ds.domain ? "ring-2 ring-primary border-primary" : "border-border"
                 }`}

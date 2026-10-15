@@ -1,120 +1,71 @@
-import React, { useState } from "react";
-import { Button, Badge, Card, Input, Modal, StatTile } from "@/components/ui";
-import { skills as initialSkills, roles as initialRoles, graphEdges as initialEdges } from "@/data/mock";
-import type { Skill, Role } from "@/data/mock";
+import React, { ReactNode, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Badge, Button, Card, EmptyState, ErrorState, Input, Modal, PageLoader, Select, StatTile } from "@/components/ui";
+import { useAdminEdges, useAdminMetrics, useDeleteEdge, useDeleteRole, useDeleteSkill, useRoles, useSkillsCatalog } from "@/api/queries";
+import { ApiError } from "@/api/client";
+import type { GraphMetrics, Role, Skill, SkillEdge } from "@/api/types";
+import { categoryLabel, formatHours, formatPercent, pluralize } from "@/lib/format";
 import { useToast } from "@/context/ToastContext";
+import EdgeForm from "@/pages/admin/EdgeForm";
+import RoleForm from "@/pages/admin/RoleForm";
+import SkillForm from "@/pages/admin/SkillForm";
+
+type Tab = "health" | "skills" | "edges" | "roles";
+
+const isForbidden = (err: unknown) => err instanceof ApiError && err.status === 403;
 
 export default function Admin() {
-  const { showToast } = useToast();
-  const [tab, setTab] = useState<"skills" | "edges" | "roles" | "health">("health");
-  const [skills, setSkills] = useState(initialSkills);
-  const [edges, setEdges] = useState(initialEdges);
-  const [deleteModal, setDeleteModal] = useState<{ type: string; id: string } | null>(null);
-  const [addSkillModal, setAddSkillModal] = useState(false);
-  const [addEdgeModal, setAddEdgeModal] = useState(false);
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<Tab>("health");
 
-  const [newSkill, setNewSkill] = useState({ name: "", category: "", description: "", estimatedHours: 30, learningOutcomes: "" });
-  const [newEdge, setNewEdge] = useState({ source: "", target: "" });
-  const [edgeError, setEdgeError] = useState("");
+  const catalog = useSkillsCatalog();
+  const edgesQuery = useAdminEdges();
+  const rolesQuery = useRoles();
+  const metricsQuery = useAdminMetrics();
 
-  // Graph health metrics
-  const allSkillIds = new Set(skills.map(s => s.id));
-  const referencedIds = new Set([...edges.map(e => e.source), ...edges.map(e => e.target)]);
-  const orphans = skills.filter(s => !referencedIds.has(s.id));
-  const avgDegree = skills.length > 0 ? (edges.length * 2 / skills.length).toFixed(1) : "0";
-
-  function detectCycles(): boolean {
-    const visited = new Set<string>();
-    const stack = new Set<string>();
-    const adj: Record<string, string[]> = {};
-    skills.forEach(s => { adj[s.id] = []; });
-    edges.forEach(e => { if (adj[e.source]) adj[e.source].push(e.target); });
-
-    function dfs(node: string): boolean {
-      visited.add(node);
-      stack.add(node);
-      for (const neighbor of (adj[node] ?? [])) {
-        if (!visited.has(neighbor) && dfs(neighbor)) return true;
-        if (stack.has(neighbor)) return true;
-      }
-      stack.delete(node);
-      return false;
-    }
-    return skills.some(s => !visited.has(s.id) && dfs(s.id));
+  // The guard already hides this page from learners; a 403 here means the role changed server-side.
+  if (isForbidden(edgesQuery.error) || isForbidden(metricsQuery.error)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <EmptyState
+          icon="🔒"
+          title="Access Restricted"
+          description="Your account no longer has administrator access."
+          action={<Button onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>}
+        />
+      </div>
+    );
   }
 
-  const hasCycles = detectCycles();
-
-  function handleAddSkill() {
-    if (!newSkill.name.trim()) { showToast("Skill name is required", "error"); return; }
-    const id = newSkill.name.toLowerCase().replace(/\s+/g, "_").slice(0, 10);
-    const outcomes = newSkill.learningOutcomes
-      .split("\n")
-      .map(l => l.trim())
-      .filter(Boolean);
-    setSkills(prev => [...prev, {
-      ...newSkill,
-      id,
-      prerequisites: [],
-      estimatedHours: Number(newSkill.estimatedHours),
-      hoursLogged: 0,
-      learningOutcomes: outcomes,
-    }]);
-    setNewSkill({ name: "", category: "", description: "", estimatedHours: 30, learningOutcomes: "" });
-    setAddSkillModal(false);
-    showToast(`Skill "${newSkill.name}" added`, "success");
+  if (catalog.isPending || edgesQuery.isPending || rolesQuery.isPending) {
+    return <PageLoader label="Loading admin data…" />;
   }
 
-  function handleAddEdge() {
-    setEdgeError("");
-    if (!newEdge.source || !newEdge.target) { setEdgeError("Both source and target are required"); return; }
-    if (newEdge.source === newEdge.target) { setEdgeError("Source and target must be different"); return; }
-    if (edges.find(e => e.source === newEdge.source && e.target === newEdge.target)) {
-      setEdgeError("This edge already exists"); return;
-    }
-    const testEdges = [...edges, newEdge];
-    const adj: Record<string, string[]> = {};
-    skills.forEach(s => { adj[s.id] = []; });
-    testEdges.forEach(e => { if (adj[e.source]) adj[e.source].push(e.target); });
-    const visited = new Set<string>();
-    const stack = new Set<string>();
-    function dfs(node: string): boolean {
-      visited.add(node); stack.add(node);
-      for (const n of (adj[node] ?? [])) {
-        if (!visited.has(n) && dfs(n)) return true;
-        if (stack.has(n)) return true;
-      }
-      stack.delete(node); return false;
-    }
-    if (skills.some(s => !visited.has(s.id) && dfs(s.id))) {
-      setEdgeError("⚠ This edge would create a cycle"); return;
-    }
-    setEdges(prev => [...prev, newEdge]);
-    setNewEdge({ source: "", target: "" });
-    setAddEdgeModal(false);
-    showToast("Edge added successfully", "success");
+  const loadError = catalog.error ?? edgesQuery.error ?? rolesQuery.error;
+  if (loadError) {
+    return (
+      <ErrorState
+        title="Couldn't load admin data"
+        message={loadError.message}
+        onRetry={() => {
+          catalog.refetch();
+          edgesQuery.refetch();
+          rolesQuery.refetch();
+        }}
+      />
+    );
   }
 
-  function handleDelete() {
-    if (!deleteModal) return;
-    if (deleteModal.type === "skill") {
-      setSkills(prev => prev.filter(s => s.id !== deleteModal.id));
-      setEdges(prev => prev.filter(e => e.source !== deleteModal.id && e.target !== deleteModal.id));
-      showToast("Skill and its edges removed", "success");
-    } else if (deleteModal.type === "edge") {
-      const [src, tgt] = deleteModal.id.split("→");
-      setEdges(prev => prev.filter(e => !(e.source === src && e.target === tgt)));
-      showToast("Edge removed", "success");
-    }
-    setDeleteModal(null);
-  }
+  const skills = catalog.data ?? [];
+  const edges = edgesQuery.data ?? [];
+  const roles = rolesQuery.data ?? [];
 
-  const tabs = [
-    { id: "health", label: "Graph Health" },
+  const tabs: Array<{ id: Tab; label: string }> = [
+    { id: "health", label: `Graph Health${metricsQuery.data && !metricsQuery.data.isDAG ? " ⚠" : ""}` },
     { id: "skills", label: `Skills (${skills.length})` },
     { id: "edges",  label: `Edges (${edges.length})` },
-    { id: "roles",  label: `Roles (${initialRoles.length})` },
-  ] as const;
+    { id: "roles",  label: `Roles (${roles.length})` },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -145,198 +96,468 @@ export default function Admin() {
         </div>
 
         {tab === "health" && (
-          <div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-              <StatTile label="Total Skills" value={String(skills.length)} />
-              <StatTile label="Orphan Nodes" value={String(orphans.length)} sub={orphans.length > 0 ? "need edges" : "all connected"} />
-              <StatTile label="Avg Degree" value={avgDegree} sub="edges per node" />
-              <StatTile label="Cycles" value={hasCycles ? "⚠ Detected" : "✓ None"} accent={!hasCycles} />
-            </div>
-
-            {hasCycles && (
-              <Card className="p-4 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/10 mb-4">
-                <p className="text-sm font-600 text-amber-700 dark:text-amber-400 mb-1">⚠ Cycle Warning</p>
-                <p className="text-xs text-amber-600 dark:text-amber-300">A circular dependency exists in the skill graph. This may prevent proper path generation. Review edges below.</p>
-              </Card>
-            )}
-
-            {orphans.length > 0 && (
-              <Card className="p-4 mb-4">
-                <p className="font-display font-700 text-sm text-foreground mb-3">Orphan Nodes ({orphans.length})</p>
-                <div className="flex flex-wrap gap-2">
-                  {orphans.map(s => (
-                    <span key={s.id} className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-full font-mono">{s.name}</span>
-                  ))}
-                </div>
-              </Card>
-            )}
-
-            <Card className="p-4">
-              <p className="font-display font-700 text-sm text-foreground mb-3">Degree Distribution</p>
-              <div className="flex flex-col gap-2">
-                {skills.slice(0, 8).map(skill => {
-                  const degree = edges.filter(e => e.source === skill.id || e.target === skill.id).length;
-                  return (
-                    <div key={skill.id} className="flex items-center gap-3">
-                      <span className="text-xs text-foreground w-32 truncate">{skill.name}</span>
-                      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-accent rounded-full" style={{ width: `${(degree / 6) * 100}%` }} />
-                      </div>
-                      <span className="font-mono text-xs text-muted-foreground w-4">{degree}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-          </div>
+          <HealthPanel
+            metrics={metricsQuery.data}
+            isPending={metricsQuery.isPending}
+            error={metricsQuery.error}
+            onRetry={() => metricsQuery.refetch()}
+            edges={edges}
+            byId={catalog.byId}
+          />
         )}
 
-        {tab === "skills" && (
-          <div>
-            <div className="flex justify-end mb-4">
-              <Button size="sm" onClick={() => setAddSkillModal(true)}>+ Add skill</Button>
-            </div>
-            <Card className="divide-y divide-border">
-              {skills.map(skill => (
-                <div key={skill.id} className="flex items-center justify-between px-4 py-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-600 text-sm text-foreground">{skill.name}</span>
-                      <Badge variant="outline">{skill.category}</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">{skill.description}</p>
-                  </div>
-                  <div className="flex items-center gap-3 ml-4">
-                    <span className="font-mono text-xs text-muted-foreground">{skill.estimatedHours}h</span>
-                    <button onClick={() => setDeleteModal({ type: "skill", id: skill.id })} className="text-xs text-muted-foreground hover:text-red-500 transition-colors">Delete</button>
-                  </div>
-                </div>
-              ))}
-            </Card>
-          </div>
-        )}
+        {tab === "skills" && <SkillsTab skills={skills} />}
+        {tab === "edges" && <EdgesTab skills={skills} byId={catalog.byId} />}
+        {tab === "roles" && <RolesTab roles={roles} skills={skills} byId={catalog.byId} />}
+      </div>
+    </div>
+  );
+}
 
-        {tab === "edges" && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-muted-foreground">{hasCycles ? <span className="text-amber-500">⚠ Cycle detected</span> : <span className="text-emerald-500">✓ No cycles</span>}</p>
-              <Button size="sm" onClick={() => setAddEdgeModal(true)}>+ Add edge</Button>
-            </div>
-            <Card className="divide-y divide-border">
-              {edges.map((edge, i) => {
-                const src = skills.find(s => s.id === edge.source);
-                const tgt = skills.find(s => s.id === edge.target);
-                return (
-                  <div key={i} className="flex items-center justify-between px-4 py-3">
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-500 text-foreground">{src?.name ?? edge.source}</span>
-                      <span className="text-muted-foreground">→</span>
-                      <span className="font-500 text-foreground">{tgt?.name ?? edge.target}</span>
-                    </div>
-                    <button onClick={() => setDeleteModal({ type: "edge", id: `${edge.source}→${edge.target}` })} className="text-xs text-muted-foreground hover:text-red-500">Remove</button>
-                  </div>
-                );
-              })}
-            </Card>
-          </div>
-        )}
+function HealthPanel({ metrics, isPending, error, onRetry, edges, byId }: {
+  metrics: GraphMetrics | undefined;
+  isPending: boolean;
+  error: Error | null;
+  onRetry: () => void;
+  edges: SkillEdge[];
+  byId: Map<string, Skill>;
+}) {
+  if (isPending) return <PageLoader label="Loading graph health…" />;
+  if (error || !metrics) {
+    const serviceDown = error instanceof ApiError && error.status === 503;
+    return (
+      <ErrorState
+        title={serviceDown ? "Path service unavailable" : "Couldn't load graph health"}
+        message={serviceDown ? "Path service unavailable — start it to see graph health." : error?.message ?? "Something went wrong."}
+        onRetry={onRetry}
+      />
+    );
+  }
 
-        {tab === "roles" && (
-          <Card className="divide-y divide-border">
-            {initialRoles.map(role => (
-              <div key={role.id} className="px-4 py-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <p className="font-600 text-sm text-foreground">{role.title}</p>
-                    <p className="text-xs text-muted-foreground">{role.openings.toLocaleString()} openings · {role.avgSalary}</p>
-                  </div>
-                  <Badge variant={role.demandScore >= 90 ? "demand" : "default"}>Demand: {role.demandScore}</Badge>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {role.requiredSkills.map(rs => {
-                    const skill = skills.find(s => s.id === rs.skillId);
-                    return skill ? (
-                      <span key={rs.skillId} className={`text-xs px-2 py-0.5 rounded-full font-mono ${rs.required ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-                        {skill.name}
-                      </span>
-                    ) : null;
-                  })}
-                </div>
-              </div>
-            ))}
-          </Card>
-        )}
+  const nameOf = (id: string) => byId.get(id)?.name ?? id;
+  // The code returns { skillId, name } objects; the OpenAPI spec says plain ids. Handle both.
+  const orphans = metrics.orphans.map(o =>
+    typeof o === "string" ? { skillId: o, name: nameOf(o) } : { skillId: o.skillId, name: o.name || nameOf(o.skillId) },
+  );
+  const cycleNames = (metrics.cycle ?? []).map(nameOf);
+
+  // Degree = edges of either type touching the skill.
+  const degree = new Map<string, number>();
+  for (const e of edges) {
+    degree.set(e.sourceSkillId, (degree.get(e.sourceSkillId) ?? 0) + 1);
+    degree.set(e.targetSkillId, (degree.get(e.targetSkillId) ?? 0) + 1);
+  }
+  const topDegree = [...degree.entries()]
+    .map(([id, d]) => ({ id, name: nameOf(id), degree: d }))
+    .sort((a, b) => b.degree - a.degree || a.name.localeCompare(b.name))
+    .slice(0, 8);
+  const maxDegree = topDegree[0]?.degree ?? 1;
+
+  return (
+    <div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        <StatTile label="Skills" value={String(metrics.nodeCount)} />
+        <StatTile label="Prerequisite edges" value={String(metrics.prerequisiteEdgeCount)} />
+        <StatTile label="Co-requisite edges" value={String(metrics.corequisiteEdgeCount)} />
+        <StatTile label="OR-groups" value={String(metrics.groupCount)} />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <StatTile label="Cycles" value={metrics.isDAG ? "✓ None" : "⚠ Detected"} accent={metrics.isDAG} />
+        <StatTile label="Orphan Nodes" value={String(metrics.orphanCount)} sub={metrics.orphanCount > 0 ? "no prerequisite edges" : "all connected"} />
+        <StatTile label="Avg Degree" value={metrics.avgDegree.toFixed(2)} sub="in + out prerequisites per node" />
+        <StatTile label="Max Depth" value={metrics.maxDepth === null ? "—" : String(metrics.maxDepth)} sub="longest prerequisite chain" />
       </div>
 
-      {/* Confirm delete modal */}
-      <Modal open={!!deleteModal} onClose={() => setDeleteModal(null)} title={`Delete ${deleteModal?.type}`}>
-        <p className="text-sm text-muted-foreground mb-5">
-          Are you sure you want to delete this {deleteModal?.type}? This action cannot be undone.
-          {deleteModal?.type === "skill" && " All edges connected to this skill will also be removed."}
+      {!metrics.isDAG && (
+        <Card className="p-4 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/10 mb-4">
+          <p className="text-sm font-600 text-amber-700 dark:text-amber-400 mb-1">⚠ Cycle Warning</p>
+          <p className="text-xs text-amber-600 dark:text-amber-300">
+            A circular dependency exists in the skill graph, so path generation may fail.
+            {cycleNames.length > 0 && <> Cycle: <span className="font-mono">{cycleNames.join(" → ")}</span></>}
+          </p>
+        </Card>
+      )}
+
+      {orphans.length > 0 && (
+        <Card className="p-4 mb-4">
+          <p className="font-display font-700 text-sm text-foreground mb-1">Orphan Nodes ({metrics.orphanCount})</p>
+          <p className="text-xs text-muted-foreground mb-3">Skills with no prerequisite edge (co-requisites don't count).</p>
+          <div className="flex flex-wrap gap-2">
+            {orphans.map(o => (
+              <span key={o.skillId} className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-full font-mono">{o.name}</span>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      <Card className="p-4">
+        <p className="font-display font-700 text-sm text-foreground mb-3">Degree Distribution</p>
+        {topDegree.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No edges yet.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {topDegree.map(s => (
+              <div key={s.id} className="flex items-center gap-3">
+                <span className="text-xs text-foreground w-32 sm:w-48 truncate" title={s.name}>{s.name}</span>
+                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-accent rounded-full" style={{ width: `${(s.degree / maxDegree) * 100}%` }} />
+                </div>
+                <span className="font-mono text-xs text-muted-foreground w-6 text-right">{s.degree}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+/** Confirmation dialog for every admin delete; shows the server's refusal (e.g. 409) inline. */
+function ConfirmDeleteModal({ open, title, children, error, pending, onConfirm, onClose }: {
+  open: boolean;
+  title: string;
+  children: ReactNode;
+  error: string;
+  pending: boolean;
+  onConfirm: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <Modal open={open} onClose={() => { if (!pending) onClose(); }} title={title}>
+      <div className="text-sm text-muted-foreground mb-5 flex flex-col gap-2">{children}</div>
+      {error && <p className="text-sm text-red-500 mb-4" role="alert">{error}</p>}
+      <div className="flex gap-2">
+        <Button variant="ghost" className="flex-1" onClick={onClose} disabled={pending}>Cancel</Button>
+        <Button variant="danger" className="flex-1 justify-center" onClick={onConfirm} disabled={pending}>
+          {pending ? "Deleting…" : "Delete"}
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
+function SkillsTab({ skills }: { skills: Skill[] }) {
+  const { showToast } = useToast();
+  const deleteSkill = useDeleteSkill();
+  const [search, setSearch] = useState("");
+  const [formSkill, setFormSkill] = useState<Skill | "new" | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Skill | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+
+  const categories = useMemo(() => [...new Set(skills.map(s => s.category))].sort(), [skills]);
+  const term = search.trim().toLowerCase();
+  const visible = skills
+    .filter(s => !term || s.name.toLowerCase().includes(term) || s.slug.includes(term) || s.category.includes(term))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  function openDelete(skill: Skill) {
+    setDeleteError("");
+    setDeleteTarget(skill);
+  }
+
+  function handleDelete() {
+    if (!deleteTarget) return;
+    const { _id, name } = deleteTarget;
+    deleteSkill.mutate(_id, {
+      onSuccess: () => {
+        setDeleteTarget(null);
+        showToast(`Skill "${name}" deleted`, "success");
+      },
+      onError: (err) => setDeleteError(err.message),
+    });
+  }
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex-1 max-w-sm">
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, slug or category…" aria-label="Search skills" />
+        </div>
+        <span className="text-xs text-muted-foreground font-mono">{visible.length} / {skills.length}</span>
+        <Button size="sm" className="ml-auto" onClick={() => setFormSkill("new")}>+ Add skill</Button>
+      </div>
+
+      {skills.length === 0 ? (
+        <EmptyState icon="🧩" title="No skills yet" description="Add the first skill to start the graph." />
+      ) : visible.length === 0 ? (
+        <EmptyState icon="🔍" title="No matching skills" description="Try a different search term." />
+      ) : (
+        <Card className="divide-y divide-border">
+          {visible.map(skill => (
+            <div key={skill._id} className="flex items-center justify-between px-4 py-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                  <span className="font-600 text-sm text-foreground">{skill.name}</span>
+                  <Badge variant="outline">{categoryLabel(skill.category)}</Badge>
+                  <span className="font-mono text-xs text-muted-foreground">{skill.slug}</span>
+                </div>
+                <p className="text-xs text-muted-foreground truncate" title={skill.description || undefined}>{skill.description}</p>
+              </div>
+              <div className="flex items-center gap-3 ml-4">
+                <span className="font-mono text-xs text-muted-foreground" title="Difficulty · demand">
+                  D{skill.baseDifficulty} · {formatPercent(skill.marketDemand)}
+                </span>
+                <span className="font-mono text-xs text-muted-foreground">{formatHours(skill.estHours)}</span>
+                <button onClick={() => setFormSkill(skill)} className="text-xs text-muted-foreground hover:text-primary transition-colors">Edit</button>
+                <button onClick={() => openDelete(skill)} className="text-xs text-muted-foreground hover:text-red-500 transition-colors">Delete</button>
+              </div>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      <Modal open={formSkill !== null} onClose={() => setFormSkill(null)} title={formSkill === "new" ? "Add New Skill" : "Edit Skill"}>
+        {formSkill !== null && (
+          <SkillForm
+            key={formSkill === "new" ? "new" : formSkill._id}
+            skill={formSkill === "new" ? undefined : formSkill}
+            categories={categories}
+            onCancel={() => setFormSkill(null)}
+            onDone={(saved) => {
+              showToast(`Skill "${saved.name}" ${formSkill === "new" ? "added" : "updated"} — learners' paths will be recalculated`, "success");
+              setFormSkill(null);
+            }}
+          />
+        )}
+      </Modal>
+
+      <ConfirmDeleteModal
+        open={deleteTarget !== null}
+        title="Delete skill"
+        error={deleteError}
+        pending={deleteSkill.isPending}
+        onConfirm={handleDelete}
+        onClose={() => setDeleteTarget(null)}
+      >
+        <p>Delete <span className="font-600 text-foreground">{deleteTarget?.name}</span>? This cannot be undone.</p>
+        <p>
+          Every edge touching this skill is deleted with it, the skill is removed from every learner's current and
+          completed skills, and all learners' paths are recalculated. A skill that a role still requires can't be
+          deleted — remove it from the role first.
         </p>
-        <div className="flex gap-2">
-          <Button variant="ghost" className="flex-1" onClick={() => setDeleteModal(null)}>Cancel</Button>
-          <Button variant="danger" className="flex-1" onClick={handleDelete}>Delete</Button>
+      </ConfirmDeleteModal>
+    </div>
+  );
+}
+
+function EdgesTab({ skills, byId }: { skills: Skill[]; byId: Map<string, Skill> }) {
+  const { showToast } = useToast();
+  const deleteEdge = useDeleteEdge();
+  const [filterSkillId, setFilterSkillId] = useState("");
+  // No filter shares the cache entry the page header counts; a filter calls GET /admin/edges?skillId=.
+  const edgesQuery = useAdminEdges(filterSkillId || undefined);
+  const [formEdge, setFormEdge] = useState<SkillEdge | "new" | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<SkillEdge | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+
+  const sortedSkills = useMemo(() => [...skills].sort((a, b) => a.name.localeCompare(b.name)), [skills]);
+  const nameOf = (id: string) => byId.get(id)?.name ?? id;
+  const edges = [...(edgesQuery.data ?? [])].sort(
+    (a, b) => nameOf(a.targetSkillId).localeCompare(nameOf(b.targetSkillId)) || nameOf(a.sourceSkillId).localeCompare(nameOf(b.sourceSkillId)),
+  );
+
+  function openDelete(edge: SkillEdge) {
+    setDeleteError("");
+    setDeleteTarget(edge);
+  }
+
+  function handleDelete() {
+    if (!deleteTarget) return;
+    deleteEdge.mutate(deleteTarget._id, {
+      onSuccess: () => {
+        setDeleteTarget(null);
+        showToast("Edge removed — learners' paths will be recalculated", "success");
+      },
+      onError: (err) => setDeleteError(err.message),
+    });
+  }
+
+  return (
+    <div>
+      <div className="flex items-end gap-3 mb-4 flex-wrap">
+        <div className="w-64">
+          <Select label="Filter by skill" value={filterSkillId} onChange={e => setFilterSkillId(e.target.value)}>
+            <option value="">All skills</option>
+            {sortedSkills.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+          </Select>
         </div>
+        {edgesQuery.data && <span className="text-xs text-muted-foreground font-mono pb-2.5">{pluralize(edgesQuery.data.length, "edge")}</span>}
+        <Button size="sm" className="ml-auto" onClick={() => setFormEdge("new")}>+ Add edge</Button>
+      </div>
+      <p className="text-xs text-muted-foreground mb-4">
+        The server rejects any prerequisite that would create a cycle. "A → B" means A is a prerequisite of B.
+      </p>
+
+      {edgesQuery.isPending ? (
+        <PageLoader label="Loading edges…" />
+      ) : edgesQuery.error ? (
+        <ErrorState title="Couldn't load edges" message={edgesQuery.error.message} onRetry={() => edgesQuery.refetch()} />
+      ) : edges.length === 0 ? (
+        <EmptyState
+          icon="🔗"
+          title={filterSkillId ? "No edges for this skill" : "No edges yet"}
+          description="Connect two skills to add a prerequisite."
+        />
+      ) : (
+        <Card className="divide-y divide-border">
+          {edges.map(edge => (
+            <div key={edge._id} className="flex items-center justify-between gap-3 px-4 py-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-sm flex-wrap">
+                  <span className="font-500 text-foreground">{nameOf(edge.sourceSkillId)}</span>
+                  <span className="text-muted-foreground">{edge.type === "prerequisite_of" ? "→" : "↔"}</span>
+                  <span className="font-500 text-foreground">{nameOf(edge.targetSkillId)}</span>
+                  <Badge variant={edge.type === "prerequisite_of" ? "in-progress" : "advanced"}>
+                    {edge.type === "prerequisite_of" ? "prerequisite" : "co-requisite"}
+                  </Badge>
+                  {edge.group && <Badge variant="intermediate" className="font-mono">OR: {edge.group}</Badge>}
+                </div>
+                {edge.source && <p className="text-xs text-muted-foreground truncate mt-0.5" title={edge.source}>{edge.source}</p>}
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <button onClick={() => setFormEdge(edge)} className="text-xs text-muted-foreground hover:text-primary transition-colors">Edit</button>
+                <button onClick={() => openDelete(edge)} className="text-xs text-muted-foreground hover:text-red-500 transition-colors">Remove</button>
+              </div>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      <Modal open={formEdge !== null} onClose={() => setFormEdge(null)} title={formEdge === "new" ? "Add Graph Edge" : "Edit Graph Edge"}>
+        {formEdge !== null && (
+          <EdgeForm
+            key={formEdge === "new" ? "new" : formEdge._id}
+            edge={formEdge === "new" ? undefined : formEdge}
+            skills={sortedSkills}
+            byId={byId}
+            onCancel={() => setFormEdge(null)}
+            onDone={() => {
+              showToast(`Edge ${formEdge === "new" ? "added" : "updated"} — learners' paths will be recalculated`, "success");
+              setFormEdge(null);
+            }}
+          />
+        )}
       </Modal>
 
-      {/* Add skill modal */}
-      <Modal open={addSkillModal} onClose={() => setAddSkillModal(false)} title="Add New Skill">
-        <div className="flex flex-col gap-4">
-          <Input label="Skill name" value={newSkill.name} onChange={e => setNewSkill(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Kubernetes" />
-          <Input label="Category" value={newSkill.category} onChange={e => setNewSkill(p => ({ ...p, category: e.target.value }))} placeholder="e.g. Engineering" />
-          <Input label="Description" value={newSkill.description} onChange={e => setNewSkill(p => ({ ...p, description: e.target.value }))} placeholder="Brief description…" />
-          <Input label="Estimated hours" type="number" value={String(newSkill.estimatedHours)} onChange={e => setNewSkill(p => ({ ...p, estimatedHours: Number(e.target.value) }))} />
-          <div>
-            <label className="text-sm font-500 text-foreground mb-1 block">Learning outcomes</label>
-            <textarea
-              rows={4}
-              placeholder={"One outcome per line, e.g.:\nVariables, control flow, functions\nLists and dicts\nOOP basics"}
-              value={newSkill.learningOutcomes}
-              onChange={e => setNewSkill(p => ({ ...p, learningOutcomes: e.target.value }))}
-              className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground resize-none"
-            />
-            <p className="text-xs text-muted-foreground mt-1">One outcome per line. Saved as an array in <span className="font-mono">learningOutcomes[]</span>.</p>
-          </div>
-          <div className="flex gap-2 mt-2">
-            <Button variant="ghost" className="flex-1" onClick={() => setAddSkillModal(false)}>Cancel</Button>
-            <Button className="flex-1" onClick={handleAddSkill}>Add skill</Button>
-          </div>
-        </div>
+      <ConfirmDeleteModal
+        open={deleteTarget !== null}
+        title="Remove edge"
+        error={deleteError}
+        pending={deleteEdge.isPending}
+        onConfirm={handleDelete}
+        onClose={() => setDeleteTarget(null)}
+      >
+        <p>
+          Remove the edge <span className="font-600 text-foreground">{deleteTarget && nameOf(deleteTarget.sourceSkillId)}</span>
+          {deleteTarget?.type === "prerequisite_of" ? " → " : " ↔ "}
+          <span className="font-600 text-foreground">{deleteTarget && nameOf(deleteTarget.targetSkillId)}</span>? This cannot be undone.
+        </p>
+        <p>All learners' paths are recalculated afterwards.</p>
+      </ConfirmDeleteModal>
+    </div>
+  );
+}
+
+
+function RolesTab({ roles, skills, byId }: { roles: Role[]; skills: Skill[]; byId: Map<string, Skill> }) {
+  const { showToast } = useToast();
+  const deleteRole = useDeleteRole();
+  const [formRole, setFormRole] = useState<Role | "new" | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+
+  const sortedSkills = useMemo(() => [...skills].sort((a, b) => a.name.localeCompare(b.name)), [skills]);
+  const nameOf = (id: string) => byId.get(id)?.name ?? id;
+
+  function openDelete(role: Role) {
+    setDeleteError("");
+    setDeleteTarget(role);
+  }
+
+  function handleDelete() {
+    if (!deleteTarget) return;
+    const { _id, title } = deleteTarget;
+    deleteRole.mutate(_id, {
+      onSuccess: () => {
+        setDeleteTarget(null);
+        showToast(`Role "${title}" deleted`, "success");
+      },
+      onError: (err) => setDeleteError(err.message),
+    });
+  }
+
+  return (
+    <div>
+      <div className="flex justify-end mb-4">
+        <Button size="sm" onClick={() => setFormRole("new")}>+ Add role</Button>
+      </div>
+
+      {roles.length === 0 ? (
+        <EmptyState icon="🎯" title="No roles yet" description="Add a role so learners can pick a target." />
+      ) : (
+        <Card className="divide-y divide-border">
+          {roles.map(role => (
+            <div key={role._id} className="px-4 py-4">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-600 text-sm text-foreground">{role.title}</p>
+                    {role.category && <Badge variant="outline">{categoryLabel(role.category)}</Badge>}
+                  </div>
+                  <p className="text-xs text-muted-foreground font-mono">{role.slug}</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Badge variant={role.demandScore >= 0.9 ? "demand" : "default"}>Demand: {formatPercent(role.demandScore)}</Badge>
+                  <button onClick={() => setFormRole(role)} className="text-xs text-muted-foreground hover:text-primary transition-colors">Edit</button>
+                  <button onClick={() => openDelete(role)} className="text-xs text-muted-foreground hover:text-red-500 transition-colors">Delete</button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {role.requiredSkills.map((req, i) => (
+                  <span
+                    key={req._id ?? i}
+                    title={`${req.label ? `${req.label} · ` : ""}min. ${req.minProficiency}`}
+                    className={`text-xs px-2 py-0.5 rounded-full font-mono ${req.anyOf.length > 1 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-primary/10 text-primary"}`}
+                  >
+                    {req.anyOf.map(nameOf).join(" / ")}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      <Modal open={formRole !== null} onClose={() => setFormRole(null)} title={formRole === "new" ? "Add New Role" : "Edit Role"} className="max-w-2xl">
+        {formRole !== null && (
+          <RoleForm
+            key={formRole === "new" ? "new" : formRole._id}
+            role={formRole === "new" ? undefined : formRole}
+            skills={sortedSkills}
+            byId={byId}
+            onCancel={() => setFormRole(null)}
+            onDone={(saved) => {
+              showToast(`Role "${saved.title}" ${formRole === "new" ? "added" : "updated"} — learners' paths will be recalculated`, "success");
+              setFormRole(null);
+            }}
+          />
+        )}
       </Modal>
 
-      {/* Add edge modal */}
-      <Modal open={addEdgeModal} onClose={() => setAddEdgeModal(false)} title="Add Graph Edge">
-        <div className="flex flex-col gap-4">
-          <div>
-            <label className="text-sm font-500 text-foreground mb-1 block">Source skill</label>
-            <select
-              value={newEdge.source}
-              onChange={e => { setNewEdge(p => ({ ...p, source: e.target.value })); setEdgeError(""); }}
-              className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="">Select source…</option>
-              {skills.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="text-sm font-500 text-foreground mb-1 block">Target skill (requires source)</label>
-            <select
-              value={newEdge.target}
-              onChange={e => { setNewEdge(p => ({ ...p, target: e.target.value })); setEdgeError(""); }}
-              className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="">Select target…</option>
-              {skills.filter(s => s.id !== newEdge.source).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </div>
-          {edgeError && <p className="text-sm text-amber-500">{edgeError}</p>}
-          <div className="flex gap-2 mt-2">
-            <Button variant="ghost" className="flex-1" onClick={() => setAddEdgeModal(false)}>Cancel</Button>
-            <Button className="flex-1" onClick={handleAddEdge}>Add edge</Button>
-          </div>
-        </div>
-      </Modal>
+      <ConfirmDeleteModal
+        open={deleteTarget !== null}
+        title="Delete role"
+        error={deleteError}
+        pending={deleteRole.isPending}
+        onConfirm={handleDelete}
+        onClose={() => setDeleteTarget(null)}
+      >
+        <p>Delete <span className="font-600 text-foreground">{deleteTarget?.title}</span>? This cannot be undone.</p>
+        <p>
+          Learners targeting this role lose it as their target and their current paths are archived; they'll be
+          asked to pick a new role.
+        </p>
+      </ConfirmDeleteModal>
     </div>
   );
 }

@@ -115,7 +115,7 @@ export default function OnboardingRole() {
               onChange={e => setSearch(e.target.value)}
             />
             {search && (
-              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs">✕</button>
+              <button onClick={() => setSearch("")} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs">✕</button>
             )}
           </div>
           <select
@@ -151,6 +151,7 @@ export default function OnboardingRole() {
                   key={role._id}
                   hover
                   onClick={() => setSelected(role._id)}
+                  selected={isSelected}
                   className={`p-4 transition-all flex flex-col ${isSelected ? "ring-2 ring-primary border-primary" : ""}`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
