@@ -1,7 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, Card, ProgressBar, StatTile, StatusBadge, PageLoader, ErrorState, EmptyState } from "@/components/ui";
-import { useGraph, useSkillsCatalog } from "@/api/queries";
+import { qk, useCompleteSkill, useGraph, useSkillsCatalog } from "@/api/queries";
+import { toApiError } from "@/api/client";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
 import { categoryColor, categoryLabel, formatDate, formatHours } from "@/lib/format";
@@ -62,6 +64,28 @@ export default function Progress() {
   );
 
   const [domainFilter, setDomainFilter] = useState<string | null>(null);
+
+  const qc = useQueryClient();
+  const complete = useCompleteSkill();
+  // Set synchronously so a rapid double click can never send a second request.
+  const inFlight = useRef(false);
+  const busy = complete.isPending || isComputing;
+
+  function handleComplete(skillId: string) {
+    if (inFlight.current || busy) return;
+    inFlight.current = true;
+    const name = skillName(skillId);
+    complete.mutate(skillId, {
+      onSuccess: () => showToast(`${name} marked complete`, "success"),
+      onError: (err) => showToast(toApiError(err).message, "error"),
+      onSettled: () => {
+        inFlight.current = false;
+        // The completion is saved before any recompute, so re-read both after every outcome.
+        void qc.invalidateQueries({ queryKey: qk.me });
+        void qc.invalidateQueries({ queryKey: qk.activePath });
+      },
+    });
+  }
 
   const skillName = (id: string) => catalog.byId.get(id)?.name ?? "Unknown skill";
   const stepCategory = (id: string) => catalog.byId.get(id)?.category ?? "";
@@ -126,7 +150,7 @@ export default function Progress() {
             <h1 className="font-display font-800 text-2xl text-foreground mb-1">Progress</h1>
             <p className="text-muted-foreground text-sm">{user.targetRoleId.title}</p>
           </div>
-          {isComputing && (
+          {busy && (
             <div className="flex items-center gap-2 bg-secondary border border-border rounded-lg px-3 py-1.5 animate-pulse">
               <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
               <span className="text-xs font-mono text-secondary-foreground">Recalculating…</span>
@@ -270,10 +294,11 @@ export default function Progress() {
                   {/* Checkbox */}
                   <span title={lockHint} className="shrink-0">
                     <button
-                      disabled={isLocked}
+                      onClick={() => handleComplete(step.skillId)}
+                      disabled={isLocked || busy}
                       aria-label={isLocked ? lockHint : `Mark ${skillName(step.skillId)} complete`}
                       className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                        isLocked
+                        isLocked || busy
                           ? "border-border cursor-not-allowed"
                           : "border-primary hover:bg-primary hover:text-white cursor-pointer"
                       }`}
