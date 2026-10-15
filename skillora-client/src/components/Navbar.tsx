@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useApp } from "@/context/AppContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
 
 const navLinks = [
@@ -12,7 +13,8 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const { darkMode, toggleDark, isLoggedIn, setLoggedIn, isAdmin } = useApp();
+  const { isLoggedIn, setLoggedIn, isAdmin } = useApp();
+  const { darkMode, toggleDark } = useTheme();
   const { showToast } = useToast();
   const { pathname } = useLocation();
   const navigate = useNavigate();

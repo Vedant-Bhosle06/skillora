@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { Button, Input, Card, Badge, ProficiencyBadge, Modal, Divider } from "@/components/ui";
 import { skills, userSkills as defaultUserSkills, roles } from "@/data/mock";
 import { useApp } from "@/context/AppContext";
+import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
 import type { Proficiency, UserSkill } from "@/data/mock";
 
 const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"];
 
 export default function Settings() {
-  const { currentRole, setCurrentRole, setLoggedIn, darkMode, toggleDark } = useApp();
+  const { currentRole, setCurrentRole, setLoggedIn } = useApp();
+  const { darkMode, toggleDark } = useTheme();
   const { showToast } = useToast();
   const navigate = useNavigate();
 

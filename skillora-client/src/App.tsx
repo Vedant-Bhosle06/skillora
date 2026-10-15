@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AppProvider, useApp } from "@/context/AppContext";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { ToastContainer } from "@/components/ui";
 import Navbar from "@/components/Navbar";
@@ -49,7 +50,7 @@ function AppShell() {
 }
 
 function NavbarMinimal() {
-  const { darkMode, toggleDark } = useApp();
+  const { darkMode, toggleDark } = useTheme();
   return (
     <button
       onClick={toggleDark}
@@ -69,12 +70,14 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <AppProvider>
-      <ToastProvider>
-        <BrowserRouter>
-          <AppShell />
-        </BrowserRouter>
-      </ToastProvider>
-    </AppProvider>
+    <ThemeProvider>
+      <AppProvider>
+        <ToastProvider>
+          <BrowserRouter>
+            <AppShell />
+          </BrowserRouter>
+        </ToastProvider>
+      </AppProvider>
+    </ThemeProvider>
   );
 }
