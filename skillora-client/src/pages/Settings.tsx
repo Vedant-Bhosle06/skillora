@@ -4,7 +4,7 @@ import { Button, Input, Card, Badge, ProficiencyBadge, Modal, EmptyState } from 
 import { roles } from "@/data/mock";
 import { useApp } from "@/context/AppContext";
 import { useAuth, useCurrentUser } from "@/auth/AuthContext";
-import { useDeleteAccount, useUpdateProficiency } from "@/api/queries";
+import { useDeleteAccount, useRemoveSkill, useUpdateProficiency } from "@/api/queries";
 import { refId } from "@/lib/requirements";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
@@ -22,6 +22,8 @@ export default function Settings() {
   const navigate = useNavigate();
 
   const updateProficiency = useUpdateProficiency();
+  const removeSkill = useRemoveSkill();
+  const [removeTarget, setRemoveTarget] = useState<{ id: string; name: string } | null>(null);
   const currentSkills = me.currentSkills.filter(cs => cs.skillId !== null);
   const learnedSkills = me.completedSkills.filter(cs => cs.skillId !== null);
   const [deleteModal, setDeleteModal] = useState(false);
@@ -56,6 +58,17 @@ export default function Settings() {
   function setProficiency(skillId: string, proficiency: Proficiency) {
     updateProficiency.mutate({ skillId, proficiency }, {
       onSuccess: () => showToast("Updated — your path will be recalculated", "success"),
+      onError: (err) => showToast(err.message, "error"),
+    });
+  }
+
+  function confirmRemoveSkill() {
+    if (!removeTarget) return;
+    removeSkill.mutate(removeTarget.id, {
+      onSuccess: () => {
+        showToast(`Removed ${removeTarget.name} — your path will be recalculated`, "success");
+        setRemoveTarget(null);
+      },
       onError: (err) => showToast(err.message, "error"),
     });
   }
@@ -168,6 +181,7 @@ export default function Settings() {
                         <span className="font-600 text-sm text-foreground">{skill.name}</span>
                         <span className="text-xs text-muted-foreground ml-2">{skill.category}</span>
                       </div>
+                      <button onClick={() => setRemoveTarget({ id: skillId, name: skill.name })} className="text-xs text-muted-foreground hover:text-red-500">Remove</button>
                     </div>
                     <div className="flex gap-1.5">
                       {proficiencyLevels.map(level => (
@@ -237,6 +251,19 @@ export default function Settings() {
           </div>
         )}
       </div>
+
+      {/* Remove skill confirm modal */}
+      <Modal open={removeTarget !== null} onClose={() => setRemoveTarget(null)} title="Remove skill">
+        <p className="text-sm text-muted-foreground">
+          Remove <strong className="text-foreground">{removeTarget?.name}</strong> from your profile? Your path will be recalculated.
+        </p>
+        <div className="flex gap-2 mt-5">
+          <Button variant="ghost" className="flex-1" onClick={() => setRemoveTarget(null)}>Cancel</Button>
+          <Button variant="danger" className="flex-1" onClick={confirmRemoveSkill} disabled={removeSkill.isPending}>
+            {removeSkill.isPending ? "Removing…" : "Remove"}
+          </Button>
+        </div>
+      </Modal>
 
       {/* Delete confirm modal */}
       <Modal open={deleteModal} onClose={() => { setDeleteModal(false); setDeleteConfirm(""); }} title="Delete Account">
