@@ -4,8 +4,9 @@ import { Button, Badge, Card, PageLoader, ErrorState, EmptyState } from "@/compo
 import { useAlternatives, useSkillsCatalog } from "@/api/queries";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
-import { formatHours } from "@/lib/format";
-import { pathLabel } from "@/lib/pathMetrics";
+import TradeoffChart from "@/components/TradeoffChart";
+import { formatHours, formatPercent } from "@/lib/format";
+import { orChoiceDiff, pathLabel } from "@/lib/pathMetrics";
 
 export default function Alternatives() {
   const navigate = useNavigate();
@@ -43,17 +44,34 @@ export default function Alternatives() {
       return <EmptyState icon="🧭" title="No routes found" description="The path service returned no routes for your profile." />;
     }
 
+    const primary = paths.find(p => p.rank === 1) ?? paths[0];
+
     return (
+      <>
+      {paths.length === 1 ? (
+        <Card className="p-4 mb-6">
+          <p className="text-sm text-muted-foreground">Only one route exists for your profile.</p>
+        </Card>
+      ) : (
+        <Card className="p-4 mb-6">
+          <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">Trade-off: hours vs. demand</p>
+          <div className="max-w-xl mx-auto"><TradeoffChart paths={paths} selectedRank={user.selectedPathRank} /></div>
+        </Card>
+      )}
+
       <div className={`grid gap-4 mb-8 ${paths.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
         {paths.map(path => {
           const isCurrent = path.rank === user.selectedPathRank;
+          const diff = path.rank === primary.rank ? null : orChoiceDiff(path, primary);
           return (
             <Card key={path.rank} className={`overflow-hidden transition-all ${isCurrent ? "ring-2 ring-primary" : ""}`}>
               {/* Header */}
               <div className={`px-4 py-3 border-b border-border ${isCurrent ? "bg-primary/8" : "bg-muted/30"}`}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="font-display font-700 text-sm text-foreground">{pathLabel(path.rank)}</p>
+                    <p className="font-display font-700 text-sm text-foreground">
+                      {path.rank === 1 ? "Primary (recommended)" : pathLabel(path.rank)}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {path.steps.length} skills · {formatHours(path.totalLearningCost)} total
                     </p>
@@ -61,6 +79,35 @@ export default function Alternatives() {
                   {isCurrent && <Badge variant="in-progress">Active</Badge>}
                 </div>
               </div>
+
+              {/* Stats */}
+              <div className="p-4 grid grid-cols-3 gap-2 border-b border-border">
+                <div className="text-center">
+                  <p className="font-display font-800 text-xl text-primary">{formatHours(path.totalLearningCost)}</p>
+                  <p className="text-xs font-mono text-muted-foreground">Hours</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-display font-800 text-xl text-rose-500">{formatPercent(path.marketDemandAvg)}</p>
+                  <p className="text-xs font-mono text-muted-foreground">Demand</p>
+                </div>
+                <div className="text-center" title="Composite score: lower is better">
+                  <p className="font-display font-800 text-xl text-foreground">{path.compositeScore.toFixed(3)}</p>
+                  <p className="text-xs font-mono text-muted-foreground">Score</p>
+                </div>
+              </div>
+              <p className="px-4 pt-2 text-[11px] text-muted-foreground text-right">Score: lower is better</p>
+
+              {/* OR-choices vs the primary route */}
+              {diff && (diff.added.length > 0 || diff.removed.length > 0) && (
+                <div className="px-4 py-3 border-b border-border text-xs flex flex-col gap-1">
+                  {diff.added.length > 0 && (
+                    <p><span className="font-mono text-muted-foreground">Chooses </span><span className="text-emerald-600 dark:text-emerald-400">{diff.added.map(skillName).join(", ")}</span></p>
+                  )}
+                  {diff.removed.length > 0 && (
+                    <p><span className="font-mono text-muted-foreground">Instead of </span><span className="text-rose-600 dark:text-rose-400">{diff.removed.map(skillName).join(", ")}</span></p>
+                  )}
+                </div>
+              )}
 
               {/* Sequence */}
               <div className="p-4">
@@ -82,6 +129,11 @@ export default function Alternatives() {
           );
         })}
       </div>
+
+      <p className="text-xs text-muted-foreground text-center">
+        Ranked by α·(hours/maxHours) + β·(1 − demand), α={pathDoc.alpha}, β={pathDoc.beta}. Lower scores rank higher.
+      </p>
+      </>
     );
   }
 
