@@ -13,6 +13,7 @@ This guide walks through the app the way a new learner uses it. The screenshots 
 3. [Dashboard](#3-dashboard)
 4. [Comparing alternatives](#4-comparing-alternatives)
 5. [Tracking progress](#5-tracking-progress)
+6. [Graph Explorer](#6-graph-explorer)
 7. [Settings](#7-settings)
 8. [Admin curation](#8-admin-curation)
 9. [Troubleshooting](#9-troubleshooting)
@@ -140,6 +141,44 @@ The roadmap is computed by a separate path-finding service. If that service is d
 > **Path service unavailable — showing your last computed path** · **Retry**
 
 Your completed skills are still saved. The page keeps showing your previous path so you can carry on. Click **Retry** in a minute or two; once the service is back, the path updates. If you have no earlier path yet, the page shows "Path service unavailable" with a **Retry** button instead.
+
+---
+
+## 6. Graph Explorer
+
+The Graph Explorer shows the whole skill map: every skill is a dot (node), and the lines (edges) show which skills lead to which. Open **Graph** in the top bar.
+
+![Graph Explorer, light mode, with Pandas hovered and selected](user-guide/09-graph.png)
+
+How to read the screenshot above, from top left:
+
+1. **Scope toggle: Full graph / My path.**
+   - *Full graph* shows all 114 skills.
+   - *My path* focuses on the skills in your roadmap and what you already know.
+2. **Zoom controls: + / − / Reset.** You can also scroll to zoom and drag the background to pan. You can drag a node to move it, too.
+3. **Domain colours** (top right). A node's fill colour shows its domain (Cloud, Database, Framework…).
+4. **Status legend** (bottom left). The ring and fill show where a skill stands for *you*:
+   - **Known**: you have it (green, with a ✓).
+   - **Up next**: the next skill on your path.
+   - **Available**: on your path, prerequisites done.
+   - **Locked**: on your path, but a prerequisite is still missing.
+   - **Not in your path**: faded.
+5. **Edge types** (bottom left).
+   - **Prerequisite** (solid line with an arrow): learn the first skill before the second, e.g. Python → Pandas.
+   - **Any one of (OR-group)** (dashed orange): *one* of these skills is enough, e.g. Power BI **or** Tableau for a BI requirement.
+   - **Co-requisite** (dotted): skills best learned together.
+6. **Hover a node** to see a tooltip with its domain, hours, demand, prerequisites, your status and, if it's on your path, its step number and "why". Its connections light up so you can see what it depends on and what it unlocks.
+7. **Click a node** to open the **Skill details** panel on the right. It shows:
+   - the description and tags;
+   - estimated hours, market demand and difficulty;
+   - your status and the step it occupies on your path, with the reason;
+   - **Requires** (prerequisites) and **Unlocks** (skills it leads to).
+
+   Close it with the ✕.
+
+The same view in **dark mode**: switch with the moon/sun button at the top right of any page, or in Settings.
+
+![Graph Explorer in dark mode](user-guide/10-graph-dark.png)
 
 ---
 
