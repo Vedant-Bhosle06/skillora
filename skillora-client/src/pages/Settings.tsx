@@ -21,12 +21,20 @@ export default function Settings() {
   const [userSkills, setUserSkills] = useState<UserSkill[]>(defaultUserSkills);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [signingOut, setSigningOut] = useState(false);
   const [tab, setTab] = useState<"account" | "skills" | "role">("account");
 
   const role = roles.find(r => r.id === currentRole);
 
   function handleSave() {
     showToast("Settings saved successfully", "success");
+  }
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    await logout();
+    navigate("/");
+    showToast("Signed out", "info");
   }
 
   async function handleDeleteAccount() {
@@ -111,6 +119,14 @@ export default function Settings() {
                   <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-all ${darkMode ? "left-6" : "left-0.5"}`} />
                 </button>
               </div>
+            </Card>
+
+            <Card className="p-5">
+              <h2 className="font-display font-700 text-base text-foreground mb-2">Session</h2>
+              <p className="text-sm text-muted-foreground mb-4">Sign out of SKILLORA on this device.</p>
+              <Button variant="secondary" onClick={handleSignOut} disabled={signingOut}>
+                {signingOut ? "Signing out…" : "Sign out"}
+              </Button>
             </Card>
 
             {/* Danger zone */}
