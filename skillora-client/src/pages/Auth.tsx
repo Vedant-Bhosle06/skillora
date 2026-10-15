@@ -26,7 +26,7 @@ export default function Auth({ mode }: { mode: Mode }) {
   const [formError, setFormError] = useState<FormError | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const { status, user, login } = useAuth();
+  const { status, user, login, register } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -51,19 +51,21 @@ export default function Auth({ mode }: { mode: Mode }) {
     if (loading || !validate()) return;
     setFormError(null);
 
-    if (mode === "register") {
-      showToast("Registration is not connected yet", "info");
-      return;
-    }
-
     setLoading(true);
     try {
-      const me = await login(email.trim(), password);
-      showToast(`Welcome back, ${me.name}!`, "success");
+      if (mode === "register") {
+        await register(name.trim(), email.trim(), password);
+        showToast("Account created — let's set up your profile", "success");
+      } else {
+        const me = await login(email.trim(), password);
+        showToast(`Welcome back, ${me.name}!`, "success");
+      }
       setPassword("");
     } catch (err) {
       const apiErr = toApiError(err);
-      setFormError({ message: apiErr.status === 401 ? "Invalid email or password" : apiErr.message });
+      if (apiErr.status === 401) setFormError({ message: "Invalid email or password" });
+      else if (apiErr.status === 409 && mode === "register") setFormError({ message: "An account with this email already exists", emailTaken: true });
+      else setFormError({ message: apiErr.message });
     } finally {
       setLoading(false);
     }
@@ -143,7 +145,7 @@ export default function Auth({ mode }: { mode: Mode }) {
                 {formError.emailTaken && (
                   <>
                     {" — "}
-                    <Link to="/login" state={location.state} replace className="font-500 underline">Sign in instead</Link>
+                    <Link to="/login" state={location.state} replace onClick={() => { setErrors({}); setFormError(null); }} className="font-500 underline">Sign in instead</Link>
                   </>
                 )}
               </div>
