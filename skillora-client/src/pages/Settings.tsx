@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Input, Card, Badge, ProficiencyBadge, Modal, Divider } from "@/components/ui";
 import { skills, userSkills as defaultUserSkills, roles } from "@/data/mock";
 import { useApp } from "@/context/AppContext";
-import { useAuth } from "@/auth/AuthContext";
+import { useAuth, useCurrentUser } from "@/auth/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
 import type { Proficiency, UserSkill } from "@/data/mock";
@@ -13,12 +13,11 @@ const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"
 export default function Settings() {
   const { currentRole, setCurrentRole } = useApp();
   const { logout } = useAuth();
+  const me = useCurrentUser();
   const { darkMode, toggleDark } = useTheme();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  const [name, setName] = useState("Alex Thornton");
-  const [email, setEmail] = useState("alex@example.com");
   const [userSkills, setUserSkills] = useState<UserSkill[]>(defaultUserSkills);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
@@ -81,12 +80,21 @@ export default function Settings() {
           <div className="flex flex-col gap-5">
             <Card className="p-5">
               <h2 className="font-display font-700 text-base text-foreground mb-4">Account Details</h2>
-              <div className="flex flex-col gap-4">
-                <Input label="Full name" value={name} onChange={e => setName(e.target.value)} />
-                <Input label="Email address" type="email" value={email} onChange={e => setEmail(e.target.value)} />
-                <Input label="New password" type="password" placeholder="Leave blank to keep current" />
-                <Button onClick={handleSave} className="self-start">Save changes</Button>
-              </div>
+              <dl className="flex flex-col gap-3 text-sm">
+                <div>
+                  <dt className="text-xs text-muted-foreground">Full name</dt>
+                  <dd className="font-600 text-foreground">{me.name}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">Email address</dt>
+                  <dd className="font-600 text-foreground">{me.email}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground mb-1">Account type</dt>
+                  <dd><Badge variant={me.role === "admin" ? "in-progress" : "default"}>{me.role}</Badge></dd>
+                </div>
+              </dl>
+              <p className="text-xs text-muted-foreground mt-4">To change account details, contact an administrator.</p>
             </Card>
 
             <Card className="p-5">
