@@ -43,6 +43,9 @@ const rawBase = import.meta.env.VITE_API_BASE_URL;
 if (!rawBase) {
   throw new Error('VITE_API_BASE_URL is not set. Create skillora-client/.env (see README).');
 }
+if (import.meta.env.PROD && !rawBase.startsWith('https:')) {
+  console.warn('VITE_API_BASE_URL is not https: the token would travel in clear text.');
+}
 
 export const api = axios.create({
   baseURL: `${rawBase.replace(/\/+$/, '')}/api`,
