@@ -76,13 +76,32 @@ export default function Progress() {
     inFlight.current = true;
     const name = skillName(skillId);
     complete.mutate(skillId, {
-      onSuccess: () => showToast(`${name} marked complete`, "success"),
-      onError: (err) => showToast(toApiError(err).message, "error"),
-      onSettled: () => {
-        inFlight.current = false;
-        // The completion is saved before any recompute, so re-read both after every outcome.
+      onSuccess: (res) => {
+        if ("path" in res) {
+          // 200: the server already recomputed; show the new document straight away.
+          qc.setQueryData(qk.activePath, res.path);
+          void qc.invalidateQueries({ queryKey: qk.me });
+          void qc.invalidateQueries({ queryKey: ["paths", "history"] });
+          void qc.invalidateQueries({ queryKey: ["paths", "alternatives"] });
+          void qc.invalidateQueries({ queryKey: qk.graph("path") });
+          showToast(`${name} marked complete — path updated`, "success");
+        } else {
+          // 202: saved, but the path service is down. The path is now stale, so
+          // useEnsureFreshPath tries compute and shows the 503 banner with Retry.
+          showToast("Saved. Your path will update when the path service is back.", "warning");
+          void qc.invalidateQueries({ queryKey: qk.me });
+          void qc.invalidateQueries({ queryKey: qk.activePath });
+        }
+      },
+      onError: (err) => {
+        const e = toApiError(err);
+        showToast(e.status === 409 ? "Already completed" : e.message, e.status === 409 ? "info" : "error");
+        // The completion may already be saved, so re-read both.
         void qc.invalidateQueries({ queryKey: qk.me });
         void qc.invalidateQueries({ queryKey: qk.activePath });
+      },
+      onSettled: () => {
+        inFlight.current = false;
       },
     });
   }
