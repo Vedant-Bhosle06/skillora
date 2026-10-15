@@ -4,6 +4,7 @@ import { Button, Input, Card, Badge, ProficiencyBadge, Modal, Divider } from "@/
 import { skills, userSkills as defaultUserSkills, roles } from "@/data/mock";
 import { useApp } from "@/context/AppContext";
 import { useAuth, useCurrentUser } from "@/auth/AuthContext";
+import { useDeleteAccount } from "@/api/queries";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
 import type { Proficiency, UserSkill } from "@/data/mock";
@@ -12,7 +13,8 @@ const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"
 
 export default function Settings() {
   const { currentRole, setCurrentRole } = useApp();
-  const { logout } = useAuth();
+  const { logout, clearSession } = useAuth();
+  const deleteAccount = useDeleteAccount();
   const me = useCurrentUser();
   const { darkMode, toggleDark } = useTheme();
   const { showToast } = useToast();
@@ -37,15 +39,19 @@ export default function Settings() {
     showToast("Signed out", "info");
   }
 
-  async function handleDeleteAccount() {
+  function handleDeleteAccount() {
     if (deleteConfirm !== "DELETE") {
       showToast("Type DELETE to confirm", "error");
       return;
     }
-    // Temporary: signs out only. Real deletion (DELETE /api/users/me) is wired in Phase 6.
-    await logout();
-    navigate("/");
-    showToast("Signed out. Account deletion isn't connected yet.", "info");
+    deleteAccount.mutate(undefined, {
+      onSuccess: () => {
+        clearSession();
+        navigate("/");
+        showToast("Your account has been deleted", "success");
+      },
+      onError: (err) => showToast(err.message, "error"),
+    });
   }
 
   function setProficiency(skillId: string, level: Proficiency) {
@@ -223,7 +229,9 @@ export default function Settings() {
         />
         <div className="flex gap-2 mt-5">
           <Button variant="ghost" className="flex-1" onClick={() => setDeleteModal(false)}>Cancel</Button>
-          <Button variant="danger" className="flex-1" onClick={handleDeleteAccount}>Delete permanently</Button>
+          <Button variant="danger" className="flex-1" onClick={handleDeleteAccount} disabled={deleteAccount.isPending}>
+            {deleteAccount.isPending ? "Deleting…" : "Delete permanently"}
+          </Button>
         </div>
       </Modal>
     </div>
