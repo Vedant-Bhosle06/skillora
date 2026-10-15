@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Button, Badge, StatusBadge, Card, StatTile, ProgressBar } from "@/components/ui";
+import { Button, StatusBadge, Card, StatTile, ProgressBar, PageLoader, ErrorState } from "@/components/ui";
+import { useCurrentUser } from "@/auth/AuthContext";
+import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
 import { paths, skills, roles } from "@/data/mock";
 import { useApp } from "@/context/AppContext";
 import { useToast } from "@/context/ToastContext";
@@ -23,6 +25,16 @@ export default function Dashboard() {
   const { currentRole, selectedPath, setSelectedPath } = useApp();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const user = useCurrentUser();
+  const { pathDoc, isLoading, loadError, isComputing, failure, retry, reload } = useEnsureFreshPath();
+
+  // 400 (no role) or 404 (role deleted) from compute: the user has to pick a role again.
+  const needsRole = !!failure && (failure.status === 400 || failure.status === 404);
+  useEffect(() => {
+    if (!needsRole || !failure) return;
+    showToast(failure.message, "error");
+    navigate("/onboarding/role", { replace: true });
+  }, [needsRole, failure, navigate, showToast]);
 
   const role = roles.find(r => r.id === currentRole);
   const primaryPath = paths.find(p => p.id === selectedPath) ?? paths[0];
@@ -36,6 +48,14 @@ export default function Dashboard() {
     return skills.find(s => s.id === id);
   }
 
+  if (isLoading) return <PageLoader label="Loading your roadmap…" />;
+  if (loadError) return <ErrorState title="Couldn't load your roadmap" message={loadError.message} onRetry={reload} />;
+  if (needsRole) return <PageLoader label="Taking you to role selection…" />;
+  if (isComputing || (!pathDoc && !failure)) return <PageLoader label="Computing your optimal path…" />;
+  if (!pathDoc) {
+    return <ErrorState title="Couldn't compute your path" message={failure?.message ?? "Something went wrong."} onRetry={retry} />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-6 py-8">
@@ -44,7 +64,7 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div>
               <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-1">Active Path</p>
-              <h1 className="font-display font-800 text-2xl text-foreground">{role?.title ?? "Machine Learning Engineer"}</h1>
+              <h1 className="font-display font-800 text-2xl text-foreground">{user.targetRoleId?.title ?? role?.title}</h1>
             </div>
             <div className="flex gap-2">
               <Button variant="secondary" size="sm" onClick={() => navigate("/alternatives")}>Compare paths</Button>
