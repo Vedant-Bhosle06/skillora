@@ -1,12 +1,13 @@
 import React, { ReactNode, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, EmptyState, ErrorState, Input, Modal, PageLoader, Select, StatTile } from "@/components/ui";
-import { useAdminEdges, useAdminMetrics, useDeleteEdge, useDeleteSkill, useRoles, useSkillsCatalog } from "@/api/queries";
+import { useAdminEdges, useAdminMetrics, useDeleteEdge, useDeleteRole, useDeleteSkill, useRoles, useSkillsCatalog } from "@/api/queries";
 import { ApiError } from "@/api/client";
 import type { GraphMetrics, Role, Skill, SkillEdge } from "@/api/types";
 import { categoryLabel, formatHours, formatPercent } from "@/lib/format";
 import { useToast } from "@/context/ToastContext";
 import EdgeForm from "@/pages/admin/EdgeForm";
+import RoleForm from "@/pages/admin/RoleForm";
 import SkillForm from "@/pages/admin/SkillForm";
 
 type Tab = "health" | "skills" | "edges" | "roles";
@@ -107,7 +108,7 @@ export default function Admin() {
 
         {tab === "skills" && <SkillsTab skills={skills} />}
         {tab === "edges" && <EdgesTab skills={skills} byId={catalog.byId} />}
-        {tab === "roles" && <RolesList roles={roles} byId={catalog.byId} />}
+        {tab === "roles" && <RolesTab roles={roles} skills={skills} byId={catalog.byId} />}
       </div>
     </div>
   );
@@ -457,28 +458,106 @@ function EdgesTab({ skills, byId }: { skills: Skill[]; byId: Map<string, Skill> 
   );
 }
 
-function RolesList({ roles, byId }: { roles: Role[]; byId: Map<string, Skill> }) {
-  if (roles.length === 0) return <EmptyState icon="🎯" title="No roles yet" description="Add a role so learners can pick a target." />;
+
+function RolesTab({ roles, skills, byId }: { roles: Role[]; skills: Skill[]; byId: Map<string, Skill> }) {
+  const { showToast } = useToast();
+  const deleteRole = useDeleteRole();
+  const [formRole, setFormRole] = useState<Role | "new" | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+
+  const sortedSkills = useMemo(() => [...skills].sort((a, b) => a.name.localeCompare(b.name)), [skills]);
+  const nameOf = (id: string) => byId.get(id)?.name ?? id;
+
+  function openDelete(role: Role) {
+    setDeleteError("");
+    setDeleteTarget(role);
+  }
+
+  function handleDelete() {
+    if (!deleteTarget) return;
+    const { _id, title } = deleteTarget;
+    deleteRole.mutate(_id, {
+      onSuccess: () => {
+        setDeleteTarget(null);
+        showToast(`Role "${title}" deleted`, "success");
+      },
+      onError: (err) => setDeleteError(err.message),
+    });
+  }
+
   return (
-    <Card className="divide-y divide-border">
-      {roles.map(role => (
-        <div key={role._id} className="px-4 py-4">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <p className="font-600 text-sm text-foreground">{role.title}</p>
-              <p className="text-xs text-muted-foreground font-mono">{role.slug}</p>
+    <div>
+      <div className="flex justify-end mb-4">
+        <Button size="sm" onClick={() => setFormRole("new")}>+ Add role</Button>
+      </div>
+
+      {roles.length === 0 ? (
+        <EmptyState icon="🎯" title="No roles yet" description="Add a role so learners can pick a target." />
+      ) : (
+        <Card className="divide-y divide-border">
+          {roles.map(role => (
+            <div key={role._id} className="px-4 py-4">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-600 text-sm text-foreground">{role.title}</p>
+                    {role.category && <Badge variant="outline">{categoryLabel(role.category)}</Badge>}
+                  </div>
+                  <p className="text-xs text-muted-foreground font-mono">{role.slug}</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Badge variant={role.demandScore >= 0.9 ? "demand" : "default"}>Demand: {formatPercent(role.demandScore)}</Badge>
+                  <button onClick={() => setFormRole(role)} className="text-xs text-muted-foreground hover:text-primary transition-colors">Edit</button>
+                  <button onClick={() => openDelete(role)} className="text-xs text-muted-foreground hover:text-red-500 transition-colors">Delete</button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {role.requiredSkills.map((req, i) => (
+                  <span
+                    key={req._id ?? i}
+                    title={`${req.label ? `${req.label} · ` : ""}min. ${req.minProficiency}`}
+                    className={`text-xs px-2 py-0.5 rounded-full font-mono ${req.anyOf.length > 1 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-primary/10 text-primary"}`}
+                  >
+                    {req.anyOf.map(nameOf).join(" / ")}
+                  </span>
+                ))}
+              </div>
             </div>
-            <Badge variant={role.demandScore >= 0.9 ? "demand" : "default"}>Demand: {formatPercent(role.demandScore)}</Badge>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {role.requiredSkills.map((req, i) => (
-              <span key={req._id ?? i} className="text-xs px-2 py-0.5 rounded-full font-mono bg-primary/10 text-primary">
-                {req.anyOf.map(id => byId.get(id)?.name ?? id).join(" / ")}
-              </span>
-            ))}
-          </div>
-        </div>
-      ))}
-    </Card>
+          ))}
+        </Card>
+      )}
+
+      <Modal open={formRole !== null} onClose={() => setFormRole(null)} title={formRole === "new" ? "Add New Role" : "Edit Role"} className="max-w-2xl">
+        {formRole !== null && (
+          <RoleForm
+            key={formRole === "new" ? "new" : formRole._id}
+            role={formRole === "new" ? undefined : formRole}
+            skills={sortedSkills}
+            byId={byId}
+            onCancel={() => setFormRole(null)}
+            onDone={(saved) => {
+              showToast(`Role "${saved.title}" ${formRole === "new" ? "added" : "updated"} — learners' paths will be recalculated`, "success");
+              setFormRole(null);
+            }}
+          />
+        )}
+      </Modal>
+
+      <ConfirmDeleteModal
+        open={deleteTarget !== null}
+        title="Delete role"
+        error={deleteError}
+        pending={deleteRole.isPending}
+        onConfirm={handleDelete}
+        onClose={() => setDeleteTarget(null)}
+      >
+        <p>Delete <span className="font-600 text-foreground">{deleteTarget?.title}</span>? This cannot be undone.</p>
+        <p>
+          Learners targeting this role lose it as their target and their current paths are archived; they'll be
+          asked to pick a new role.
+        </p>
+      </ConfirmDeleteModal>
+    </div>
   );
 }
