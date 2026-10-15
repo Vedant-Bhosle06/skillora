@@ -39,7 +39,9 @@ const MIN_ZOOM = 0.3;
 const MAX_ZOOM = 2;
 const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z));
 // Below this zoom, labels of skills outside the user's path are hidden so they don't pile up.
-const LABEL_ZOOM = 0.6;
+const LABEL_ZOOM = 0.75;
+// Labels keep at least this on-screen size (px) when zoomed out.
+const MIN_LABEL_PX = 10;
 
 export default function GraphExplorer() {
   const navigate = useNavigate();
@@ -173,6 +175,8 @@ export default function GraphExplorer() {
       .map(e => nodeById.get(e.source)?.name)
       .filter(Boolean) as string[];
   }
+
+  const labelSize = Math.max(11, MIN_LABEL_PX / view.zoom);
 
   const categories = useMemo(() => [...new Set(nodes.map(n => n.category))].sort(), [nodes]);
 
@@ -308,11 +312,11 @@ export default function GraphExplorer() {
                   )}
                   {(isHovered || status !== "outside" || view.zoom >= LABEL_ZOOM) && (
                     <text
-                      y={isHovered ? 34 : 28}
+                      y={(isHovered ? 26 : 22) + labelSize}
                       textAnchor="middle"
                       fill="var(--foreground)"
                       fillOpacity={status === "outside" && !isHovered ? 0.7 : 1}
-                      fontSize="11"
+                      fontSize={labelSize}
                       fontFamily="'DM Sans', sans-serif"
                       fontWeight="600"
                     >
