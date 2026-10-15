@@ -4,11 +4,22 @@ import { useGraph, type GraphScope } from "@/api/queries";
 import { toApiError } from "@/api/client";
 import { categoryColor, categoryLabel, formatHours } from "@/lib/format";
 import { computeLayout, fitToView, type Point } from "@/lib/graphLayout";
-import type { GraphNode } from "@/api/types";
+import type { GraphEdge, GraphNode } from "@/api/types";
 
 type Node = GraphNode & { id: string };
 type View = { zoom: number; pan: Point };
 type Tooltip = { node: Node; x: number; y: number } | null;
+type EdgeTooltip = { edge: GraphEdge; x: number; y: number } | null;
+
+// Gap left at the target end so the arrow head is not hidden under the node.
+const ARROW_GAP = 24;
+const GROUP_COLOR = "#f59e0b";
+
+function edgeTypeLabel(edge: GraphEdge): string {
+  if (edge.type === "corequisite_with") return "Co-requisite (informational, not used in path search)";
+  if (edge.group) return `Prerequisite — OR-group '${edge.group}': any one is enough`;
+  return "Prerequisite (mandatory)";
+}
 
 const MIN_ZOOM = 0.3;
 const MAX_ZOOM = 2;
@@ -19,6 +30,8 @@ export default function GraphExplorer() {
   const graph = useGraph(scope);
 
   const [tooltip, setTooltip] = useState<Tooltip>(null);
+  const [edgeTooltip, setEdgeTooltip] = useState<EdgeTooltip>(null);
+  const [hoveredEdge, setHoveredEdge] = useState<number | null>(null);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [view, setView] = useState<View>({ zoom: 0.85, pan: { x: 0, y: 0 } });
   const [dragging, setDragging] = useState(false);
@@ -46,6 +59,9 @@ export default function GraphExplorer() {
     if (!svg) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      // The graph moves under the cursor, so any open tooltip would point at the wrong thing.
+      setTooltip(null);
+      setEdgeTooltip(null);
       const rect = svg.getBoundingClientRect();
       const cx = e.clientX - rect.left;
       const cy = e.clientY - rect.top;
@@ -122,19 +138,63 @@ export default function GraphExplorer() {
           onMouseLeave={onMouseUp}
         >
           <g transform={`translate(${view.pan.x},${view.pan.y}) scale(${view.zoom})`}>
-            {/* Edges */}
+            <defs>
+              <marker id="graph-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+                <path d="M0,0 L10,5 L0,10 z" fill="var(--muted-foreground)" />
+              </marker>
+              <marker id="graph-arrow-active" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+                <path d="M0,0 L10,5 L0,10 z" fill="var(--primary)" />
+              </marker>
+            </defs>
+
+            {/* Edges: source → target, the prerequisite points at the skill it unlocks */}
             {edges.map((edge, i) => {
               const src = positions.get(edge.source);
               const tgt = positions.get(edge.target);
               if (!src || !tgt) return null;
-              const isHighlighted = hoveredNode === edge.source || hoveredNode === edge.target;
+              const dx = tgt.x - src.x;
+              const dy = tgt.y - src.y;
+              const len = Math.hypot(dx, dy) || 1;
+              const ux = dx / len;
+              const uy = dy / len;
+              const isCoreq = edge.type === "corequisite_with";
+              const isGrouped = !isCoreq && !!edge.group;
+              const isHighlighted = hoveredEdge === i || hoveredNode === edge.source || hoveredNode === edge.target;
+              const stroke = isHighlighted ? "var(--primary)" : isGrouped ? GROUP_COLOR : "var(--muted-foreground)";
               return (
                 <line
                   key={i}
+                  x1={src.x} y1={src.y}
+                  x2={isCoreq ? tgt.x : tgt.x - ux * ARROW_GAP}
+                  y2={isCoreq ? tgt.y : tgt.y - uy * ARROW_GAP}
+                  stroke={stroke}
+                  strokeWidth={isHighlighted ? 2 : 1.2}
+                  strokeOpacity={isHighlighted ? 0.9 : isGrouped ? 0.7 : 0.4}
+                  strokeDasharray={isCoreq ? "1 4" : isGrouped ? "4 3" : undefined}
+                  strokeLinecap={isCoreq ? "round" : undefined}
+                  markerEnd={isCoreq ? undefined : `url(#${isHighlighted ? "graph-arrow-active" : "graph-arrow"})`}
+                />
+              );
+            })}
+
+            {/* Invisible, wider hit lines so thin edges are easy to hover */}
+            {edges.map((edge, i) => {
+              const src = positions.get(edge.source);
+              const tgt = positions.get(edge.target);
+              if (!src || !tgt) return null;
+              return (
+                <line
+                  key={`hit-${i}`}
                   x1={src.x} y1={src.y} x2={tgt.x} y2={tgt.y}
-                  stroke={isHighlighted ? "var(--primary)" : "var(--muted-foreground)"}
-                  strokeWidth={isHighlighted ? 2 : 1}
-                  strokeOpacity={isHighlighted ? 0.8 : 0.35}
+                  stroke="transparent"
+                  strokeWidth={12 / view.zoom}
+                  pointerEvents="stroke"
+                  onMouseMove={(e) => {
+                    const rect = svgRef.current?.getBoundingClientRect();
+                    if (rect) setEdgeTooltip({ edge, x: e.clientX - rect.left, y: e.clientY - rect.top });
+                  }}
+                  onMouseEnter={() => setHoveredEdge(i)}
+                  onMouseLeave={() => { setHoveredEdge(null); setEdgeTooltip(null); }}
                 />
               );
             })}
@@ -200,6 +260,21 @@ export default function GraphExplorer() {
           </div>
         )}
 
+        {/* Edge tooltip */}
+        {edgeTooltip && !tooltip && (
+          <div
+            className="absolute pointer-events-none z-20 bg-card border border-border rounded-xl shadow-xl p-3 max-w-72"
+            style={{ left: edgeTooltip.x + 16, top: edgeTooltip.y - 20 }}
+          >
+            <p className="font-display font-700 text-sm text-foreground mb-1">
+              {nodeById.get(edgeTooltip.edge.source)?.name ?? "?"}
+              {edgeTooltip.edge.type === "corequisite_with" ? " ↔ " : " → "}
+              {nodeById.get(edgeTooltip.edge.target)?.name ?? "?"}
+            </p>
+            <p className="text-xs text-muted-foreground">{edgeTypeLabel(edgeTooltip.edge)}</p>
+          </div>
+        )}
+
         {/* Legend */}
         <div className="absolute bottom-4 left-4 bg-card/90 backdrop-blur border border-border rounded-xl p-3 flex flex-col gap-1.5">
           <p className="font-mono text-xs text-muted-foreground uppercase tracking-wider mb-1">Status</p>
@@ -211,6 +286,19 @@ export default function GraphExplorer() {
           ].map(l => (
             <div key={l.label} className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ background: l.color, opacity: l.opacity ?? 1 }} />
+              <span className="text-xs text-muted-foreground">{l.label}</span>
+            </div>
+          ))}
+          <p className="font-mono text-xs text-muted-foreground uppercase tracking-wider mt-2 mb-1">Edges</p>
+          {[
+            { label: "Prerequisite", color: "var(--muted-foreground)", dash: undefined },
+            { label: "Any one of (OR-group)", color: GROUP_COLOR, dash: "4 3" },
+            { label: "Co-requisite", color: "var(--muted-foreground)", dash: "1 4" },
+          ].map(l => (
+            <div key={l.label} className="flex items-center gap-2">
+              <svg width="18" height="6" aria-hidden="true">
+                <line x1="1" y1="3" x2="17" y2="3" stroke={l.color} strokeWidth="1.5" strokeDasharray={l.dash} strokeLinecap="round" />
+              </svg>
               <span className="text-xs text-muted-foreground">{l.label}</span>
             </div>
           ))}
