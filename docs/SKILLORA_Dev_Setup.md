@@ -71,11 +71,12 @@ pip install -r requirements.txt
 ### 4. Seed the Database (Member A runs this after writing the seed script)
 
 ```bash
-cd skillora-api
+# from the repo root, after `npm install` in skillora-api
 node scripts/seed.js
+node scripts/seed.js --dry-run   # validate the dataset only, no DB connection
 ```
 
-> This populates `skills`, `skill_edges`, and `roles` collections.
+> This populates the `skills`, `skilledges`, and `roles` collections.
 > Run it only once (it is idempotent — safe to re-run if needed).
 
 ---
@@ -167,7 +168,7 @@ pytest tests/ -v --cov=. --cov-report=term-missing
 ## Evaluation Seed Script (Member A — run after app is working end-to-end)
 
 ```bash
-cd skillora-api
+# from the repo root
 node scripts/seed-eval.js
 ```
 
