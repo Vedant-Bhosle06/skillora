@@ -110,7 +110,7 @@ Measured demand from sampled job postings; dataset `data/v2`; caching of compute
 | **D4** | Roadmap and graph explorer UI | O5 | Ordered roadmap with rationales; force-directed graph with hover info and node detail | 🟡 In progress (Member C) |
 | **D5** | Progress tracking with recomputation | O5 | Completion triggers recompute < 2 s; old paths archived | 🟡 Backend done; UI in progress |
 | **D6** | Evaluation report | O6 | ≥ 5 scenarios, metrics table, limitations and scaling | ✅ Done — 6 scenarios ([report](D6_Evaluation_Report.md)) |
-| **D7** | Project documentation | All | Architecture diagram, data model, OpenAPI for both services, user guide with screenshots | 🟡 Docs done; user guide needs the finished UI |
+| **D7** | Project documentation | All | Architecture diagram, data model, OpenAPI for both services, user guide with screenshots | ✅ Done — docs complete; [user guide](USER_GUIDE.md) written with screenshots |
 
 ## 8. Success metrics
 
