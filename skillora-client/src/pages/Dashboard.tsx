@@ -1,17 +1,17 @@
 import React, { useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button, StatusBadge, Card, StatTile, PageLoader, ErrorState, ProgressRing } from "@/components/ui";
-import { useGraph, useSkillsCatalog } from "@/api/queries";
+import { useGraph, useSelectPath, useSkillsCatalog } from "@/api/queries";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
-import { formatDate, formatHours, rankLabel } from "@/lib/format";
-import { completedForRole, estWeeks, pathLabel, progressFraction, remainingSteps, selectedRankedPath, totalHours } from "@/lib/pathMetrics";
+import { formatDate, formatHours, formatPercent, rankLabel } from "@/lib/format";
+import {
+  completedForRole, estWeeks, orChoiceDiff, pathLabel, progressFraction, remainingSteps, selectedRankedPath, totalHours,
+} from "@/lib/pathMetrics";
 import { computeStepStatuses } from "@/lib/pathStatus";
 import { heldRankMap, refId } from "@/lib/requirements";
-import { paths, roles } from "@/data/mock";
-import { useApp } from "@/context/AppContext";
 import { useToast } from "@/context/ToastContext";
-import type { NodeStatus } from "@/data/mock";
+import type { NodeStatus } from "@/lib/types";
 
 function statusIcon(status: NodeStatus) {
   if (status === "completed")   return <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white text-sm">✓</div>;
@@ -27,7 +27,6 @@ function connectorColor(status: NodeStatus) {
 }
 
 export default function Dashboard() {
-  const { currentRole, selectedPath, setSelectedPath } = useApp();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const user = useCurrentUser();
@@ -40,10 +39,6 @@ export default function Dashboard() {
     showToast(failure.message, "error");
     navigate("/onboarding/role", { replace: true });
   }, [needsRole, failure, navigate, showToast]);
-
-  const role = roles.find(r => r.id === currentRole);
-  const primaryPath = paths.find(p => p.id === selectedPath) ?? paths[0];
-  const altPaths = paths.filter(p => p.id !== primaryPath.id && p.roleId === currentRole);
 
   // Steps completed for this role are filtered out even if a stale path still lists them.
   const completed = useMemo(() => completedForRole(user), [user]);
@@ -63,6 +58,16 @@ export default function Dashboard() {
     [remaining, graph.data, held]
   );
   const skillName = (id: string) => catalog.byId.get(id)?.name ?? "Unknown skill";
+
+  const selectPath = useSelectPath();
+  const otherPaths = (pathDoc?.paths ?? []).filter(p => p.rank !== currentPath?.rank);
+
+  function handleSelectPath(rank: number) {
+    selectPath.mutate(rank, {
+      onSuccess: () => showToast(`Switched to ${pathLabel(rank)}`, "success"),
+      onError: (err) => showToast(err.message, "error"),
+    });
+  }
   const weeks = estWeeks(remainingHours);
 
   if (isLoading) return <PageLoader label="Loading your roadmap…" />;
@@ -196,27 +201,48 @@ export default function Dashboard() {
           <div>
             <h2 className="font-display font-700 text-base text-foreground mb-4">Alternative Paths</h2>
             <div className="flex flex-col gap-3">
-              {altPaths.map(path => (
-                <Card key={path.id} hover className="p-4" onClick={() => { setSelectedPath(path.id); showToast("Path switched!", "success"); }}>
-                  <p className="font-display font-600 text-sm text-foreground mb-1">{path.name.split("—")[1]?.trim()}</p>
-                  <p className="text-xs text-muted-foreground mb-3">{path.totalHours}h · {path.nodes.length} skills</p>
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground font-mono">Speed</span>
-                      <div className="flex gap-0.5">
-                        {[1,2,3,4,5].map(i => <div key={i} className={`w-3 h-1.5 rounded-full ${i <= Math.round(path.speedScore / 20) ? "bg-primary" : "bg-muted"}`} />)}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground font-mono">Relevance</span>
-                      <div className="flex gap-0.5">
-                        {[1,2,3,4,5].map(i => <div key={i} className={`w-3 h-1.5 rounded-full ${i <= Math.round(path.relevanceScore / 20) ? "bg-accent" : "bg-muted"}`} />)}
-                      </div>
-                    </div>
-                  </div>
-                  <Button size="sm" variant="secondary" className="w-full mt-3">Select this path</Button>
+              {pathDoc.paths.length === 1 && (
+                <Card className="p-4">
+                  <p className="text-sm text-muted-foreground">Only one route exists for your profile.</p>
                 </Card>
-              ))}
+              )}
+              {otherPaths.map(path => {
+                const diff = currentPath ? orChoiceDiff(path, currentPath) : { added: [], removed: [] };
+                return (
+                  <Card key={path.rank} className="p-4">
+                    <p className="font-display font-600 text-sm text-foreground mb-1">{pathLabel(path.rank)}</p>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      {formatHours(path.totalLearningCost)} · {path.steps.length} skill{path.steps.length === 1 ? "" : "s"}
+                    </p>
+                    <div className="flex flex-col gap-1 text-xs mb-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground font-mono">Demand</span>
+                        <span className="font-mono text-foreground">{formatPercent(path.marketDemandAvg)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground font-mono">Score</span>
+                        <span className="font-mono text-foreground">{path.compositeScore.toFixed(3)}</span>
+                      </div>
+                    </div>
+                    {(diff.added.length > 0 || diff.removed.length > 0) && (
+                      <p className="text-xs text-muted-foreground">
+                        {diff.added.length > 0 && <span className="text-emerald-600 dark:text-emerald-400">+ {diff.added.map(skillName).join(", ")}</span>}
+                        {diff.added.length > 0 && diff.removed.length > 0 && " · "}
+                        {diff.removed.length > 0 && <span className="text-rose-600 dark:text-rose-400">− {diff.removed.map(skillName).join(", ")}</span>}
+                      </p>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="w-full mt-3 justify-center"
+                      disabled={selectPath.isPending}
+                      onClick={() => handleSelectPath(path.rank)}
+                    >
+                      Select this path
+                    </Button>
+                  </Card>
+                );
+              })}
 
               <Card className="p-4 border-dashed">
                 <p className="text-xs text-muted-foreground text-center mb-2">Want a custom path?</p>
