@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GraphEdge, PathStep } from '@/api/types';
-import { computeStepStatuses, prerequisiteGroups } from '@/lib/pathStatus';
+import { computeStepStatuses, graphNodeStatus, prerequisiteGroups } from '@/lib/pathStatus';
 
 function step(skillId: string, order: number, fromRank = 0, toRank = 1): PathStep {
   return { skillId, order, fromRank, toRank, estCost: 10, rationale: '' };
@@ -85,5 +85,28 @@ describe('prerequisiteGroups', () => {
   it('returns nothing without edges or prerequisites', () => {
     expect(prerequisiteGroups('pandas', undefined)).toEqual([]);
     expect(prerequisiteGroups('python', edges)).toEqual([]);
+  });
+});
+
+describe('graphNodeStatus', () => {
+  const stepById = new Map([
+    ['python', { status: 'unlocked' as const }],
+    ['pandas', { status: 'in-progress' as const }],
+    ['powerbi', { status: 'locked' as const }],
+  ]);
+
+  it('marks held skills as known, even when they are path steps', () => {
+    expect(graphNodeStatus('python', held, stepById)).toBe('known');
+    expect(graphNodeStatus('sql', held, stepById)).toBe('known');
+  });
+
+  it('uses the step status for path steps', () => {
+    expect(graphNodeStatus('pandas', held, stepById)).toBe('in-progress');
+    expect(graphNodeStatus('powerbi', held, stepById)).toBe('locked');
+  });
+
+  it('marks everything else as outside the path', () => {
+    expect(graphNodeStatus('excel', held, stepById)).toBe('outside');
+    expect(graphNodeStatus('excel', new Map([['excel', 0]]), new Map())).toBe('outside');
   });
 });

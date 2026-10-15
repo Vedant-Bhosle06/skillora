@@ -1,52 +1,93 @@
-import React, { useState } from "react";
+import React, { startTransition, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Input, Card, Badge, ProficiencyBadge, Modal, Divider } from "@/components/ui";
-import { skills, userSkills as defaultUserSkills, roles } from "@/data/mock";
-import { useApp } from "@/context/AppContext";
-import { useAuth } from "@/auth/AuthContext";
+import { Button, Input, Card, Badge, ProficiencyBadge, Modal, EmptyState, PageLoader, ErrorState } from "@/components/ui";
+import { useAuth, useCurrentUser } from "@/auth/AuthContext";
+import { useDeleteAccount, useRemoveSkill, useRoles, useSetTargetRole, useUpdateProficiency } from "@/api/queries";
+import { refId } from "@/lib/requirements";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
-import type { Proficiency, UserSkill } from "@/data/mock";
+import type { Proficiency } from "@/api/types";
 
 const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"];
 
 export default function Settings() {
-  const { currentRole, setCurrentRole } = useApp();
-  const { logout } = useAuth();
+  const { logout, clearSession } = useAuth();
+  const deleteAccount = useDeleteAccount();
+  const me = useCurrentUser();
   const { darkMode, toggleDark } = useTheme();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  const [name, setName] = useState("Alex Thornton");
-  const [email, setEmail] = useState("alex@example.com");
-  const [userSkills, setUserSkills] = useState<UserSkill[]>(defaultUserSkills);
+  const updateProficiency = useUpdateProficiency();
+  const removeSkill = useRemoveSkill();
+  const [removeTarget, setRemoveTarget] = useState<{ id: string; name: string } | null>(null);
+  const currentSkills = me.currentSkills.filter(cs => cs.skillId !== null);
+  const learnedSkills = me.completedSkills.filter(cs => cs.skillId !== null);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [signingOut, setSigningOut] = useState(false);
   const [tab, setTab] = useState<"account" | "skills" | "role">("account");
 
-  const role = roles.find(r => r.id === currentRole);
+  const rolesQuery = useRoles();
+  const setTargetRole = useSetTargetRole();
+  const currentRoleId = refId(me.targetRoleId);
+  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  const chosenRoleId = selectedRoleId ?? currentRoleId;
 
-  function handleSave() {
-    showToast("Settings saved successfully", "success");
+  function handleSaveRole() {
+    if (!chosenRoleId) return;
+    setTargetRole.mutate(chosenRoleId, {
+      onSuccess: () => {
+        setSelectedRoleId(null);
+        showToast("Target role updated — your roadmap will be recomputed", "success");
+      },
+      onError: (err) => showToast(err.message, "error"),
+    });
   }
 
-  async function handleDeleteAccount() {
+  async function handleSignOut() {
+    setSigningOut(true);
+    // Leave the guarded page first, or RequireAuth sends us to /login once the session clears.
+    navigate("/", { replace: true });
+    await logout();
+    showToast("Signed out", "info");
+  }
+
+  function handleDeleteAccount() {
     if (deleteConfirm !== "DELETE") {
       showToast("Type DELETE to confirm", "error");
       return;
     }
-    // Temporary: signs out only. Real deletion (DELETE /api/users/me) is wired in Phase 6.
-    await logout();
-    navigate("/");
-    showToast("Signed out. Account deletion isn't connected yet.", "info");
+    deleteAccount.mutate(undefined, {
+      onSuccess: () => {
+        // React Router renders navigations as transitions; clear the session in the same one
+        // so RequireAuth never sees the signed-out state on /settings and redirects to /login.
+        startTransition(() => {
+          navigate("/", { replace: true });
+          clearSession();
+        });
+        showToast("Your account has been deleted", "success");
+      },
+      onError: (err) => showToast(err.message, "error"),
+    });
   }
 
-  function setProficiency(skillId: string, level: Proficiency) {
-    setUserSkills(prev => prev.map(s => s.skillId === skillId ? { ...s, proficiency: level } : s));
+  function setProficiency(skillId: string, proficiency: Proficiency) {
+    updateProficiency.mutate({ skillId, proficiency }, {
+      onSuccess: () => showToast("Updated — your path will be recalculated", "success"),
+      onError: (err) => showToast(err.message, "error"),
+    });
   }
 
-  function removeSkill(skillId: string) {
-    setUserSkills(prev => prev.filter(s => s.skillId !== skillId));
+  function confirmRemoveSkill() {
+    if (!removeTarget) return;
+    removeSkill.mutate(removeTarget.id, {
+      onSuccess: () => {
+        showToast(`Removed ${removeTarget.name} — your path will be recalculated`, "success");
+        setRemoveTarget(null);
+      },
+      onError: (err) => showToast(err.message, "error"),
+    });
   }
 
   const tabs = [
@@ -81,12 +122,21 @@ export default function Settings() {
           <div className="flex flex-col gap-5">
             <Card className="p-5">
               <h2 className="font-display font-700 text-base text-foreground mb-4">Account Details</h2>
-              <div className="flex flex-col gap-4">
-                <Input label="Full name" value={name} onChange={e => setName(e.target.value)} />
-                <Input label="Email address" type="email" value={email} onChange={e => setEmail(e.target.value)} />
-                <Input label="New password" type="password" placeholder="Leave blank to keep current" />
-                <Button onClick={handleSave} className="self-start">Save changes</Button>
-              </div>
+              <dl className="flex flex-col gap-3 text-sm">
+                <div>
+                  <dt className="text-xs text-muted-foreground">Full name</dt>
+                  <dd className="font-600 text-foreground">{me.name}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">Email address</dt>
+                  <dd className="font-600 text-foreground">{me.email}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground mb-1">Account type</dt>
+                  <dd><Badge variant={me.role === "admin" ? "in-progress" : "default"}>{me.role}</Badge></dd>
+                </div>
+              </dl>
+              <p className="text-xs text-muted-foreground mt-4">To change account details, contact an administrator.</p>
             </Card>
 
             <Card className="p-5">
@@ -105,6 +155,14 @@ export default function Settings() {
               </div>
             </Card>
 
+            <Card className="p-5">
+              <h2 className="font-display font-700 text-base text-foreground mb-2">Session</h2>
+              <p className="text-sm text-muted-foreground mb-4">Sign out of SKILLORA on this device.</p>
+              <Button variant="secondary" onClick={handleSignOut} disabled={signingOut}>
+                {signingOut ? "Signing out…" : "Sign out"}
+              </Button>
+            </Card>
+
             {/* Danger zone */}
             <Card className="p-5 border-red-200 dark:border-red-900/40">
               <h2 className="font-display font-700 text-base text-red-600 dark:text-red-400 mb-2">Danger Zone</h2>
@@ -117,29 +175,38 @@ export default function Settings() {
         {tab === "skills" && (
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">{userSkills.length} skills in your profile</p>
+              <p className="text-sm text-muted-foreground">{currentSkills.length} skills in your profile</p>
               <Button size="sm" variant="secondary" onClick={() => navigate("/onboarding/skills")}>Edit in wizard →</Button>
             </div>
 
+            {currentSkills.length === 0 ? (
+              <EmptyState
+                icon="🧩"
+                title="No skills yet"
+                description="Add the skills you already have so SKILLORA can plan your path."
+                action={<Button onClick={() => navigate("/onboarding/skills")}>Add skills</Button>}
+              />
+            ) : (
             <Card className="divide-y divide-border">
-              {userSkills.map(us => {
-                const skill = skills.find(s => s.id === us.skillId);
-                if (!skill) return null;
+              {currentSkills.map(us => {
+                const skill = us.skillId!;
+                const skillId = refId(skill) as string;
                 return (
-                  <div key={us.skillId} className="px-4 py-3">
+                  <div key={skillId} className="px-4 py-3">
                     <div className="flex items-center justify-between mb-2">
                       <div>
                         <span className="font-600 text-sm text-foreground">{skill.name}</span>
                         <span className="text-xs text-muted-foreground ml-2">{skill.category}</span>
                       </div>
-                      <button onClick={() => removeSkill(us.skillId)} className="text-xs text-muted-foreground hover:text-red-500">Remove</button>
+                      <button onClick={() => setRemoveTarget({ id: skillId, name: skill.name })} className="text-xs text-muted-foreground hover:text-red-500">Remove</button>
                     </div>
                     <div className="flex gap-1.5">
                       {proficiencyLevels.map(level => (
                         <button
                           key={level}
-                          onClick={() => setProficiency(us.skillId, level)}
-                          className={`px-2.5 py-1 rounded-full text-xs font-mono transition-all ${
+                          disabled={updateProficiency.isPending || us.proficiency === level}
+                          onClick={() => setProficiency(skillId, level)}
+                          className={`px-2.5 py-1 rounded-full text-xs font-mono transition-all disabled:cursor-default ${
                             us.proficiency === level
                               ? level === "beginner"     ? "bg-emerald-500 text-white"
                               : level === "intermediate" ? "bg-amber-500 text-white"
@@ -155,36 +222,87 @@ export default function Settings() {
                 );
               })}
             </Card>
+            )}
 
-            <Button onClick={handleSave} className="self-start">Save skill changes</Button>
+            {learnedSkills.length > 0 && (
+              <Card className="p-5">
+                <h2 className="font-display font-700 text-base text-foreground mb-3">Learned with SKILLORA</h2>
+                <ul className="flex flex-col gap-2">
+                  {learnedSkills.map(cs => (
+                    <li key={cs._id} className="flex items-center justify-between text-sm">
+                      <span className="text-foreground">
+                        {cs.skillId!.name}
+                        <span className="text-xs text-muted-foreground ml-2">{cs.skillId!.category}</span>
+                      </span>
+                      <ProficiencyBadge level={cs.proficiency} />
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
           </div>
         )}
 
         {tab === "role" && (
           <div className="flex flex-col gap-4">
-            <p className="text-sm text-muted-foreground">Current target role: <strong className="text-foreground">{role?.title}</strong></p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {roles.map(r => (
-                <Card
-                  key={r.id}
-                  hover
-                  onClick={() => setCurrentRole(r.id)}
-                  className={`p-3 transition-all ${currentRole === r.id ? "ring-2 ring-primary border-primary" : ""}`}
+            <p className="text-sm text-muted-foreground">
+              Current target role: <strong className="text-foreground">{me.targetRoleId?.title ?? "None selected"}</strong>
+            </p>
+            {rolesQuery.isLoading ? (
+              <PageLoader label="Loading roles…" />
+            ) : rolesQuery.error ? (
+              <ErrorState title="Couldn't load roles" message={rolesQuery.error.message} onRetry={() => rolesQuery.refetch()} />
+            ) : !rolesQuery.data?.length ? (
+              <EmptyState icon="🎯" title="No roles available" description="An administrator hasn't added any target roles yet." />
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {rolesQuery.data.map(r => (
+                    <Card
+                      key={r._id}
+                      hover
+                      onClick={() => setSelectedRoleId(r._id)}
+                      className={`p-3 transition-all ${chosenRoleId === r._id ? "ring-2 ring-primary border-primary" : ""}`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-600 text-sm text-foreground">{r.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {r.category ?? "general"} · {Math.round(r.demandScore * 100)}% demand
+                          </p>
+                        </div>
+                        {currentRoleId === r._id
+                          ? <Badge variant="in-progress">current</Badge>
+                          : chosenRoleId === r._id && <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs">✓</div>}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+                <Button
+                  onClick={handleSaveRole}
+                  disabled={!chosenRoleId || chosenRoleId === currentRoleId || setTargetRole.isPending}
+                  className="self-start"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-600 text-sm text-foreground">{r.title}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{r.avgSalary} avg · {r.openings.toLocaleString()} jobs</p>
-                    </div>
-                    {currentRole === r.id && <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs">✓</div>}
-                  </div>
-                </Card>
-              ))}
-            </div>
-            <Button onClick={() => { showToast("Target role updated!", "success"); }} className="self-start">Save role</Button>
+                  {setTargetRole.isPending ? "Saving…" : "Save role"}
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>
+
+      {/* Remove skill confirm modal */}
+      <Modal open={removeTarget !== null} onClose={() => setRemoveTarget(null)} title="Remove skill">
+        <p className="text-sm text-muted-foreground">
+          Remove <strong className="text-foreground">{removeTarget?.name}</strong> from your profile? Your path will be recalculated.
+        </p>
+        <div className="flex gap-2 mt-5">
+          <Button variant="ghost" className="flex-1" onClick={() => setRemoveTarget(null)}>Cancel</Button>
+          <Button variant="danger" className="flex-1" onClick={confirmRemoveSkill} disabled={removeSkill.isPending}>
+            {removeSkill.isPending ? "Removing…" : "Remove"}
+          </Button>
+        </div>
+      </Modal>
 
       {/* Delete confirm modal */}
       <Modal open={deleteModal} onClose={() => { setDeleteModal(false); setDeleteConfirm(""); }} title="Delete Account">
@@ -199,7 +317,9 @@ export default function Settings() {
         />
         <div className="flex gap-2 mt-5">
           <Button variant="ghost" className="flex-1" onClick={() => setDeleteModal(false)}>Cancel</Button>
-          <Button variant="danger" className="flex-1" onClick={handleDeleteAccount}>Delete permanently</Button>
+          <Button variant="danger" className="flex-1" onClick={handleDeleteAccount} disabled={deleteAccount.isPending}>
+            {deleteAccount.isPending ? "Deleting…" : "Delete permanently"}
+          </Button>
         </div>
       </Modal>
     </div>
