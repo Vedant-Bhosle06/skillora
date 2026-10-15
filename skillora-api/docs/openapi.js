@@ -1,4 +1,4 @@
-// Hand-written OpenAPI 3 spec for all API-N-* endpoints (spec v4.0, Part 4)
+// Hand-written OpenAPI 3 spec for all API-N-* endpoints (see docs/API.md, ADR-0010)
 
 const ref = (name) => ({ $ref: `#/components/schemas/${name}` });
 const json = (schema) => ({ 'application/json': { schema } });

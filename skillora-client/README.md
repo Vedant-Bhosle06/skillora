@@ -4,12 +4,12 @@ React 18 / Vite frontend SPA.
 
 **Owner:** Member C
 
-See [`../docs/SKILLORA_Team_Work_Division.md`](../docs/SKILLORA_Team_Work_Division.md) for the full list of pages and API integrations.
+API contract for the pages: [`../docs/API.md`](../docs/API.md) (endpoints, response shapes, behaviour to handle, page → endpoint map). Work plan: [`../docs/TEAM_WORK_DIVISION.md`](../docs/TEAM_WORK_DIVISION.md).
 
 ## Setup
 
 ```bash
 npm install
-cp ../.env.example .env   # then fill in VITE_API_BASE_URL
+cp ../.env.example .env   # keep ONLY the [REACT CLIENT] section: VITE_API_BASE_URL=http://localhost:5000
 npm run dev               # starts on http://localhost:5173
 ```

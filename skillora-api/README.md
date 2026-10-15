@@ -4,7 +4,7 @@ Node.js / Express backend — all `/api/*` endpoints.
 
 **Owner:** Member B
 
-See [`../docs/SKILLORA_Team_Work_Division.md`](../docs/SKILLORA_Team_Work_Division.md) for the full list of endpoints to implement.
+Endpoint reference and client behaviour: [`../docs/API.md`](../docs/API.md). Collections: [`../docs/DATA_MODEL.md`](../docs/DATA_MODEL.md). Design: [`../docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md).
 
 ## Setup
 

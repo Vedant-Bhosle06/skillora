@@ -1,4 +1,4 @@
-"""State-space A* search over sets of skills to learn (spec section 4.3)."""
+"""State-space A* search over sets of skills to learn (docs/ALGORITHM.md)."""
 from __future__ import annotations
 
 import heapq
