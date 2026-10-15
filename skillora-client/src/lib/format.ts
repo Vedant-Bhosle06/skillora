@@ -18,6 +18,13 @@ export function formatDate(iso: string | null | undefined): string {
   return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
 }
 
+/** ISO date string -> locale date and time; "—" for missing or invalid input. */
+export function formatDateTime(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString();
+}
+
 /** "soft-skill" -> "Soft Skill". */
 export function categoryLabel(cat: string): string {
   return cat

@@ -4,11 +4,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   Button, Card, Modal, ProgressBar, ProgressRing, ProficiencyBadge, StatTile, StatusBadge, PageLoader, ErrorState, EmptyState,
 } from "@/components/ui";
-import { qk, useCompleteSkill, useGraph, useSkillDetail, useSkillsCatalog } from "@/api/queries";
+import { qk, useCompleteSkill, useGraph, usePathHistory, useRoles, useSkillDetail, useSkillsCatalog } from "@/api/queries";
 import { toApiError } from "@/api/client";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
-import { categoryColor, categoryLabel, formatDate, formatHours, rankLabel } from "@/lib/format";
+import { categoryColor, categoryLabel, formatDate, formatDateTime, formatHours, rankLabel } from "@/lib/format";
 import { completedForRole, progressFraction, remainingSteps, selectedRankedPath, totalHours } from "@/lib/pathMetrics";
 import { computeStepStatuses, prerequisiteGroups } from "@/lib/pathStatus";
 import { heldRankMap, refId } from "@/lib/requirements";
@@ -152,6 +152,11 @@ export default function Progress() {
   const detailEntry = user.completedSkills.find(c => c._id === detailEntryId) ?? null;
   const skillDetail = useSkillDetail(refId(detailEntry?.skillId));
   const closeDetail = useCallback(() => setDetailEntryId(null), []);
+
+  const pathHistory = usePathHistory();
+  const roles = useRoles();
+  const roleTitles = useMemo(() => new Map((roles.data ?? []).map(r => [r._id, r.title])), [roles.data]);
+  const [historyLimit, setHistoryLimit] = useState(10);
 
   function toggleRow(key: string) {
     setExpandedRows(prev => {
@@ -544,6 +549,53 @@ export default function Progress() {
               </div>
             );
           })}
+        </Card>
+
+        {/* ── Path History (FR-19) ────────────────────────────────────────── */}
+        <h2 className="font-display font-700 text-base text-foreground mb-4">Path history (archived snapshots)</h2>
+        <Card className="divide-y divide-border">
+          {pathHistory.isPending && <p className="text-sm text-muted-foreground p-4 text-center">Loading path history…</p>}
+          {pathHistory.error && (
+            <div className="flex items-center justify-between gap-3 p-4">
+              <p className="text-sm text-muted-foreground">{toApiError(pathHistory.error).message}</p>
+              <Button size="sm" variant="secondary" onClick={() => void pathHistory.refetch()}>Retry</Button>
+            </div>
+          )}
+          {pathHistory.data?.length === 0 && (
+            <p className="text-sm text-muted-foreground p-4 text-center">No archived paths yet. Each recompute keeps a snapshot here.</p>
+          )}
+          {pathHistory.data?.slice(0, historyLimit).map(doc => {
+            const primary = doc.paths.find(p => p.rank === 1) ?? doc.paths[0];
+            const primarySteps = primary ? [...primary.steps].sort((a, b) => a.order - b.order) : [];
+            const isExpanded = expandedRows.has(doc._id);
+            return (
+              <div key={doc._id} className="px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-foreground font-500">{roleTitles.get(doc.targetRoleId) ?? "Deleted role"}</p>
+                    <p className="text-xs font-mono text-muted-foreground mt-0.5">
+                      {formatDateTime(doc.generatedAt)} · {doc.algorithm === "a_star" ? "A*" : doc.algorithm} · {primarySteps.length} step{primarySteps.length === 1 ? "" : "s"} · {formatHours(totalHours(primarySteps))}
+                    </p>
+                  </div>
+                  {primarySteps.length > 0 && <Chevron open={isExpanded} onClick={() => toggleRow(doc._id)} />}
+                </div>
+                {isExpanded && (
+                  <ol className="mt-2 ml-1 flex flex-col gap-1">
+                    {primarySteps.map(s => (
+                      <li key={s.skillId} className="text-xs text-muted-foreground">
+                        <span className="font-mono">#{s.order}</span> {skillName(s.skillId)} · {formatHours(s.estCost)}
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </div>
+            );
+          })}
+          {(pathHistory.data?.length ?? 0) > historyLimit && (
+            <div className="p-3 text-center">
+              <Button size="sm" variant="ghost" onClick={() => setHistoryLimit(n => n + 10)}>Show more</Button>
+            </div>
+          )}
         </Card>
       </div>
 
