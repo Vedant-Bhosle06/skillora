@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Button, StatusBadge, Card, StatTile, PageLoader, ErrorState, ProgressRing } from "@/components/ui";
+import { Button, StatusBadge, Card, StatTile, PageLoader, ErrorState, EmptyState, ProgressRing } from "@/components/ui";
 import { useGraph, useSelectPath, useSkillsCatalog } from "@/api/queries";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
@@ -30,7 +30,10 @@ export default function Dashboard() {
   const { showToast } = useToast();
   const navigate = useNavigate();
   const user = useCurrentUser();
-  const { pathDoc, isLoading, loadError, isComputing, failure, retry, reload } = useEnsureFreshPath();
+  const fresh = useEnsureFreshPath();
+  const { isLoading, loadError, isComputing, failure, retry, reload } = fresh;
+  // A cached document for a previous role is never shown as this role's roadmap.
+  const pathDoc = fresh.pathDoc && fresh.pathDoc.targetRoleId === user.targetRoleId?._id ? fresh.pathDoc : null;
 
   // 400 (no role) or 404 (role deleted) from compute: the user has to pick a role again.
   const needsRole = !!failure && (failure.status === 400 || failure.status === 404);
@@ -73,14 +76,39 @@ export default function Dashboard() {
   if (isLoading) return <PageLoader label="Loading your roadmap…" />;
   if (loadError) return <ErrorState title="Couldn't load your roadmap" message={loadError.message} onRetry={reload} />;
   if (needsRole) return <PageLoader label="Taking you to role selection…" />;
-  if (isComputing || (!pathDoc && !failure)) return <PageLoader label="Computing your optimal path…" />;
   if (!pathDoc) {
-    return <ErrorState title="Couldn't compute your path" message={failure?.message ?? "Something went wrong."} onRetry={retry} />;
+    if (isComputing || !failure) return <PageLoader label="Computing your optimal path…" />;
+    return (
+      <ErrorState
+        title={failure.status === 503 ? "Path service unavailable" : "Couldn't compute your path"}
+        message={failure.message}
+        onRetry={retry}
+      />
+    );
   }
+
+  const roleTitle = user.targetRoleId?.title ?? "this role";
+  const alreadyQualified = !currentPath || remaining.length === 0;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-6 py-8">
+        {failure && (
+          <div className="mb-6 rounded-xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-900/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p className="text-sm text-amber-800 dark:text-amber-300">
+              {failure.status === 503 ? "Path service unavailable — showing your last computed path" : `${failure.message} — showing your last computed path`}
+            </p>
+            <Button size="sm" variant="secondary" onClick={retry} disabled={isComputing}>Retry</Button>
+          </div>
+        )}
+        {isComputing && (
+          <div className="mb-4 flex justify-center">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-mono">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" /> Recalculating…
+            </span>
+          </div>
+        )}
+        <div className={isComputing ? "opacity-50 pointer-events-none transition-opacity" : "transition-opacity"} aria-busy={isComputing}>
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
@@ -119,6 +147,14 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {alreadyQualified ? (
+          <EmptyState
+            icon="🎉"
+            title={`You already meet every requirement for ${roleTitle}`}
+            description="There is nothing left to learn for this role. Pick another role to keep growing."
+            action={<Button onClick={() => navigate("/onboarding/role")}>Change role</Button>}
+          />
+        ) : (
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Main path timeline */}
           <div className="lg:col-span-2">
@@ -246,12 +282,14 @@ export default function Dashboard() {
 
               <Card className="p-4 border-dashed">
                 <p className="text-xs text-muted-foreground text-center mb-2">Want a custom path?</p>
-                <Button size="sm" variant="ghost" className="w-full" onClick={() => navigate("/alternatives")}>
+                <Button size="sm" variant="ghost" className="w-full" onClick={() => navigate("/dashboard/alternatives")}>
                   Compare all paths →
                 </Button>
               </Card>
             </div>
           </div>
+        </div>
+        )}
         </div>
       </div>
     </div>
