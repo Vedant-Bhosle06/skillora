@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { AppProvider } from "@/context/AppContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
 import { AuthProvider } from "@/auth/AuthContext";
@@ -77,9 +76,7 @@ export default function App() {
           <ToastProvider>
             <BrowserRouter>
               <AuthProvider>
-                <AppProvider>
-                  <AppShell />
-                </AppProvider>
+                <AppShell />
               </AuthProvider>
             </BrowserRouter>
           </ToastProvider>
