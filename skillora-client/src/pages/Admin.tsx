@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { ReactNode, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, Card, EmptyState, ErrorState, PageLoader, StatTile } from "@/components/ui";
-import { useAdminEdges, useAdminMetrics, useRoles, useSkillsCatalog } from "@/api/queries";
+import { Badge, Button, Card, EmptyState, ErrorState, Input, Modal, PageLoader, StatTile } from "@/components/ui";
+import { useAdminEdges, useAdminMetrics, useDeleteSkill, useRoles, useSkillsCatalog } from "@/api/queries";
 import { ApiError } from "@/api/client";
 import type { GraphMetrics, Role, Skill, SkillEdge } from "@/api/types";
 import { categoryLabel, formatHours, formatPercent } from "@/lib/format";
+import { useToast } from "@/context/ToastContext";
+import SkillForm from "@/pages/admin/SkillForm";
 
 type Tab = "health" | "skills" | "edges" | "roles";
 
@@ -102,7 +104,7 @@ export default function Admin() {
           />
         )}
 
-        {tab === "skills" && <SkillsList skills={skills} />}
+        {tab === "skills" && <SkillsTab skills={skills} />}
         {tab === "edges" && <EdgesList edges={edges} byId={catalog.byId} />}
         {tab === "roles" && <RolesList roles={roles} byId={catalog.byId} />}
       </div>
@@ -208,24 +210,131 @@ function HealthPanel({ metrics, isPending, error, onRetry, edges, byId }: {
   );
 }
 
-function SkillsList({ skills }: { skills: Skill[] }) {
-  if (skills.length === 0) return <EmptyState icon="🧩" title="No skills yet" description="Add the first skill to start the graph." />;
-  const sorted = [...skills].sort((a, b) => a.name.localeCompare(b.name));
+/** Confirmation dialog for every admin delete; shows the server's refusal (e.g. 409) inline. */
+function ConfirmDeleteModal({ open, title, children, error, pending, onConfirm, onClose }: {
+  open: boolean;
+  title: string;
+  children: ReactNode;
+  error: string;
+  pending: boolean;
+  onConfirm: () => void;
+  onClose: () => void;
+}) {
   return (
-    <Card className="divide-y divide-border">
-      {sorted.map(skill => (
-        <div key={skill._id} className="flex items-center justify-between px-4 py-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className="font-600 text-sm text-foreground">{skill.name}</span>
-              <Badge variant="outline">{categoryLabel(skill.category)}</Badge>
-            </div>
-            <p className="text-xs text-muted-foreground truncate">{skill.description}</p>
-          </div>
-          <span className="font-mono text-xs text-muted-foreground ml-4">{formatHours(skill.estHours)}</span>
+    <Modal open={open} onClose={() => { if (!pending) onClose(); }} title={title}>
+      <div className="text-sm text-muted-foreground mb-5 flex flex-col gap-2">{children}</div>
+      {error && <p className="text-sm text-red-500 mb-4" role="alert">{error}</p>}
+      <div className="flex gap-2">
+        <Button variant="ghost" className="flex-1" onClick={onClose} disabled={pending}>Cancel</Button>
+        <Button variant="danger" className="flex-1 justify-center" onClick={onConfirm} disabled={pending}>
+          {pending ? "Deleting…" : "Delete"}
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
+function SkillsTab({ skills }: { skills: Skill[] }) {
+  const { showToast } = useToast();
+  const deleteSkill = useDeleteSkill();
+  const [search, setSearch] = useState("");
+  const [formSkill, setFormSkill] = useState<Skill | "new" | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Skill | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+
+  const categories = useMemo(() => [...new Set(skills.map(s => s.category))].sort(), [skills]);
+  const term = search.trim().toLowerCase();
+  const visible = skills
+    .filter(s => !term || s.name.toLowerCase().includes(term) || s.slug.includes(term) || s.category.includes(term))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  function openDelete(skill: Skill) {
+    setDeleteError("");
+    setDeleteTarget(skill);
+  }
+
+  function handleDelete() {
+    if (!deleteTarget) return;
+    const { _id, name } = deleteTarget;
+    deleteSkill.mutate(_id, {
+      onSuccess: () => {
+        setDeleteTarget(null);
+        showToast(`Skill "${name}" deleted`, "success");
+      },
+      onError: (err) => setDeleteError(err.message),
+    });
+  }
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex-1 max-w-sm">
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, slug or category…" aria-label="Search skills" />
         </div>
-      ))}
-    </Card>
+        <span className="text-xs text-muted-foreground font-mono">{visible.length} / {skills.length}</span>
+        <Button size="sm" className="ml-auto" onClick={() => setFormSkill("new")}>+ Add skill</Button>
+      </div>
+
+      {skills.length === 0 ? (
+        <EmptyState icon="🧩" title="No skills yet" description="Add the first skill to start the graph." />
+      ) : visible.length === 0 ? (
+        <EmptyState icon="🔍" title="No matching skills" description="Try a different search term." />
+      ) : (
+        <Card className="divide-y divide-border">
+          {visible.map(skill => (
+            <div key={skill._id} className="flex items-center justify-between px-4 py-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                  <span className="font-600 text-sm text-foreground">{skill.name}</span>
+                  <Badge variant="outline">{categoryLabel(skill.category)}</Badge>
+                  <span className="font-mono text-xs text-muted-foreground">{skill.slug}</span>
+                </div>
+                <p className="text-xs text-muted-foreground truncate">{skill.description}</p>
+              </div>
+              <div className="flex items-center gap-3 ml-4">
+                <span className="font-mono text-xs text-muted-foreground" title="Difficulty · demand">
+                  D{skill.baseDifficulty} · {formatPercent(skill.marketDemand)}
+                </span>
+                <span className="font-mono text-xs text-muted-foreground">{formatHours(skill.estHours)}</span>
+                <button onClick={() => setFormSkill(skill)} className="text-xs text-muted-foreground hover:text-primary transition-colors">Edit</button>
+                <button onClick={() => openDelete(skill)} className="text-xs text-muted-foreground hover:text-red-500 transition-colors">Delete</button>
+              </div>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      <Modal open={formSkill !== null} onClose={() => setFormSkill(null)} title={formSkill === "new" ? "Add New Skill" : "Edit Skill"}>
+        {formSkill !== null && (
+          <SkillForm
+            key={formSkill === "new" ? "new" : formSkill._id}
+            skill={formSkill === "new" ? undefined : formSkill}
+            categories={categories}
+            onCancel={() => setFormSkill(null)}
+            onDone={(saved) => {
+              showToast(`Skill "${saved.name}" ${formSkill === "new" ? "added" : "updated"} — learners' paths will be recalculated`, "success");
+              setFormSkill(null);
+            }}
+          />
+        )}
+      </Modal>
+
+      <ConfirmDeleteModal
+        open={deleteTarget !== null}
+        title="Delete skill"
+        error={deleteError}
+        pending={deleteSkill.isPending}
+        onConfirm={handleDelete}
+        onClose={() => setDeleteTarget(null)}
+      >
+        <p>Delete <span className="font-600 text-foreground">{deleteTarget?.name}</span>? This cannot be undone.</p>
+        <p>
+          Every edge touching this skill is deleted with it, the skill is removed from every learner's current and
+          completed skills, and all learners' paths are recalculated. A skill that a role still requires can't be
+          deleted — remove it from the role first.
+        </p>
+      </ConfirmDeleteModal>
+    </div>
   );
 }
 
