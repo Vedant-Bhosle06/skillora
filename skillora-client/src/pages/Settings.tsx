@@ -202,12 +202,14 @@ export default function Settings() {
                         <span className="font-600 text-sm text-foreground">{skill.name}</span>
                         <span className="text-xs text-muted-foreground ml-2">{skill.category}</span>
                       </div>
-                      <button onClick={() => setRemoveTarget({ id: skillId, name: skill.name })} className="text-xs text-muted-foreground hover:text-red-500">Remove</button>
+                      <button onClick={() => setRemoveTarget({ id: skillId, name: skill.name })} aria-label={`Remove ${skill.name}`} className="text-xs text-muted-foreground hover:text-red-500">Remove</button>
                     </div>
                     <div className="flex gap-1.5">
                       {proficiencyLevels.map(level => (
                         <button
                           key={level}
+                          aria-label={`Set ${skill.name} to ${level}`}
+                          aria-pressed={us.proficiency === level}
                           disabled={updateProficiency.isPending || us.proficiency === level}
                           onClick={() => setProficiency(skillId, level)}
                           className={`px-2.5 py-1 rounded-full text-xs font-mono transition-all disabled:cursor-default ${
