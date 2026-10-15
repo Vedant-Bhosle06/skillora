@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Badge, Button, Card, EmptyState, ErrorState, PageLoader } from "@/components/ui";
+import { Badge, Button, Card, EmptyState, ErrorState, PageLoader, StatTile } from "@/components/ui";
 import { useAdminEdges, useAdminMetrics, useRoles, useSkillsCatalog } from "@/api/queries";
 import { ApiError } from "@/api/client";
-import type { Role, Skill, SkillEdge } from "@/api/types";
+import type { GraphMetrics, Role, Skill, SkillEdge } from "@/api/types";
 import { categoryLabel, formatHours, formatPercent } from "@/lib/format";
 
 type Tab = "health" | "skills" | "edges" | "roles";
@@ -92,17 +92,118 @@ export default function Admin() {
         </div>
 
         {tab === "health" && (
-          metricsQuery.isPending ? <PageLoader label="Loading graph health…" /> : (
-            <p className="text-sm text-muted-foreground">
-              {metricsQuery.data ? `${metricsQuery.data.nodeCount} skills in the graph.` : metricsQuery.error?.message}
-            </p>
-          )
+          <HealthPanel
+            metrics={metricsQuery.data}
+            isPending={metricsQuery.isPending}
+            error={metricsQuery.error}
+            onRetry={() => metricsQuery.refetch()}
+            edges={edges}
+            byId={catalog.byId}
+          />
         )}
 
         {tab === "skills" && <SkillsList skills={skills} />}
         {tab === "edges" && <EdgesList edges={edges} byId={catalog.byId} />}
         {tab === "roles" && <RolesList roles={roles} byId={catalog.byId} />}
       </div>
+    </div>
+  );
+}
+
+function HealthPanel({ metrics, isPending, error, onRetry, edges, byId }: {
+  metrics: GraphMetrics | undefined;
+  isPending: boolean;
+  error: Error | null;
+  onRetry: () => void;
+  edges: SkillEdge[];
+  byId: Map<string, Skill>;
+}) {
+  if (isPending) return <PageLoader label="Loading graph health…" />;
+  if (error || !metrics) {
+    const serviceDown = error instanceof ApiError && error.status === 503;
+    return (
+      <ErrorState
+        title={serviceDown ? "Path service unavailable" : "Couldn't load graph health"}
+        message={serviceDown ? "Path service unavailable — start it to see graph health." : error?.message ?? "Something went wrong."}
+        onRetry={onRetry}
+      />
+    );
+  }
+
+  const nameOf = (id: string) => byId.get(id)?.name ?? id;
+  // The code returns { skillId, name } objects; the OpenAPI spec says plain ids. Handle both.
+  const orphans = metrics.orphans.map(o =>
+    typeof o === "string" ? { skillId: o, name: nameOf(o) } : { skillId: o.skillId, name: o.name || nameOf(o.skillId) },
+  );
+  const cycleNames = (metrics.cycle ?? []).map(nameOf);
+
+  // Degree = edges of either type touching the skill.
+  const degree = new Map<string, number>();
+  for (const e of edges) {
+    degree.set(e.sourceSkillId, (degree.get(e.sourceSkillId) ?? 0) + 1);
+    degree.set(e.targetSkillId, (degree.get(e.targetSkillId) ?? 0) + 1);
+  }
+  const topDegree = [...degree.entries()]
+    .map(([id, d]) => ({ id, name: nameOf(id), degree: d }))
+    .sort((a, b) => b.degree - a.degree || a.name.localeCompare(b.name))
+    .slice(0, 8);
+  const maxDegree = topDegree[0]?.degree ?? 1;
+
+  return (
+    <div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        <StatTile label="Skills" value={String(metrics.nodeCount)} />
+        <StatTile label="Prerequisite edges" value={String(metrics.prerequisiteEdgeCount)} />
+        <StatTile label="Co-requisite edges" value={String(metrics.corequisiteEdgeCount)} />
+        <StatTile label="OR-groups" value={String(metrics.groupCount)} />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <StatTile label="Cycles" value={metrics.isDAG ? "✓ None" : "⚠ Detected"} accent={metrics.isDAG} />
+        <StatTile label="Orphan Nodes" value={String(metrics.orphanCount)} sub={metrics.orphanCount > 0 ? "no prerequisite edges" : "all connected"} />
+        <StatTile label="Avg Degree" value={metrics.avgDegree.toFixed(2)} sub="in + out prerequisites per node" />
+        <StatTile label="Max Depth" value={metrics.maxDepth === null ? "—" : String(metrics.maxDepth)} sub="longest prerequisite chain" />
+      </div>
+
+      {!metrics.isDAG && (
+        <Card className="p-4 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/10 mb-4">
+          <p className="text-sm font-600 text-amber-700 dark:text-amber-400 mb-1">⚠ Cycle Warning</p>
+          <p className="text-xs text-amber-600 dark:text-amber-300">
+            A circular dependency exists in the skill graph, so path generation may fail.
+            {cycleNames.length > 0 && <> Cycle: <span className="font-mono">{cycleNames.join(" → ")}</span></>}
+          </p>
+        </Card>
+      )}
+
+      {orphans.length > 0 && (
+        <Card className="p-4 mb-4">
+          <p className="font-display font-700 text-sm text-foreground mb-1">Orphan Nodes ({metrics.orphanCount})</p>
+          <p className="text-xs text-muted-foreground mb-3">Skills with no prerequisite edge (co-requisites don't count).</p>
+          <div className="flex flex-wrap gap-2">
+            {orphans.map(o => (
+              <span key={o.skillId} className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-full font-mono">{o.name}</span>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      <Card className="p-4">
+        <p className="font-display font-700 text-sm text-foreground mb-3">Degree Distribution</p>
+        {topDegree.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No edges yet.</p>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {topDegree.map(s => (
+              <div key={s.id} className="flex items-center gap-3">
+                <span className="text-xs text-foreground w-32 truncate">{s.name}</span>
+                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-accent rounded-full" style={{ width: `${(s.degree / maxDegree) * 100}%` }} />
+                </div>
+                <span className="font-mono text-xs text-muted-foreground w-6 text-right">{s.degree}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
