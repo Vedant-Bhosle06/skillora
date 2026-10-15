@@ -56,7 +56,7 @@ export function Badge({ children, variant = "default", className = "" }: BadgePr
 }
 
 export function StatusBadge({ status }: { status: NodeStatus }) {
-  const labels: Record<NodeStatus, string> = { completed: "Completed", "in-progress": "In Progress", locked: "Locked", unlocked: "Unlocked" };
+  const labels: Record<NodeStatus, string> = { completed: "Completed", "in-progress": "Up next", locked: "Locked", unlocked: "Available" };
   const icons: Record<NodeStatus, string> = { completed: "✓", "in-progress": "◉", locked: "🔒", unlocked: "◎" };
   return <Badge variant={status}>{icons[status]} {labels[status]}</Badge>;
 }
@@ -200,6 +200,53 @@ export function Input({ label, error, hint, className = "", ...props }: InputPro
   );
 }
 
+// ── Select ────────────────────────────────────────────────────────────────────
+
+interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  error?: string;
+  hint?: string;
+  children: ReactNode;
+}
+
+export function Select({ label, error, hint, className = "", children, ...props }: SelectProps) {
+  return (
+    <div className="flex flex-col gap-1">
+      {label && <label className="text-sm font-500 text-foreground">{label}</label>}
+      <select
+        className={`px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all ${error ? "border-red-500" : ""} ${className}`}
+        {...props}
+      >
+        {children}
+      </select>
+      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {error && <p className="text-xs text-red-500">{error}</p>}
+    </div>
+  );
+}
+
+// ── Textarea ──────────────────────────────────────────────────────────────────
+
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  error?: string;
+  hint?: string;
+}
+
+export function Textarea({ label, error, hint, className = "", ...props }: TextareaProps) {
+  return (
+    <div className="flex flex-col gap-1">
+      {label && <label className="text-sm font-500 text-foreground">{label}</label>}
+      <textarea
+        className={`px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent placeholder:text-muted-foreground transition-all ${error ? "border-red-500" : ""} ${className}`}
+        {...props}
+      />
+      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {error && <p className="text-xs text-red-500">{error}</p>}
+    </div>
+  );
+}
+
 // ── Divider ───────────────────────────────────────────────────────────────────
 
 export function Divider({ className = "" }: { className?: string }) {
@@ -216,6 +263,67 @@ export function DemandBar({ score }: { score: number }) {
         <div className={`h-full ${color} rounded-full`} style={{ width: `${score}%` }} />
       </div>
       <span className="text-xs font-mono text-muted-foreground">{score}</span>
+    </div>
+  );
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+
+export function Spinner({ className = "" }: { className?: string }) {
+  return (
+    <span
+      role="status"
+      aria-label="Loading"
+      className={`inline-block w-5 h-5 rounded-full border-2 border-muted border-t-primary animate-spin ${className}`}
+    />
+  );
+}
+
+// ── Page Loader ───────────────────────────────────────────────────────────────
+
+export function PageLoader({ label = "Loading…" }: { label?: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
+      <Spinner className="w-8 h-8" />
+      <p className="text-sm text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
+// ── Error State ───────────────────────────────────────────────────────────────
+
+export function ErrorState({ title = "Something went wrong", message, onRetry }: { title?: string; message: string; onRetry?: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
+      <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-3xl mb-4">⚠</div>
+      <h3 className="font-display font-700 text-lg text-foreground mb-2">{title}</h3>
+      <p className="text-muted-foreground text-sm max-w-sm mb-6">{message}</p>
+      {onRetry && <Button variant="secondary" onClick={onRetry}>Try again</Button>}
+    </div>
+  );
+}
+
+// ── Progress Ring ─────────────────────────────────────────────────────────────
+
+export function ProgressRing({ value, size = 88, stroke = 8, label }: { value: number; size?: number; stroke?: number; label?: string }) {
+  const clamped = Math.min(1, Math.max(0, Number.isFinite(value) ? value : 0));
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const pct = Math.round(clamped * 100);
+  return (
+    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" strokeWidth={stroke} className="stroke-muted" />
+        <circle
+          cx={size / 2} cy={size / 2} r={radius} fill="none" strokeWidth={stroke} strokeLinecap="round"
+          className="stroke-primary transition-all duration-500"
+          strokeDasharray={`${circumference * clamped} ${circumference}`}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="font-display font-800 text-lg text-foreground">{pct}%</span>
+        {label && <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{label}</span>}
+      </div>
     </div>
   );
 }
