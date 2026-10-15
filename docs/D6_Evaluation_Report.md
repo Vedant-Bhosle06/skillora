@@ -230,7 +230,7 @@ Two caveats apply to reading tau. With few shared skills it is coarse (scenario 
 ### 8.1 Variants compared
 
 - **A* closure** (service default): `h(L)` is the summed cost of skills in `N` not yet learned, where `N` is the closure of the single-option unmet requirements' skills under mandatory prerequisite edges.
-- **A* simple** (the heuristic written in specification section 4.3): `h(L)` is the summed cost of the single-option unmet requirements' skills not yet learned.
+- **A* simple** (the heuristic written in specification v4.0 §4.3): `h(L)` is the summed cost of the single-option unmet requirements' skills not yet learned.
 - **Dijkstra**: the same code with `h = 0`.
 
 All three share relevance pruning, the cost bound and the cap, so the comparison isolates the heuristic. Both heuristics are checked for admissibility, consistency and zero value at goals on the fixture graphs (`test_heuristics_admissible_consistent_and_zero_at_goal`), and `test_real_dataset_modes_agree` checks that the three modes return identical goal sets and costs on four real roles.
@@ -326,7 +326,7 @@ The ranking flips (`rankingChanged: true`). The set of routes is unchanged, only
 
 ## 10. Design refinements beyond the specification
 
-The implementation departs from the written algorithm (specification section 4.3) in the following ways. Each is deliberate; none changes the problem being solved.
+The implementation departs from the written algorithm (specification v4.0 §4.3) in the following ways. Each is deliberate; none changes the problem being solved. Since v4.1 these refinements are part of the specification itself ([ALGORITHM.md](ALGORITHM.md), [ADR-0008](adr/0008-closure-heuristic-and-near-optimal-bound.md)).
 
 **10.1 Closure heuristic (default).** The specification's `h` sums the costs of unmet single-option requirements. The service adds their mandatory prerequisites: `N` is the closure of those skills under mandatory prerequisite edges, stopping at known skills, and `h(L)` is the summed cost of `N` minus `L`. The simple heuristic remains selectable (`heuristic: "simple"`) and is used for the comparison above. *Admissible:* in any plan, each skill of `N` not yet learned must be learned, because a single-option requirement can be met only by its one option, and an unknown mandatory prerequisite of a learned skill must precede it (a skill is unlocked only when all its mandatory prerequisites are known or learned); costs are positive and each skill is learned once, so `h` never overestimates. Group edges are excluded because the choice of member is free. *Consistent:* a move learns one skill at cost `c`; if that skill is in `N`, `h` falls by exactly `c`, otherwise it is unchanged, so `h(L) <= c + h(L + s)`. *Zero at goals:* a goal contains every single-option skill and, being reachable, all their mandatory ancestors that are not already known (known skills are excluded from `N`), so `N` minus `L` is empty. Because `N` contains the simple heuristic's set, the closure heuristic dominates it pointwise. Admissibility, consistency and zero-at-goal are checked against exhaustively computed optimal remaining costs on the fixture graphs.
 

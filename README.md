@@ -1,84 +1,82 @@
 # SKILLORA — Skill-Gap Navigator
 
-> A personalized upskilling-path recommendation system that models skills as a knowledge graph and computes optimized learning sequences via A\* search.
+> A personalised upskilling-path recommender that models skills as a knowledge graph and computes the minimum-effort, prerequisite-respecting learning path to a target role with A\* search.
 
----
+## What it does
 
-## What It Does
+A user enters the skills they already have and picks a target job role. SKILLORA computes the cheapest ordered set of skills still to learn, explains why each step is there, offers ranked alternative routes (for example Tableau versus Power BI), and recomputes the plan as the user marks skills complete. Scope and goals: [docs/PRD.md](docs/PRD.md).
 
-SKILLORA takes a user's current skills and a target job role, then computes the minimum-effort, prerequisite-respecting learning path using A\* search over a curated skill knowledge graph. Users can compare alternative routes, mark skills complete, and watch their roadmap update in real time.
+## Architecture at a glance
 
----
+```
+React SPA  ──/api/*──►  Node.js API (Express)  ──X-Internal-Key──►  Python path service (FastAPI + NetworkX)
+                              │                                              │
+                              └────────────── MongoDB Atlas ◄──── read-only ─┘
+```
 
-## Project Structure
+Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Repository layout
 
 ```
 skillora/
-├── data/v1/               ← Curated skill graph dataset (JSON seed files)
-│   ├── skills.json
-│   ├── edges.json
-│   └── roles.json
-├── scripts/
-│   ├── seed.js            ← Populates MongoDB from data/v1/*.json
-│   └── seed-eval.js       ← Generates D6 evaluation scenarios
-├── skillora-api/          ← Node.js / Express backend (all /api/* endpoints)
-├── skillora-path-service/ ← Python / FastAPI algorithm microservice (/compute/*, /graph/*)
-├── skillora-client/       ← React frontend (Vite)
-├── docs/                  ← Project specification, work division, dev guide
-├── .env.example           ← Environment variable template
-└── .gitignore
+├── data/v1/                 curated skill graph (skills, edges, roles) — D1
+├── scripts/                 seed.js (load dataset), seed-eval.js (D6 evaluation)
+├── skillora-api/            Node.js / Express API — all /api/* endpoints
+├── skillora-path-service/   Python / FastAPI path computation — /compute/*, /graph/*
+├── skillora-client/         React frontend (Vite)
+├── docs/                    product, design and report documents — start at docs/README.md
+├── .env.example             environment template for every service
+└── CONTRIBUTING.md          branches, commits, pull requests, secrets
 ```
 
----
-
-## Tech Stack
+## Tech stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18, Vite, react-force-graph |
-| Backend API | Node.js 18+, Express, Mongoose |
-| Algorithm Service | Python 3.11+, FastAPI, NetworkX, heapq |
+| Frontend | React, Vite |
+| API | Node.js 18+, Express 5, Mongoose 9 |
+| Path computation | Python 3.11+, FastAPI, NetworkX, heapq |
 | Database | MongoDB Atlas |
-| Auth | JWT + server-side sessions (bcrypt) |
+| Auth | JWT with server-side sessions, bcrypt |
 
----
+## Quick start
 
-## Local Development
-
-See **[docs/SKILLORA_Dev_Setup.md](docs/SKILLORA_Dev_Setup.md)** for full setup instructions.
-
-**Quick start (after `.env` files are configured):**
+Full instructions, including `.env` setup: [docs/DEV_SETUP.md](docs/DEV_SETUP.md).
 
 ```bash
 # Terminal 1 — Node API (port 5000)
-cd skillora-api && npm run dev
+cd skillora-api && npm install && npm run dev
 
-# Terminal 2 — Python service (port 5001)
-cd skillora-path-service && uvicorn main:app --port 5001 --reload
+# Terminal 2 — path service (port 5001), inside its virtual environment
+cd skillora-path-service && pip install -r requirements.txt -r requirements-dev.txt
+uvicorn main:app --port 5001 --reload
 
 # Terminal 3 — React client (port 5173)
-cd skillora-client && npm run dev
+cd skillora-client && npm install && npm run dev
 ```
 
----
+API documentation while running: `http://localhost:5000/api/docs` (Node) and `http://localhost:5001/docs` (path service).
 
 ## Documentation
 
-| File | Description |
+| Document | Contents |
 |---|---|
-| [`docs/SKILLORA_Project_Specification.md`](docs/SKILLORA_Project_Specification.md) | Full technical spec v4.0 — objectives, DB schema, all API endpoints, SRS |
-| [`docs/SKILLORA_Internal_Working_Guide.md`](docs/SKILLORA_Internal_Working_Guide.md) | How the A\* algorithm works, data flow, worked example |
-| [`docs/SkillGap_Navigator_Problem_Objectives_Deliverables.md`](docs/SkillGap_Navigator_Problem_Objectives_Deliverables.md) | Problem statement, objectives, deliverables |
-| [`docs/SKILLORA_Team_Work_Division.md`](docs/SKILLORA_Team_Work_Division.md) | Team work breakdown — who builds what, commit plan |
-| [`docs/SKILLORA_Dev_Setup.md`](docs/SKILLORA_Dev_Setup.md) | Ports, run commands, env setup, Git workflow |
-| [`.env.example`](.env.example) | Environment variable template for all three services |
-
----
+| [docs/README.md](docs/README.md) | Index and reading order |
+| [docs/PRD.md](docs/PRD.md) | Problem, users, scope, success metrics, deliverable status |
+| [docs/SRS.md](docs/SRS.md) | Functional and non-functional requirements |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, flows, security, deployment |
+| [docs/adr/](docs/adr/README.md) | Architecture decision records |
+| [docs/DATA_MODEL.md](docs/DATA_MODEL.md) | MongoDB collections |
+| [docs/API.md](docs/API.md) | Endpoint reference and client behaviour |
+| [docs/ALGORITHM.md](docs/ALGORITHM.md) | Path-computation algorithm |
+| [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) | Plain-language walkthrough |
+| [docs/D1_Dataset_Methodology.md](docs/D1_Dataset_Methodology.md) · [docs/D6_Evaluation_Report.md](docs/D6_Evaluation_Report.md) | Dataset and evaluation reports |
 
 ## Team
 
-| Member | Role |
-|---|---|
-| Member A | Data Curator + Python Algorithm Engineer (D1, D3, D6) |
-| Member B | Node.js Backend Engineer (D2 backend, D7 API docs) |
-| Member C | React Frontend Integrator (D2 frontend, D4, D5, D7 user guide) |
+| Member | Role | Deliverables |
+|---|---|---|
+| Member A | Data curator and algorithm engineer | D1, D3, D6 |
+| Member B | Backend engineer | D2 (backend), D7 (API and architecture docs) |
+| Member C | Frontend engineer | D2 (frontend), D4, D5, D7 (user guide) |

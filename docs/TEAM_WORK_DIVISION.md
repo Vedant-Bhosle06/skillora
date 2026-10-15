@@ -1,5 +1,7 @@
 # SKILLORA — Team Work Division
-### Based on Project Specification v4.0 · 3 Members
+### Planning document · 3 Members
+
+> **Status:** This is the original work plan, kept as a record of who owns what. Members A and B have completed their parts; Member C's frontend work is in progress. For the *current* contract, use [API.md](API.md) (endpoints and behaviour), [DATA_MODEL.md](DATA_MODEL.md) and [ALGORITHM.md](ALGORITHM.md); where this plan and those documents differ, those documents win. Note: the Node API has 32 endpoints (API-N-1 … N-31 plus N-4b).
 
 > **Context:** The Figma design is done and the UI codebase is already running.
 > Member C therefore focuses on **API integration + targeted UI work** rather than building pages from scratch.
