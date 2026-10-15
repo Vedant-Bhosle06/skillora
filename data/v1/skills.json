@@ -1,0 +1,1564 @@
+[
+  {
+    "slug": "excel",
+    "name": "Excel",
+    "category": "tool",
+    "description": "Spreadsheet basics for analysis. Covers formulas, sorting, filtering, pivot tables and simple charts.",
+    "aliases": [
+      "microsoft excel",
+      "spreadsheets"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "excel-advanced",
+    "name": "Advanced Excel",
+    "category": "tool",
+    "description": "Advanced spreadsheet techniques including lookup functions, Power Query, complex pivot tables and basic macros.",
+    "aliases": [
+      "advanced excel",
+      "power query",
+      "xlookup"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "statistics",
+    "name": "Statistics",
+    "category": "math",
+    "description": "Descriptive statistics, distributions, sampling and confidence intervals needed to interpret data.",
+    "aliases": [
+      "stats",
+      "descriptive statistics"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 30,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "probability",
+    "name": "Probability",
+    "category": "math",
+    "description": "Probability rules, conditional probability, Bayes theorem and random variables.",
+    "aliases": [
+      "probability theory"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "linear-algebra",
+    "name": "Linear Algebra",
+    "category": "math",
+    "description": "Vectors, matrices, linear transformations and decompositions that underpin machine learning methods.",
+    "aliases": [
+      "linear algebra",
+      "matrices",
+      "vectors"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "calculus",
+    "name": "Calculus",
+    "category": "math",
+    "description": "Derivatives, partial derivatives and gradients, used to understand how models are optimized.",
+    "aliases": [
+      "derivatives",
+      "gradients"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "jupyter",
+    "name": "Jupyter Notebooks",
+    "category": "tool",
+    "description": "Interactive notebooks for combining code, output and notes during analysis.",
+    "aliases": [
+      "jupyter",
+      "notebooks",
+      "ipython"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 5,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "numpy",
+    "name": "NumPy",
+    "category": "framework",
+    "description": "Python library for fast array computing, vectorized operations and basic linear algebra.",
+    "aliases": [
+      "numpy",
+      "numerical python"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "pandas",
+    "name": "Pandas",
+    "category": "framework",
+    "description": "Python library for working with tabular data. Covers DataFrames, filtering, grouping, merging and reshaping.",
+    "aliases": [
+      "dataframes",
+      "pandas"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 25,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "matplotlib-seaborn",
+    "name": "Matplotlib and Seaborn",
+    "category": "framework",
+    "description": "Python plotting libraries for building statistical charts and customizing figures.",
+    "aliases": [
+      "matplotlib",
+      "seaborn",
+      "plotting"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "data-cleaning",
+    "name": "Data Cleaning",
+    "category": "concept",
+    "description": "Finding and fixing missing values, duplicates, wrong types and inconsistent formats in raw data.",
+    "aliases": [
+      "data wrangling",
+      "data preparation"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "exploratory-data-analysis",
+    "name": "Exploratory Data Analysis",
+    "category": "concept",
+    "description": "Summarizing and visualizing a dataset to find patterns, outliers and questions worth testing.",
+    "aliases": [
+      "eda"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 20,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "data-visualization",
+    "name": "Data Visualization",
+    "category": "concept",
+    "description": "Choosing the right chart type and design principles to show data clearly and honestly.",
+    "aliases": [
+      "dataviz",
+      "charts",
+      "data viz"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "data-storytelling",
+    "name": "Data Storytelling",
+    "category": "soft-skill",
+    "description": "Turning analysis into a clear narrative with visuals so decision makers can act on the findings.",
+    "aliases": [
+      "storytelling",
+      "presenting data"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "tableau",
+    "name": "Tableau",
+    "category": "tool",
+    "description": "Business intelligence tool for building interactive dashboards and visual analyses from many data sources.",
+    "aliases": [
+      "tableau desktop"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "power-bi",
+    "name": "Power BI",
+    "category": "tool",
+    "description": "Microsoft business intelligence tool for loading data, modeling it and building reports and dashboards.",
+    "aliases": [
+      "powerbi",
+      "power bi",
+      "microsoft power bi"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 20,
+    "marketDemand": 0.8
+  },
+  {
+    "slug": "dax",
+    "name": "DAX",
+    "category": "programming",
+    "description": "Formula language for calculated columns and measures in Power BI and Excel data models.",
+    "aliases": [
+      "dax",
+      "data analysis expressions"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "r-programming",
+    "name": "R Programming",
+    "category": "programming",
+    "description": "Statistical programming language with strong tools for data manipulation, modeling and plotting.",
+    "aliases": [
+      "r",
+      "r language",
+      "tidyverse"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 30,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "hypothesis-testing",
+    "name": "Hypothesis Testing",
+    "category": "math",
+    "description": "Using t-tests, chi-square tests and p-values to decide whether an observed effect is real.",
+    "aliases": [
+      "t-test",
+      "p-value",
+      "significance testing"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "ab-testing",
+    "name": "A/B Testing",
+    "category": "domain",
+    "description": "Designing and analyzing controlled experiments to compare product or marketing changes.",
+    "aliases": [
+      "ab testing",
+      "experimentation",
+      "split testing"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 12,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "machine-learning",
+    "name": "Machine Learning",
+    "category": "concept",
+    "description": "Core machine learning ideas. Covers supervised and unsupervised learning, model evaluation, overfitting and common algorithms.",
+    "aliases": [
+      "ml",
+      "machine learning"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 50,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "scikit-learn",
+    "name": "scikit-learn",
+    "category": "framework",
+    "description": "Python library for classical machine learning, with ready-made models, pipelines and evaluation tools.",
+    "aliases": [
+      "sklearn",
+      "scikit learn"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.55
+  },
+  {
+    "slug": "feature-engineering",
+    "name": "Feature Engineering",
+    "category": "concept",
+    "description": "Creating and selecting input variables that help models learn, including encoding, scaling and aggregation.",
+    "aliases": [
+      "features",
+      "feature selection"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "deep-learning",
+    "name": "Deep Learning",
+    "category": "concept",
+    "description": "Neural networks with many layers. Covers backpropagation, CNNs, RNNs and training techniques.",
+    "aliases": [
+      "dl",
+      "neural networks",
+      "deep learning"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 45,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "tensorflow",
+    "name": "TensorFlow",
+    "category": "framework",
+    "description": "Google deep learning framework with the Keras API for building and deploying neural networks.",
+    "aliases": [
+      "tf",
+      "keras"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 30,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "pytorch",
+    "name": "PyTorch",
+    "category": "framework",
+    "description": "Deep learning framework popular in research and industry, known for its dynamic computation graphs.",
+    "aliases": [
+      "torch",
+      "pytorch"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 30,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "nlp",
+    "name": "Natural Language Processing",
+    "category": "domain",
+    "description": "Machine learning on text. Covers tokenization, embeddings, text classification and sequence models.",
+    "aliases": [
+      "nlp",
+      "text mining",
+      "language processing"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 35,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "computer-vision",
+    "name": "Computer Vision",
+    "category": "domain",
+    "description": "Machine learning on images and video, including classification, detection and segmentation.",
+    "aliases": [
+      "cv",
+      "image processing",
+      "opencv"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 35,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "transformers-llms",
+    "name": "Transformers and LLMs",
+    "category": "concept",
+    "description": "Transformer architectures and large language models, including attention, pretraining and fine-tuning.",
+    "aliases": [
+      "llm",
+      "transformers",
+      "large language models",
+      "gpt"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 40,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "llm-app-development",
+    "name": "LLM App Development",
+    "category": "domain",
+    "description": "Building applications on top of hosted language models. Covers prompting, retrieval-augmented generation and API integration.",
+    "aliases": [
+      "llm apps",
+      "rag",
+      "prompt engineering",
+      "langchain"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 30,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "time-series",
+    "name": "Time Series Analysis",
+    "category": "domain",
+    "description": "Analyzing and forecasting data ordered in time, including trend, seasonality and ARIMA-style models.",
+    "aliases": [
+      "forecasting",
+      "time series"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 25,
+    "marketDemand": 0.25
+  },
+  {
+    "slug": "pyspark",
+    "name": "PySpark",
+    "category": "framework",
+    "description": "Python API for Apache Spark, used to process large datasets across a cluster.",
+    "aliases": [
+      "spark",
+      "apache spark",
+      "pyspark"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 30,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "data-warehousing",
+    "name": "Data Warehousing",
+    "category": "concept",
+    "description": "Designing central analytical stores with star schemas, fact and dimension tables.",
+    "aliases": [
+      "data warehouse",
+      "dwh",
+      "olap"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "data-modeling",
+    "name": "Data Modeling",
+    "category": "concept",
+    "description": "Structuring data into tables and relationships, including normalization and dimensional models.",
+    "aliases": [
+      "schema design",
+      "dimensional modeling",
+      "er diagrams"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "etl-pipelines",
+    "name": "ETL Pipelines",
+    "category": "concept",
+    "description": "Building pipelines that extract data from sources, transform it and load it into a target store.",
+    "aliases": [
+      "etl",
+      "elt",
+      "data pipelines"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "airflow",
+    "name": "Apache Airflow",
+    "category": "tool",
+    "description": "Workflow orchestrator for scheduling and monitoring data pipelines defined as Python DAGs.",
+    "aliases": [
+      "airflow",
+      "apache airflow",
+      "dags"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "dbt",
+    "name": "dbt",
+    "category": "tool",
+    "description": "SQL-based transformation tool for building tested, documented analytics models inside a warehouse.",
+    "aliases": [
+      "data build tool",
+      "dbt core"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "snowflake",
+    "name": "Snowflake",
+    "category": "database",
+    "description": "Cloud data warehouse platform with separated storage and compute, queried with SQL.",
+    "aliases": [
+      "snowflake data cloud"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "bigquery",
+    "name": "BigQuery",
+    "category": "database",
+    "description": "Google Cloud serverless data warehouse for running SQL queries on very large datasets.",
+    "aliases": [
+      "google bigquery",
+      "bq"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "kafka",
+    "name": "Apache Kafka",
+    "category": "tool",
+    "description": "Distributed event streaming platform for moving data between systems in real time.",
+    "aliases": [
+      "kafka",
+      "apache kafka",
+      "event streaming"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 25,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "mlflow",
+    "name": "MLflow",
+    "category": "tool",
+    "description": "Open-source tool for tracking experiments, packaging models and managing the model lifecycle.",
+    "aliases": [
+      "mlflow",
+      "experiment tracking"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 12,
+    "marketDemand": 0.2
+  },
+  {
+    "slug": "mlops",
+    "name": "MLOps",
+    "category": "concept",
+    "description": "Practices for deploying, monitoring and retraining machine learning models in production.",
+    "aliases": [
+      "ml ops",
+      "model deployment",
+      "machine learning operations"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 30,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "python",
+    "name": "Python",
+    "category": "programming",
+    "description": "General-purpose programming language widely used for scripting, data analysis, automation and web back ends. Covers syntax, data types, functions, modules and common libraries.",
+    "aliases": [
+      "py",
+      "python3"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 40,
+    "marketDemand": 0.9
+  },
+  {
+    "slug": "sql",
+    "name": "SQL",
+    "category": "database",
+    "description": "Language for querying and manipulating relational databases. Covers SELECT, joins, aggregation, subqueries and basic schema design.",
+    "aliases": [
+      "structured query language"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 30,
+    "marketDemand": 0.9
+  },
+  {
+    "slug": "html",
+    "name": "HTML",
+    "category": "programming",
+    "description": "Markup language that structures web pages. Covers elements, forms, semantic tags and document layout.",
+    "aliases": [
+      "html5",
+      "markup"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 15,
+    "marketDemand": 0.85
+  },
+  {
+    "slug": "css",
+    "name": "CSS",
+    "category": "programming",
+    "description": "Styling language for web pages. Covers selectors, the box model, flexbox, grid and positioning.",
+    "aliases": [
+      "css3",
+      "stylesheets"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 25,
+    "marketDemand": 0.85
+  },
+  {
+    "slug": "responsive-design",
+    "name": "Responsive Design",
+    "category": "concept",
+    "description": "Building layouts that adapt to different screen sizes with media queries and flexible units.",
+    "aliases": [
+      "responsive",
+      "mobile first",
+      "media queries"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "tailwind",
+    "name": "Tailwind CSS",
+    "category": "framework",
+    "description": "Utility-first CSS framework for styling interfaces directly in markup.",
+    "aliases": [
+      "tailwindcss",
+      "tailwind css"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "bootstrap",
+    "name": "Bootstrap",
+    "category": "framework",
+    "description": "Component-based CSS framework with a grid system and prebuilt UI elements.",
+    "aliases": [
+      "bootstrap css",
+      "twitter bootstrap"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 10,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "javascript",
+    "name": "JavaScript",
+    "category": "programming",
+    "description": "The programming language of the web. Covers core syntax, functions, objects, closures and the event loop.",
+    "aliases": [
+      "js",
+      "javascript",
+      "ecmascript"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 40,
+    "marketDemand": 0.9
+  },
+  {
+    "slug": "dom-manipulation",
+    "name": "DOM Manipulation",
+    "category": "concept",
+    "description": "Reading and changing a web page from JavaScript through the DOM, including event handling.",
+    "aliases": [
+      "dom",
+      "document object model",
+      "events"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "es6-plus",
+    "name": "Modern JavaScript (ES6+)",
+    "category": "programming",
+    "description": "Modern JavaScript features such as arrow functions, destructuring, modules, classes and template strings.",
+    "aliases": [
+      "es6",
+      "es2015",
+      "modern javascript"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "async-javascript",
+    "name": "Asynchronous JavaScript",
+    "category": "concept",
+    "description": "Handling asynchronous work with callbacks, promises and async/await, including network requests.",
+    "aliases": [
+      "async await",
+      "promises",
+      "callbacks",
+      "fetch"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "typescript",
+    "name": "TypeScript",
+    "category": "programming",
+    "description": "Typed superset of JavaScript that catches errors at compile time through static types.",
+    "aliases": [
+      "ts",
+      "typescript"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.65
+  },
+  {
+    "slug": "npm",
+    "name": "npm",
+    "category": "tool",
+    "description": "Package manager for JavaScript projects. Covers installing dependencies, scripts and semantic versioning.",
+    "aliases": [
+      "npm",
+      "package manager",
+      "yarn",
+      "pnpm"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 6,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "build-tools-vite",
+    "name": "Build Tools (Vite)",
+    "category": "tool",
+    "description": "Bundlers and dev servers that compile and optimize front-end code, with a focus on Vite.",
+    "aliases": [
+      "vite",
+      "webpack",
+      "bundler"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 8,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "react",
+    "name": "React",
+    "category": "framework",
+    "description": "Component-based library for building user interfaces. Covers JSX, props, state, hooks and rendering.",
+    "aliases": [
+      "reactjs",
+      "react.js",
+      "hooks"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 40,
+    "marketDemand": 0.75
+  },
+  {
+    "slug": "redux",
+    "name": "Redux",
+    "category": "framework",
+    "description": "Predictable global state management for JavaScript apps, commonly used with React.",
+    "aliases": [
+      "redux toolkit",
+      "state management"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "next-js",
+    "name": "Next.js",
+    "category": "framework",
+    "description": "React framework with file-based routing, server-side rendering and API routes.",
+    "aliases": [
+      "nextjs",
+      "next",
+      "ssr"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "vue",
+    "name": "Vue.js",
+    "category": "framework",
+    "description": "Progressive front-end framework with reactive data binding and single-file components.",
+    "aliases": [
+      "vuejs",
+      "vue.js"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 30,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "angular",
+    "name": "Angular",
+    "category": "framework",
+    "description": "Full front-end framework by Google, built on TypeScript with dependency injection and RxJS.",
+    "aliases": [
+      "angularjs",
+      "angular"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 40,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "web-accessibility",
+    "name": "Web Accessibility",
+    "category": "concept",
+    "description": "Making websites usable for people with disabilities through semantic HTML, ARIA and WCAG guidelines.",
+    "aliases": [
+      "a11y",
+      "wcag",
+      "accessibility"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "frontend-testing",
+    "name": "Frontend Testing",
+    "category": "concept",
+    "description": "Testing user interfaces with unit, component and end-to-end tests using tools like Jest and Cypress.",
+    "aliases": [
+      "jest",
+      "testing library",
+      "cypress",
+      "unit testing"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "node-js",
+    "name": "Node.js",
+    "category": "framework",
+    "description": "JavaScript runtime for running code on servers. Covers modules, the event loop, file access and building services.",
+    "aliases": [
+      "node",
+      "nodejs",
+      "node.js"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 30,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "express",
+    "name": "Express.js",
+    "category": "framework",
+    "description": "Minimal Node.js web framework for routing, middleware and building HTTP APIs.",
+    "aliases": [
+      "expressjs",
+      "express.js"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "rest-api-design",
+    "name": "REST API Design",
+    "category": "concept",
+    "description": "Designing resource-oriented HTTP APIs with proper methods, status codes, versioning and error handling.",
+    "aliases": [
+      "rest",
+      "restful api",
+      "api design"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "graphql",
+    "name": "GraphQL",
+    "category": "framework",
+    "description": "Query language for APIs that lets clients request exactly the fields they need.",
+    "aliases": [
+      "graphql",
+      "gql"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.25
+  },
+  {
+    "slug": "mongodb",
+    "name": "MongoDB",
+    "category": "database",
+    "description": "Document-oriented NoSQL database that stores JSON-like records. Covers CRUD, indexes and aggregation.",
+    "aliases": [
+      "mongo",
+      "nosql",
+      "mongo db"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 20,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "mongoose",
+    "name": "Mongoose",
+    "category": "framework",
+    "description": "Node.js library that adds schemas, validation and models on top of MongoDB.",
+    "aliases": [
+      "mongoose odm",
+      "odm"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 10,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "postgresql",
+    "name": "PostgreSQL",
+    "category": "database",
+    "description": "Open-source relational database with strong SQL support, indexes, transactions and JSON types.",
+    "aliases": [
+      "postgres",
+      "psql",
+      "pg"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "redis",
+    "name": "Redis",
+    "category": "database",
+    "description": "In-memory data store used for caching, sessions and queues.",
+    "aliases": [
+      "redis cache",
+      "caching"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "authentication-jwt",
+    "name": "Authentication and JWT",
+    "category": "concept",
+    "description": "Verifying users and protecting API routes with password hashing, sessions and JSON Web Tokens.",
+    "aliases": [
+      "jwt",
+      "auth",
+      "authentication",
+      "sessions"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 12,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "web-security",
+    "name": "Web Security",
+    "category": "concept",
+    "description": "Protecting web apps against common attacks such as XSS, CSRF and injection, following the OWASP guidance.",
+    "aliases": [
+      "owasp",
+      "xss",
+      "csrf",
+      "cors"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "websockets",
+    "name": "WebSockets",
+    "category": "concept",
+    "description": "Two-way real-time communication between browser and server, used for chat and live updates.",
+    "aliases": [
+      "websocket",
+      "socket.io",
+      "real-time"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 10,
+    "marketDemand": 0.2
+  },
+  {
+    "slug": "django",
+    "name": "Django",
+    "category": "framework",
+    "description": "Batteries-included Python web framework with an ORM, admin site and built-in authentication.",
+    "aliases": [
+      "django",
+      "python web framework"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 35,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "flask",
+    "name": "Flask",
+    "category": "framework",
+    "description": "Lightweight Python web framework for small services and APIs.",
+    "aliases": [
+      "flask",
+      "microframework"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 20,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "fastapi",
+    "name": "FastAPI",
+    "category": "framework",
+    "description": "Modern Python framework for building typed, async HTTP APIs with automatic documentation.",
+    "aliases": [
+      "fast api",
+      "fastapi"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 20,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "java",
+    "name": "Java",
+    "category": "programming",
+    "description": "Statically typed, object-oriented language used widely for enterprise back ends and Android.",
+    "aliases": [
+      "java",
+      "jvm",
+      "jdk"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 45,
+    "marketDemand": 0.55
+  },
+  {
+    "slug": "spring-boot",
+    "name": "Spring Boot",
+    "category": "framework",
+    "description": "Java framework for building production-ready web services with auto-configuration and dependency injection.",
+    "aliases": [
+      "spring",
+      "springboot",
+      "spring framework"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 40,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "backend-testing",
+    "name": "Backend Testing",
+    "category": "concept",
+    "description": "Writing unit and integration tests for server code and HTTP APIs.",
+    "aliases": [
+      "api testing",
+      "integration testing",
+      "supertest",
+      "pytest"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "figma",
+    "name": "Figma",
+    "category": "tool",
+    "description": "Collaborative design tool for creating interface mockups, components and clickable prototypes.",
+    "aliases": [
+      "figma",
+      "ui design",
+      "prototyping"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "cloud-fundamentals",
+    "name": "Cloud Fundamentals",
+    "category": "concept",
+    "description": "Core cloud ideas such as regions, virtual machines, storage, shared responsibility and pricing models.",
+    "aliases": [
+      "cloud computing",
+      "iaas",
+      "paas",
+      "cloud basics"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "aws",
+    "name": "Amazon Web Services",
+    "category": "cloud",
+    "description": "Amazon cloud platform. Covers core services such as EC2, S3, IAM, VPC and RDS.",
+    "aliases": [
+      "aws",
+      "amazon web services",
+      "ec2",
+      "s3"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 40,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "azure",
+    "name": "Microsoft Azure",
+    "category": "cloud",
+    "description": "Microsoft cloud platform. Covers virtual machines, storage, networking and Azure Active Directory.",
+    "aliases": [
+      "azure",
+      "microsoft azure"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 40,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "gcp",
+    "name": "Google Cloud Platform",
+    "category": "cloud",
+    "description": "Google cloud platform. Covers Compute Engine, Cloud Storage, networking and IAM.",
+    "aliases": [
+      "gcp",
+      "google cloud"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 40,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "iam-cloud-security",
+    "name": "Cloud IAM and Security",
+    "category": "concept",
+    "description": "Managing identities, roles and permissions in the cloud with least-privilege access.",
+    "aliases": [
+      "iam",
+      "cloud security",
+      "least privilege"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "serverless",
+    "name": "Serverless",
+    "category": "concept",
+    "description": "Running code on managed functions such as AWS Lambda without managing servers.",
+    "aliases": [
+      "lambda",
+      "functions",
+      "faas",
+      "cloud functions"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "docker",
+    "name": "Docker",
+    "category": "tool",
+    "description": "Packaging applications into containers. Covers images, Dockerfiles, volumes and networking.",
+    "aliases": [
+      "containers",
+      "docker",
+      "containerization"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.75
+  },
+  {
+    "slug": "docker-compose",
+    "name": "Docker Compose",
+    "category": "tool",
+    "description": "Defining and running multi-container applications with a single YAML file.",
+    "aliases": [
+      "compose",
+      "docker compose"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 8,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "kubernetes",
+    "name": "Kubernetes",
+    "category": "tool",
+    "description": "Container orchestrator. Covers pods, deployments, services, config and scaling.",
+    "aliases": [
+      "k8s",
+      "kubernetes",
+      "kube"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 40,
+    "marketDemand": 0.55
+  },
+  {
+    "slug": "helm",
+    "name": "Helm",
+    "category": "tool",
+    "description": "Package manager for Kubernetes that bundles manifests into reusable, versioned charts.",
+    "aliases": [
+      "helm charts",
+      "k8s package manager"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 10,
+    "marketDemand": 0.15
+  },
+  {
+    "slug": "gitops-argocd",
+    "name": "GitOps and Argo CD",
+    "category": "tool",
+    "description": "Managing cluster state from Git using a controller such as Argo CD.",
+    "aliases": [
+      "gitops",
+      "argocd",
+      "argo cd",
+      "flux"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 12,
+    "marketDemand": 0.15
+  },
+  {
+    "slug": "ci-cd-concepts",
+    "name": "CI/CD Concepts",
+    "category": "concept",
+    "description": "Automating build, test and release steps with continuous integration and delivery pipelines.",
+    "aliases": [
+      "ci/cd",
+      "continuous integration",
+      "continuous delivery",
+      "pipelines"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 10,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "github-actions",
+    "name": "GitHub Actions",
+    "category": "tool",
+    "description": "CI/CD automation built into GitHub, defined with YAML workflow files.",
+    "aliases": [
+      "actions",
+      "gh actions",
+      "workflows"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 12,
+    "marketDemand": 0.45
+  },
+  {
+    "slug": "jenkins",
+    "name": "Jenkins",
+    "category": "tool",
+    "description": "Self-hosted automation server for building CI/CD pipelines with plugins and Jenkinsfiles.",
+    "aliases": [
+      "jenkins",
+      "jenkinsfile"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "terraform",
+    "name": "Terraform",
+    "category": "tool",
+    "description": "Infrastructure as code tool for declaring and provisioning cloud resources with HCL files.",
+    "aliases": [
+      "tf",
+      "iac",
+      "infrastructure as code",
+      "hcl"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 25,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "ansible",
+    "name": "Ansible",
+    "category": "tool",
+    "description": "Agentless configuration management and automation tool driven by YAML playbooks.",
+    "aliases": [
+      "ansible",
+      "configuration management",
+      "playbooks"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "nginx",
+    "name": "Nginx",
+    "category": "tool",
+    "description": "Web server and reverse proxy used for routing traffic, load balancing and TLS termination.",
+    "aliases": [
+      "nginx",
+      "reverse proxy",
+      "load balancer"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 10,
+    "marketDemand": 0.35
+  },
+  {
+    "slug": "monitoring-prometheus-grafana",
+    "name": "Monitoring (Prometheus and Grafana)",
+    "category": "tool",
+    "description": "Collecting metrics with Prometheus and building dashboards and alerts in Grafana.",
+    "aliases": [
+      "prometheus",
+      "grafana",
+      "observability",
+      "metrics"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "logging-elk",
+    "name": "Logging (ELK Stack)",
+    "category": "tool",
+    "description": "Centralized log collection, search and visualization with Elasticsearch, Logstash and Kibana.",
+    "aliases": [
+      "elk",
+      "elasticsearch",
+      "logstash",
+      "kibana",
+      "logs"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 15,
+    "marketDemand": 0.25
+  },
+  {
+    "slug": "sre-practices",
+    "name": "SRE Practices",
+    "category": "concept",
+    "description": "Site reliability engineering methods such as SLOs, error budgets, on-call and postmortems.",
+    "aliases": [
+      "sre",
+      "site reliability",
+      "slo",
+      "error budgets"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 20,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "go",
+    "name": "Go",
+    "category": "programming",
+    "description": "Compiled language from Google known for simple syntax, concurrency and fast tooling.",
+    "aliases": [
+      "golang",
+      "go lang"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 35,
+    "marketDemand": 0.3
+  },
+  {
+    "slug": "system-design",
+    "name": "System Design",
+    "category": "concept",
+    "description": "Designing scalable systems. Covers load balancing, caching, databases, queues and trade-offs.",
+    "aliases": [
+      "architecture",
+      "scalability",
+      "distributed systems"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 30,
+    "marketDemand": 0.4
+  },
+  {
+    "slug": "git",
+    "name": "Git",
+    "category": "tool",
+    "description": "Distributed version control for tracking changes to code. Covers commits, branches, merging and resolving conflicts.",
+    "aliases": [
+      "version control"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 10,
+    "marketDemand": 0.85
+  },
+  {
+    "slug": "github-collaboration",
+    "name": "GitHub Collaboration",
+    "category": "tool",
+    "description": "Working with others through GitHub using forks, pull requests, code review and issues.",
+    "aliases": [
+      "github",
+      "pull requests",
+      "gh"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 8,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "linux",
+    "name": "Linux",
+    "category": "tool",
+    "description": "Using a Linux system from the command line. Covers the file system, permissions, processes and package management.",
+    "aliases": [
+      "unix",
+      "linux command line"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 20,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "bash-scripting",
+    "name": "Bash Scripting",
+    "category": "programming",
+    "description": "Automating tasks with shell scripts. Covers variables, conditionals, loops, pipes and text processing tools.",
+    "aliases": [
+      "shell",
+      "shell scripting",
+      "sh"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "networking-basics",
+    "name": "Networking Basics",
+    "category": "concept",
+    "description": "Core networking concepts such as IP addressing, DNS, TCP and UDP, ports and firewalls.",
+    "aliases": [
+      "tcp/ip",
+      "dns",
+      "networking"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 15,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "http-web-fundamentals",
+    "name": "HTTP and Web Fundamentals",
+    "category": "concept",
+    "description": "How the web works. Covers HTTP methods, status codes, headers, cookies and the client-server model.",
+    "aliases": [
+      "http",
+      "web basics",
+      "rest basics"
+    ],
+    "baseDifficulty": 2,
+    "estHours": 10,
+    "marketDemand": 0.7
+  },
+  {
+    "slug": "json-yaml",
+    "name": "JSON and YAML",
+    "category": "concept",
+    "description": "Reading and writing the JSON and YAML data formats used for APIs and configuration files.",
+    "aliases": [
+      "json",
+      "yaml",
+      "data formats"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 5,
+    "marketDemand": 0.6
+  },
+  {
+    "slug": "data-structures-algorithms",
+    "name": "Data Structures and Algorithms",
+    "category": "concept",
+    "description": "Core data structures such as arrays, hash maps, trees and graphs, plus sorting, searching and complexity analysis.",
+    "aliases": [
+      "dsa",
+      "algorithms",
+      "data structures"
+    ],
+    "baseDifficulty": 4,
+    "estHours": 40,
+    "marketDemand": 0.55
+  },
+  {
+    "slug": "oop",
+    "name": "Object-Oriented Programming",
+    "category": "concept",
+    "description": "Designing programs with classes, objects, inheritance, encapsulation and polymorphism.",
+    "aliases": [
+      "object oriented",
+      "oop",
+      "classes"
+    ],
+    "baseDifficulty": 3,
+    "estHours": 20,
+    "marketDemand": 0.65
+  },
+  {
+    "slug": "agile-scrum",
+    "name": "Agile and Scrum",
+    "category": "concept",
+    "description": "Iterative team delivery practices such as sprints, standups, backlogs and retrospectives.",
+    "aliases": [
+      "agile",
+      "scrum",
+      "sprints"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 8,
+    "marketDemand": 0.5
+  },
+  {
+    "slug": "technical-communication",
+    "name": "Technical Communication",
+    "category": "soft-skill",
+    "description": "Explaining technical work clearly in writing and conversation, including documentation, design notes and status updates.",
+    "aliases": [
+      "documentation",
+      "technical writing",
+      "communication"
+    ],
+    "baseDifficulty": 1,
+    "estHours": 10,
+    "marketDemand": 0.5
+  }
+]
