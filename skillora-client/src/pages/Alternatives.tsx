@@ -6,7 +6,7 @@ import { useCurrentUser } from "@/auth/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
 import TradeoffChart from "@/components/TradeoffChart";
-import { formatHours, formatPercent } from "@/lib/format";
+import { formatHours, formatPercent, pluralize } from "@/lib/format";
 import { orChoiceDiff, pathLabel } from "@/lib/pathMetrics";
 
 export default function Alternatives() {
@@ -86,7 +86,7 @@ export default function Alternatives() {
                       {path.rank === 1 ? "Primary (recommended)" : pathLabel(path.rank)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {path.steps.length} skills · {formatHours(path.totalLearningCost)} total
+                      {pluralize(path.steps.length, "skill")} · {formatHours(path.totalLearningCost)} total
                     </p>
                   </div>
                   {isCurrent && <Badge variant="in-progress">Active</Badge>}

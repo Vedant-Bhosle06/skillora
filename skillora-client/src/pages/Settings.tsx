@@ -7,6 +7,7 @@ import { refId } from "@/lib/requirements";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
 import type { Proficiency } from "@/api/types";
+import { pluralize } from "@/lib/format";
 
 const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"];
 
@@ -178,7 +179,7 @@ export default function Settings() {
         {tab === "skills" && (
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">{currentSkills.length} skills in your profile</p>
+              <p className="text-sm text-muted-foreground">{pluralize(currentSkills.length, "skill")} in your profile</p>
               <Button size="sm" variant="secondary" onClick={() => navigate("/onboarding/skills")}>Edit in wizard →</Button>
             </div>
 
