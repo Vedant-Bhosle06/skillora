@@ -1,42 +1,75 @@
-import React, { useState, useRef, useCallback } from "react";
-import { Button, Badge, Card } from "@/components/ui";
-import { graphNodes, graphEdges, paths, skills } from "@/data/mock";
-import type { GraphNode, NodeStatus } from "@/data/mock";
+import React, { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo } from "react";
+import { PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import { useGraph, type GraphScope } from "@/api/queries";
+import { toApiError } from "@/api/client";
+import { categoryColor, categoryLabel, formatHours } from "@/lib/format";
+import { computeLayout, fitToView, type Point } from "@/lib/graphLayout";
+import type { GraphNode } from "@/api/types";
 
-const categoryColors: Record<string, string> = {
-  Programming: "#6366f1",
-  Data:        "#0ea5e9",
-  Math:        "#f59e0b",
-  "AI/ML":     "#8b5cf6",
-  Engineering: "#10b981",
-  Frontend:    "#f97316",
-  Backend:     "#ec4899",
-};
+type Node = GraphNode & { id: string };
+type View = { zoom: number; pan: Point };
+type Tooltip = { node: Node; x: number; y: number } | null;
 
-const statusFill: Record<string, string> = {
-  completed:    "#10b981",
-  "in-progress":"#6366f1",
-  unlocked:     "#6366f1",
-  locked:       "#94a3b8",
-};
-
-type Tooltip = { node: GraphNode; x: number; y: number } | null;
+const MIN_ZOOM = 0.3;
+const MAX_ZOOM = 2;
+const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z));
 
 export default function GraphExplorer() {
-  const [scope, setScope] = useState<"full" | "path">("full");
+  const [scope, setScope] = useState<GraphScope>("full");
+  const graph = useGraph(scope);
+
   const [tooltip, setTooltip] = useState<Tooltip>(null);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(0.85);
+  const [view, setView] = useState<View>({ zoom: 0.85, pan: { x: 0, y: 0 } });
   const [dragging, setDragging] = useState(false);
   const lastPos = useRef({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const pathNodeIds = new Set(paths[0].nodes.map(n => n.skillId));
-  const displayNodes = scope === "path" ? graphNodes.filter(n => pathNodeIds.has(n.id)) : graphNodes;
-  const displayEdges = scope === "path"
-    ? graphEdges.filter(e => pathNodeIds.has(e.source) && pathNodeIds.has(e.target))
-    : graphEdges;
+  // `/api/graph` nodes use `_id`; the layout and the SVG work with `id`.
+  const nodes = useMemo<Node[]>(() => (graph.data?.nodes ?? []).map(n => ({ ...n, id: n._id })), [graph.data]);
+  const edges = useMemo(() => graph.data?.edges ?? [], [graph.data]);
+  const nodeById = useMemo(() => new Map(nodes.map(n => [n.id, n])), [nodes]);
+  const positions = useMemo(() => computeLayout(nodes, edges), [nodes, edges]);
+
+  const resetView = useCallback(() => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect || rect.width === 0) return;
+    setView(fitToView(positions, rect.width, rect.height));
+  }, [positions]);
+
+  // Fit the whole graph on load and whenever the data (and so the layout) changes.
+  useLayoutEffect(() => { resetView(); }, [resetView]);
+
+  // React's wheel listeners are passive, so preventDefault only works on a native listener.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = svg.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+      // Zoom towards the cursor: the graph point under it stays in place.
+      setView(v => {
+        const zoom = clampZoom(v.zoom * Math.exp(-e.deltaY * 0.001));
+        const k = zoom / v.zoom;
+        return { zoom, pan: { x: cx - (cx - v.pan.x) * k, y: cy - (cy - v.pan.y) * k } };
+      });
+    };
+    svg.addEventListener("wheel", onWheel, { passive: false });
+    return () => svg.removeEventListener("wheel", onWheel);
+  }, [graph.data]);
+
+  const zoomBy = (factor: number) => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    const cx = (rect?.width ?? 0) / 2;
+    const cy = (rect?.height ?? 0) / 2;
+    setView(v => {
+      const zoom = clampZoom(v.zoom * factor);
+      const k = zoom / v.zoom;
+      return { zoom, pan: { x: cx - (cx - v.pan.x) * k, y: cy - (cy - v.pan.y) * k } };
+    });
+  };
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     if ((e.target as SVGElement).closest("circle, text")) return;
@@ -48,100 +81,75 @@ export default function GraphExplorer() {
     if (!dragging) return;
     const dx = e.clientX - lastPos.current.x;
     const dy = e.clientY - lastPos.current.y;
-    setPan(p => ({ x: p.x + dx, y: p.y + dy }));
+    setView(v => ({ ...v, pan: { x: v.pan.x + dx, y: v.pan.y + dy } }));
     lastPos.current = { x: e.clientX, y: e.clientY };
   }, [dragging]);
 
   const onMouseUp = useCallback(() => setDragging(false), []);
 
-  const onWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    setZoom(z => Math.min(2, Math.max(0.3, z - e.deltaY * 0.001)));
-  }, []);
-
   function getPrereqs(nodeId: string) {
-    return graphEdges
-      .filter(e => e.target === nodeId)
-      .map(e => skills.find(s => s.id === e.source)?.name)
+    return edges
+      .filter(e => e.type === "prerequisite_of" && e.target === nodeId)
+      .map(e => nodeById.get(e.source)?.name)
       .filter(Boolean) as string[];
   }
 
-  function getNode(id: string) { return graphNodes.find(n => n.id === id); }
+  const categories = useMemo(() => [...new Set(nodes.map(n => n.category))].sort(), [nodes]);
 
-  const categories = [...new Set(graphNodes.map(n => n.category))];
+  function renderCanvas() {
+    if (graph.isPending) return <PageLoader label="Loading the skill graph…" />;
+    if (graph.isError) {
+      return (
+        <ErrorState
+          title="Couldn't load the skill graph"
+          message={toApiError(graph.error).message}
+          onRetry={() => graph.refetch()}
+        />
+      );
+    }
+    if (nodes.length === 0) {
+      return <EmptyState icon="◎" title="No skills yet" description="The skill graph is empty." />;
+    }
 
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Toolbar */}
-      <div className="border-b border-border bg-card px-6 py-3 flex flex-wrap items-center gap-3">
-        <h1 className="font-display font-700 text-base text-foreground mr-2">Graph Explorer</h1>
-        <div className="flex rounded-lg border border-border overflow-hidden">
-          {(["full", "path"] as const).map(s => (
-            <button
-              key={s}
-              onClick={() => setScope(s)}
-              className={`px-3 py-1.5 text-xs font-mono transition-colors ${scope === s ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
-            >
-              {s === "full" ? "Full graph" : "My path"}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-1">
-          <button onClick={() => setZoom(z => Math.min(2, z + 0.15))} className="w-7 h-7 rounded border border-border bg-card text-foreground text-sm hover:bg-muted flex items-center justify-center">+</button>
-          <button onClick={() => setZoom(z => Math.max(0.3, z - 0.15))} className="w-7 h-7 rounded border border-border bg-card text-foreground text-sm hover:bg-muted flex items-center justify-center">−</button>
-          <button onClick={() => { setPan({ x: 0, y: 0 }); setZoom(0.85); }} className="px-2 h-7 rounded border border-border bg-card text-xs text-muted-foreground hover:bg-muted">Reset</button>
-        </div>
-        <div className="ml-auto flex flex-wrap gap-2">
-          {categories.map(cat => (
-            <div key={cat} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: categoryColors[cat] ?? "#888" }} />
-              {cat}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Graph canvas */}
-      <div className="flex-1 relative overflow-hidden" style={{ minHeight: 480 }}>
+    return (
+      <>
         <svg
           ref={svgRef}
-          className="w-full h-full graph-canvas select-none"
-          style={{ minHeight: 480 }}
+          className="absolute inset-0 w-full h-full graph-canvas select-none"
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
           onMouseLeave={onMouseUp}
-          onWheel={onWheel}
         >
-          <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
+          <g transform={`translate(${view.pan.x},${view.pan.y}) scale(${view.zoom})`}>
             {/* Edges */}
-            {displayEdges.map((edge, i) => {
-              const src = getNode(edge.source);
-              const tgt = getNode(edge.target);
+            {edges.map((edge, i) => {
+              const src = positions.get(edge.source);
+              const tgt = positions.get(edge.target);
               if (!src || !tgt) return null;
               const isHighlighted = hoveredNode === edge.source || hoveredNode === edge.target;
               return (
                 <line
                   key={i}
                   x1={src.x} y1={src.y} x2={tgt.x} y2={tgt.y}
-                  stroke={isHighlighted ? "var(--primary)" : "var(--border)"}
+                  stroke={isHighlighted ? "var(--primary)" : "var(--muted-foreground)"}
                   strokeWidth={isHighlighted ? 2 : 1}
-                  strokeOpacity={isHighlighted ? 0.8 : 0.5}
-                  markerEnd="none"
+                  strokeOpacity={isHighlighted ? 0.8 : 0.35}
                 />
               );
             })}
 
             {/* Nodes */}
-            {displayNodes.map(node => {
+            {nodes.map(node => {
+              const pos = positions.get(node.id);
+              if (!pos) return null;
               const isHovered = hoveredNode === node.id;
-              const fill = statusFill[node.status ?? "locked"] ?? "#888";
-              const catColor = categoryColors[node.category] ?? "#888";
+              const catColor = categoryColor(node.category);
 
               return (
                 <g
                   key={node.id}
-                  transform={`translate(${node.x},${node.y})`}
+                  transform={`translate(${pos.x},${pos.y})`}
                   onMouseEnter={(e) => {
                     setHoveredNode(node.id);
                     const rect = svgRef.current?.getBoundingClientRect();
@@ -152,10 +160,7 @@ export default function GraphExplorer() {
                 >
                   {/* Outer ring for category */}
                   <circle r={isHovered ? 26 : 22} fill={catColor} opacity={0.15} />
-                  <circle r={isHovered ? 20 : 16} fill={fill} opacity={node.status === "locked" ? 0.5 : 1} />
-                  {node.status === "completed" && (
-                    <text textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="10">✓</text>
-                  )}
+                  <circle r={isHovered ? 20 : 16} fill={catColor} />
                   <text
                     y={isHovered ? 34 : 28}
                     textAnchor="middle"
@@ -164,7 +169,7 @@ export default function GraphExplorer() {
                     fontFamily="'DM Sans', sans-serif"
                     fontWeight="600"
                   >
-                    {node.label}
+                    {node.name}
                   </text>
                 </g>
               );
@@ -175,11 +180,13 @@ export default function GraphExplorer() {
         {/* Tooltip */}
         {tooltip && (
           <div
-            className="absolute pointer-events-none z-20 bg-card border border-border rounded-xl shadow-xl p-3 min-w-44"
+            className="absolute pointer-events-none z-20 bg-card border border-border rounded-xl shadow-xl p-3 min-w-44 max-w-64"
             style={{ left: tooltip.x + 16, top: tooltip.y - 20 }}
           >
-            <p className="font-display font-700 text-sm text-foreground mb-1">{tooltip.node.label}</p>
-            <p className="text-xs font-mono text-muted-foreground mb-2">{tooltip.node.estimatedHours}h · {tooltip.node.category}</p>
+            <p className="font-display font-700 text-sm text-foreground mb-1">{tooltip.node.name}</p>
+            <p className="text-xs font-mono text-muted-foreground mb-2">
+              {formatHours(tooltip.node.estHours)} · {categoryLabel(tooltip.node.category)}
+            </p>
             {getPrereqs(tooltip.node.id).length > 0 && (
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Prerequisites:</p>
@@ -190,14 +197,6 @@ export default function GraphExplorer() {
                 </div>
               </div>
             )}
-            <div className={`mt-2 text-xs font-mono px-2 py-0.5 rounded-full inline-block ${
-              tooltip.node.status === "completed"    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" :
-              tooltip.node.status === "in-progress"  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" :
-              tooltip.node.status === "unlocked"     ? "bg-secondary text-secondary-foreground" :
-              "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-            }`}>
-              {tooltip.node.status ?? "locked"}
-            </div>
           </div>
         )}
 
@@ -216,6 +215,44 @@ export default function GraphExplorer() {
             </div>
           ))}
         </div>
+      </>
+    );
+  }
+
+  return (
+    <div className="h-[calc(100dvh-3.5rem)] bg-background flex flex-col">
+      {/* Toolbar */}
+      <div className="border-b border-border bg-card px-6 py-3 flex flex-wrap items-center gap-3">
+        <h1 className="font-display font-700 text-base text-foreground mr-2">Graph Explorer</h1>
+        <div className="flex rounded-lg border border-border overflow-hidden">
+          {(["full", "path"] as const).map(s => (
+            <button
+              key={s}
+              onClick={() => setScope(s)}
+              className={`px-3 py-1.5 text-xs font-mono transition-colors ${scope === s ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
+            >
+              {s === "full" ? "Full graph" : "My path"}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1">
+          <button onClick={() => zoomBy(1.2)} aria-label="Zoom in" className="w-7 h-7 rounded border border-border bg-card text-foreground text-sm hover:bg-muted flex items-center justify-center">+</button>
+          <button onClick={() => zoomBy(1 / 1.2)} aria-label="Zoom out" className="w-7 h-7 rounded border border-border bg-card text-foreground text-sm hover:bg-muted flex items-center justify-center">−</button>
+          <button onClick={resetView} className="px-2 h-7 rounded border border-border bg-card text-xs text-muted-foreground hover:bg-muted">Reset</button>
+        </div>
+        <div className="ml-auto flex flex-wrap gap-2">
+          {categories.map(cat => (
+            <div key={cat} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ background: categoryColor(cat) }} />
+              {categoryLabel(cat)}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Graph canvas */}
+      <div className="flex-1 relative overflow-hidden" style={{ minHeight: 420 }}>
+        {renderCanvas()}
       </div>
     </div>
   );
