@@ -148,6 +148,9 @@ export default function Settings() {
                 </div>
                 <button
                   onClick={toggleDark}
+                  role="switch"
+                  aria-checked={darkMode}
+                  aria-label="Dark mode"
                   className={`w-12 h-6 rounded-full border-2 transition-all relative ${darkMode ? "bg-primary border-primary" : "bg-muted border-border"}`}
                 >
                   <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-all ${darkMode ? "left-6" : "left-0.5"}`} />
@@ -262,6 +265,7 @@ export default function Settings() {
                       key={r._id}
                       hover
                       onClick={() => setSelectedRoleId(r._id)}
+                      selected={chosenRoleId === r._id}
                       className={`p-3 transition-all ${chosenRoleId === r._id ? "ring-2 ring-primary border-primary" : ""}`}
                     >
                       <div className="flex items-start justify-between">

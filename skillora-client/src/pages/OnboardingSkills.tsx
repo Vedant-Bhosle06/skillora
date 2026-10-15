@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, ProficiencyBadge, Card, PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import { Button, ProficiencyBadge, Card, PageLoader, ErrorState, EmptyState, activateOnKey } from "@/components/ui";
 import type { Proficiency, Skill } from "@/api/types";
 import { useSaveSkills, useSkillsCatalog, useSkillSearch } from "@/api/queries";
 import { useAuth } from "@/auth/AuthContext";
@@ -76,7 +76,15 @@ export default function OnboardingSkills() {
           sel ? "border-primary bg-secondary/50" : "border-border bg-card hover:border-primary/40"
         }`}
       >
-        <div className="flex items-center justify-between mb-1" onClick={() => toggle(skill._id)}>
+        <div
+          className="flex items-center justify-between mb-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          role="checkbox"
+          aria-checked={!!sel}
+          aria-label={skill.name}
+          tabIndex={0}
+          onClick={() => toggle(skill._id)}
+          onKeyDown={activateOnKey(() => toggle(skill._id))}
+        >
           <div className="flex items-center gap-2">
             <div className={`w-4 h-4 rounded border-2 flex items-center justify-center text-xs transition-all ${
               sel ? "bg-primary border-primary text-white" : "border-border"
@@ -179,7 +187,7 @@ export default function OnboardingSkills() {
             onChange={e => setSearch(e.target.value)}
           />
           {search && (
-            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs">✕</button>
+            <button onClick={() => setSearch("")} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs">✕</button>
           )}
         </div>
 
@@ -196,7 +204,7 @@ export default function OnboardingSkills() {
                   <div key={s.skillId} className="flex items-center gap-1.5 bg-card border border-border rounded-full px-3 py-1">
                     <span className="text-xs font-500 text-foreground">{skill.name}</span>
                     <ProficiencyBadge level={s.proficiency} />
-                    <button onClick={() => toggle(s.skillId)} className="text-muted-foreground hover:text-foreground text-xs ml-0.5">✕</button>
+                    <button onClick={() => toggle(s.skillId)} aria-label={`Remove ${skill.name}`} className="text-muted-foreground hover:text-foreground text-xs ml-0.5">✕</button>
                   </div>
                 ) : null;
               })}

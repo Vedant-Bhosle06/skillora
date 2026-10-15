@@ -126,7 +126,7 @@ export default function Navbar() {
 
         {/* Mobile hamburger */}
         {signedIn && (
-          <button onClick={() => setMenuOpen(o => !o)} className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-foreground">
+          <button onClick={() => setMenuOpen(o => !o)} aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-foreground">
             ☰
           </button>
         )}

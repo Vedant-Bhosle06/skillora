@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect, useId, useRef } from "react";
 import { useToast } from "@/context/ToastContext";
 import type { NodeStatus, Proficiency } from "@/lib/types";
 
@@ -65,6 +65,19 @@ export function ProficiencyBadge({ level }: { level: Proficiency }) {
   return <Badge variant={level}>{level.charAt(0).toUpperCase() + level.slice(1)}</Badge>;
 }
 
+// ── Keyboard activation ───────────────────────────────────────────────────────
+
+/** onKeyDown for non-button elements that act like buttons: Enter or Space runs fn. */
+export function activateOnKey(fn: () => void) {
+  return (e: React.KeyboardEvent) => {
+    if (e.target !== e.currentTarget) return;   // let nested buttons handle their own keys
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      fn();
+    }
+  };
+}
+
 // ── Card ──────────────────────────────────────────────────────────────────────
 
 interface CardProps {
@@ -72,13 +85,19 @@ interface CardProps {
   className?: string;
   hover?: boolean;
   onClick?: () => void;
+  /** For selectable cards: exposed to screen readers as aria-pressed. */
+  selected?: boolean;
 }
 
-export function Card({ children, className = "", hover = false, onClick }: CardProps) {
+export function Card({ children, className = "", hover = false, onClick, selected }: CardProps) {
+  const interactive = onClick
+    ? { role: "button", tabIndex: 0, onKeyDown: activateOnKey(onClick), "aria-pressed": selected }
+    : {};
   return (
     <div
       onClick={onClick}
-      className={`bg-card text-card-foreground border border-border rounded-xl shadow-sm ${hover ? "hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer" : ""} ${className}`}
+      {...interactive}
+      className={`bg-card text-card-foreground border border-border rounded-xl shadow-sm ${hover ? "hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer" : ""} ${onClick ? "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring" : ""} ${className}`}
     >
       {children}
     </div>
@@ -96,23 +115,45 @@ interface ModalProps {
 }
 
 export function Modal({ open, onClose, title, children, className = "" }: ModalProps) {
+  const titleId = useId();
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
+    if (!open) return;
     const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", esc);
     return () => window.removeEventListener("keydown", esc);
-  }, [onClose]);
+  }, [open, onClose]);
+
+  // Focus the first field when the dialog opens (or the close button if it has none),
+  // and give focus back to whatever opened it when it closes.
+  useEffect(() => {
+    if (!open) return;
+    const opener = document.activeElement as HTMLElement | null;
+    const first = bodyRef.current?.querySelector<HTMLElement>(
+      "input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])",
+    );
+    (first ?? closeRef.current)?.focus();
+    return () => opener?.focus?.();
+  }, [open]);
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto ${className}`}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className={`relative bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto ${className}`}
+      >
         <div className="flex items-center justify-between p-5 border-b border-border">
-          <h2 className="font-display font-700 text-lg text-foreground">{title}</h2>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">✕</button>
+          <h2 id={titleId} className="font-display font-700 text-lg text-foreground">{title}</h2>
+          <button ref={closeRef} onClick={onClose} aria-label="Close dialog" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">✕</button>
         </div>
-        <div className="p-5">{children}</div>
+        <div ref={bodyRef} className="p-5">{children}</div>
       </div>
     </div>
   );
@@ -186,16 +227,36 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   hint?: string;
 }
 
-export function Input({ label, error, hint, className = "", ...props }: InputProps) {
+/** Ids that tie a field to its label, hint and error text. */
+function useFieldIds(id: string | undefined, hint?: string, error?: string) {
+  const generated = useId();
+  const fieldId = id ?? generated;
+  const describedBy = error ? `${fieldId}-error` : hint ? `${fieldId}-hint` : undefined;
+  return { fieldId, describedBy };
+}
+
+function FieldMessages({ fieldId, hint, error }: { fieldId: string; hint?: string; error?: string }) {
+  return (
+    <>
+      {hint && !error && <p id={`${fieldId}-hint`} className="text-xs text-muted-foreground">{hint}</p>}
+      {error && <p id={`${fieldId}-error`} className="text-xs text-red-500">{error}</p>}
+    </>
+  );
+}
+
+export function Input({ label, error, hint, className = "", id, ...props }: InputProps) {
+  const { fieldId, describedBy } = useFieldIds(id, hint, error);
   return (
     <div className="flex flex-col gap-1">
-      {label && <label className="text-sm font-500 text-foreground">{label}</label>}
+      {label && <label htmlFor={fieldId} className="text-sm font-500 text-foreground">{label}</label>}
       <input
+        id={fieldId}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
         className={`px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent placeholder:text-muted-foreground transition-all ${error ? "border-red-500" : ""} ${className}`}
         {...props}
       />
-      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      <FieldMessages fieldId={fieldId} hint={hint} error={error} />
     </div>
   );
 }
@@ -209,18 +270,21 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   children: ReactNode;
 }
 
-export function Select({ label, error, hint, className = "", children, ...props }: SelectProps) {
+export function Select({ label, error, hint, className = "", id, children, ...props }: SelectProps) {
+  const { fieldId, describedBy } = useFieldIds(id, hint, error);
   return (
     <div className="flex flex-col gap-1">
-      {label && <label className="text-sm font-500 text-foreground">{label}</label>}
+      {label && <label htmlFor={fieldId} className="text-sm font-500 text-foreground">{label}</label>}
       <select
+        id={fieldId}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
         className={`px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all ${error ? "border-red-500" : ""} ${className}`}
         {...props}
       >
         {children}
       </select>
-      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      <FieldMessages fieldId={fieldId} hint={hint} error={error} />
     </div>
   );
 }
@@ -233,16 +297,19 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
   hint?: string;
 }
 
-export function Textarea({ label, error, hint, className = "", ...props }: TextareaProps) {
+export function Textarea({ label, error, hint, className = "", id, ...props }: TextareaProps) {
+  const { fieldId, describedBy } = useFieldIds(id, hint, error);
   return (
     <div className="flex flex-col gap-1">
-      {label && <label className="text-sm font-500 text-foreground">{label}</label>}
+      {label && <label htmlFor={fieldId} className="text-sm font-500 text-foreground">{label}</label>}
       <textarea
+        id={fieldId}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
         className={`px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent placeholder:text-muted-foreground transition-all ${error ? "border-red-500" : ""} ${className}`}
         {...props}
       />
-      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      <FieldMessages fieldId={fieldId} hint={hint} error={error} />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { Badge, Button, Card, EmptyState, ErrorState, Input, Modal, PageLoader, 
 import { useAdminEdges, useAdminMetrics, useDeleteEdge, useDeleteRole, useDeleteSkill, useRoles, useSkillsCatalog } from "@/api/queries";
 import { ApiError } from "@/api/client";
 import type { GraphMetrics, Role, Skill, SkillEdge } from "@/api/types";
-import { categoryLabel, formatHours, formatPercent } from "@/lib/format";
+import { categoryLabel, formatHours, formatPercent, pluralize } from "@/lib/format";
 import { useToast } from "@/context/ToastContext";
 import EdgeForm from "@/pages/admin/EdgeForm";
 import RoleForm from "@/pages/admin/RoleForm";
@@ -381,7 +381,7 @@ function EdgesTab({ skills, byId }: { skills: Skill[]; byId: Map<string, Skill> 
             {sortedSkills.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
           </Select>
         </div>
-        {edgesQuery.data && <span className="text-xs text-muted-foreground font-mono pb-2.5">{edgesQuery.data.length} edges</span>}
+        {edgesQuery.data && <span className="text-xs text-muted-foreground font-mono pb-2.5">{pluralize(edgesQuery.data.length, "edge")}</span>}
         <Button size="sm" className="ml-auto" onClick={() => setFormEdge("new")}>+ Add edge</Button>
       </div>
       <p className="text-xs text-muted-foreground mb-4">

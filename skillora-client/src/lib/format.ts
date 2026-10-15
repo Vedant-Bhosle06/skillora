@@ -25,6 +25,11 @@ export function formatDateTime(iso: string | null | undefined): string {
   return Number.isNaN(d.getTime()) ? '—' : d.toLocaleString();
 }
 
+/** (1, "edge") -> "1 edge", (3, "edge") -> "3 edges"; pass `plural` for irregular words. */
+export function pluralize(n: number, singular: string, plural = `${singular}s`): string {
+  return `${n} ${n === 1 ? singular : plural}`;
+}
+
 /** "soft-skill" -> "Soft Skill". */
 export function categoryLabel(cat: string): string {
   return cat

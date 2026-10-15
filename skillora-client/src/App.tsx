@@ -61,6 +61,7 @@ function NavbarMinimal() {
   return (
     <button
       onClick={toggleDark}
+      aria-label="Toggle dark mode"
       className="w-8 h-8 flex items-center justify-center rounded-lg bg-card border border-border shadow text-muted-foreground hover:text-foreground"
     >
       {darkMode ? "☀" : "☽"}
