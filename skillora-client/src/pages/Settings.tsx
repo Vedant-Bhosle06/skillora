@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Input, Card, Badge, ProficiencyBadge, Modal, Divider } from "@/components/ui";
-import { skills, userSkills as defaultUserSkills, roles } from "@/data/mock";
+import { Button, Input, Card, Badge, ProficiencyBadge, Modal, EmptyState } from "@/components/ui";
+import { roles } from "@/data/mock";
 import { useApp } from "@/context/AppContext";
 import { useAuth, useCurrentUser } from "@/auth/AuthContext";
-import { useDeleteAccount } from "@/api/queries";
+import { useDeleteAccount, useUpdateProficiency } from "@/api/queries";
+import { refId } from "@/lib/requirements";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
-import type { Proficiency, UserSkill } from "@/data/mock";
+import type { Proficiency } from "@/api/types";
 
 const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"];
 
@@ -20,17 +21,15 @@ export default function Settings() {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  const [userSkills, setUserSkills] = useState<UserSkill[]>(defaultUserSkills);
+  const updateProficiency = useUpdateProficiency();
+  const currentSkills = me.currentSkills.filter(cs => cs.skillId !== null);
+  const learnedSkills = me.completedSkills.filter(cs => cs.skillId !== null);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [signingOut, setSigningOut] = useState(false);
   const [tab, setTab] = useState<"account" | "skills" | "role">("account");
 
   const role = roles.find(r => r.id === currentRole);
-
-  function handleSave() {
-    showToast("Settings saved successfully", "success");
-  }
 
   async function handleSignOut() {
     setSigningOut(true);
@@ -54,12 +53,11 @@ export default function Settings() {
     });
   }
 
-  function setProficiency(skillId: string, level: Proficiency) {
-    setUserSkills(prev => prev.map(s => s.skillId === skillId ? { ...s, proficiency: level } : s));
-  }
-
-  function removeSkill(skillId: string) {
-    setUserSkills(prev => prev.filter(s => s.skillId !== skillId));
+  function setProficiency(skillId: string, proficiency: Proficiency) {
+    updateProficiency.mutate({ skillId, proficiency }, {
+      onSuccess: () => showToast("Updated — your path will be recalculated", "success"),
+      onError: (err) => showToast(err.message, "error"),
+    });
   }
 
   const tabs = [
@@ -147,29 +145,37 @@ export default function Settings() {
         {tab === "skills" && (
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">{userSkills.length} skills in your profile</p>
+              <p className="text-sm text-muted-foreground">{currentSkills.length} skills in your profile</p>
               <Button size="sm" variant="secondary" onClick={() => navigate("/onboarding/skills")}>Edit in wizard →</Button>
             </div>
 
+            {currentSkills.length === 0 ? (
+              <EmptyState
+                icon="🧩"
+                title="No skills yet"
+                description="Add the skills you already have so SKILLORA can plan your path."
+                action={<Button onClick={() => navigate("/onboarding/skills")}>Add skills</Button>}
+              />
+            ) : (
             <Card className="divide-y divide-border">
-              {userSkills.map(us => {
-                const skill = skills.find(s => s.id === us.skillId);
-                if (!skill) return null;
+              {currentSkills.map(us => {
+                const skill = us.skillId!;
+                const skillId = refId(skill) as string;
                 return (
-                  <div key={us.skillId} className="px-4 py-3">
+                  <div key={skillId} className="px-4 py-3">
                     <div className="flex items-center justify-between mb-2">
                       <div>
                         <span className="font-600 text-sm text-foreground">{skill.name}</span>
                         <span className="text-xs text-muted-foreground ml-2">{skill.category}</span>
                       </div>
-                      <button onClick={() => removeSkill(us.skillId)} className="text-xs text-muted-foreground hover:text-red-500">Remove</button>
                     </div>
                     <div className="flex gap-1.5">
                       {proficiencyLevels.map(level => (
                         <button
                           key={level}
-                          onClick={() => setProficiency(us.skillId, level)}
-                          className={`px-2.5 py-1 rounded-full text-xs font-mono transition-all ${
+                          disabled={updateProficiency.isPending || us.proficiency === level}
+                          onClick={() => setProficiency(skillId, level)}
+                          className={`px-2.5 py-1 rounded-full text-xs font-mono transition-all disabled:cursor-default ${
                             us.proficiency === level
                               ? level === "beginner"     ? "bg-emerald-500 text-white"
                               : level === "intermediate" ? "bg-amber-500 text-white"
@@ -185,8 +191,24 @@ export default function Settings() {
                 );
               })}
             </Card>
+            )}
 
-            <Button onClick={handleSave} className="self-start">Save skill changes</Button>
+            {learnedSkills.length > 0 && (
+              <Card className="p-5">
+                <h2 className="font-display font-700 text-base text-foreground mb-3">Learned with SKILLORA</h2>
+                <ul className="flex flex-col gap-2">
+                  {learnedSkills.map(cs => (
+                    <li key={cs._id} className="flex items-center justify-between text-sm">
+                      <span className="text-foreground">
+                        {cs.skillId!.name}
+                        <span className="text-xs text-muted-foreground ml-2">{cs.skillId!.category}</span>
+                      </span>
+                      <ProficiencyBadge level={cs.proficiency} />
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
           </div>
         )}
 
