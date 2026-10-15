@@ -198,7 +198,7 @@ function HealthPanel({ metrics, isPending, error, onRetry, edges, byId }: {
           <div className="flex flex-col gap-2">
             {topDegree.map(s => (
               <div key={s.id} className="flex items-center gap-3">
-                <span className="text-xs text-foreground w-32 truncate">{s.name}</span>
+                <span className="text-xs text-foreground w-32 sm:w-48 truncate" title={s.name}>{s.name}</span>
                 <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-accent rounded-full" style={{ width: `${(s.degree / maxDegree) * 100}%` }} />
                 </div>
@@ -291,7 +291,7 @@ function SkillsTab({ skills }: { skills: Skill[] }) {
                   <Badge variant="outline">{categoryLabel(skill.category)}</Badge>
                   <span className="font-mono text-xs text-muted-foreground">{skill.slug}</span>
                 </div>
-                <p className="text-xs text-muted-foreground truncate">{skill.description}</p>
+                <p className="text-xs text-muted-foreground truncate" title={skill.description || undefined}>{skill.description}</p>
               </div>
               <div className="flex items-center gap-3 ml-4">
                 <span className="font-mono text-xs text-muted-foreground" title="Difficulty · demand">
@@ -412,7 +412,7 @@ function EdgesTab({ skills, byId }: { skills: Skill[]; byId: Map<string, Skill> 
                   </Badge>
                   {edge.group && <Badge variant="intermediate" className="font-mono">OR: {edge.group}</Badge>}
                 </div>
-                {edge.source && <p className="text-xs text-muted-foreground truncate mt-0.5">{edge.source}</p>}
+                {edge.source && <p className="text-xs text-muted-foreground truncate mt-0.5" title={edge.source}>{edge.source}</p>}
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <button onClick={() => setFormEdge(edge)} className="text-xs text-muted-foreground hover:text-primary transition-colors">Edit</button>
