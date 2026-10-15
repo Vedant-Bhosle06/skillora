@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DEFAULT_MAX_STATES = 200_000
+DEFAULT_COST_BOUND_RATIO = 1.5
 
 
 def mongo_uri() -> str:
@@ -31,3 +32,7 @@ def internal_api_key() -> str:
 
 def max_states() -> int:
     return int(os.getenv("MAX_STATES", DEFAULT_MAX_STATES))
+
+
+def cost_bound_ratio() -> float:
+    return float(os.getenv("COST_BOUND_RATIO", DEFAULT_COST_BOUND_RATIO))
