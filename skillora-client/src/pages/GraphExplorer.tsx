@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo } from "react";
 import { PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import SkillDetailPanel from "@/components/SkillDetailPanel";
 import { useActivePath, useGraph, type GraphScope } from "@/api/queries";
 import { toApiError } from "@/api/client";
 import { useCurrentUser } from "@/auth/AuthContext";
@@ -50,6 +51,8 @@ export default function GraphExplorer() {
   const [tooltip, setTooltip] = useState<Tooltip>(null);
   const [edgeTooltip, setEdgeTooltip] = useState<EdgeTooltip>(null);
   const [hoveredEdge, setHoveredEdge] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const closePanel = useCallback(() => setSelectedId(null), []);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [view, setView] = useState<View>({ zoom: 0.85, pan: { x: 0, y: 0 } });
   const [dragging, setDragging] = useState(false);
@@ -60,6 +63,12 @@ export default function GraphExplorer() {
   const nodes = useMemo<Node[]>(() => (graph.data?.nodes ?? []).map(n => ({ ...n, id: n._id })), [graph.data]);
   const edges = useMemo(() => graph.data?.edges ?? [], [graph.data]);
   const nodeById = useMemo(() => new Map(nodes.map(n => [n.id, n])), [nodes]);
+  // Names for the detail panel's edge lists, which can point outside the path-scoped graph.
+  const nameById = useMemo(
+    () => new Map((fullGraph.data?.nodes ?? graph.data?.nodes ?? []).map(n => [n._id, n.name])),
+    [fullGraph.data, graph.data]
+  );
+  const nameOf = useCallback((id: string) => nameById.get(id) ?? "Unknown skill", [nameById]);
   const positions = useMemo(() => computeLayout(nodes, edges), [nodes, edges]);
 
   // The user's selected route: only a document for the current role, minus steps already completed for it.
@@ -259,10 +268,16 @@ export default function GraphExplorer() {
                     if (rect) setTooltip({ node, x: e.clientX - rect.left, y: e.clientY - rect.top });
                   }}
                   onMouseLeave={() => { setHoveredNode(null); setTooltip(null); }}
+                  onClick={() => { setSelectedId(node.id); setTooltip(null); }}
+                  role="button"
+                  aria-label={node.name}
                   style={{ cursor: "pointer" }}
                 >
                   {/* Outer ring for category, inner circle for status */}
                   <circle r={isHovered ? 26 : 22} fill={catColor} opacity={0.15} />
+                  {selectedId === node.id && (
+                    <circle r={isHovered ? 26 : 22} fill="none" stroke="var(--primary)" strokeWidth={2.5} />
+                  )}
                   <circle r={isHovered ? 20 : 16} fill={style.color} opacity={isHovered ? 1 : style.opacity} />
                   {status === "known" && (
                     <text textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="10">✓</text>
@@ -400,8 +415,21 @@ export default function GraphExplorer() {
       </div>
 
       {/* Graph canvas */}
-      <div className="flex-1 relative overflow-hidden" style={{ minHeight: 420 }}>
-        {renderCanvas()}
+      <div className="flex-1 flex relative overflow-hidden" style={{ minHeight: 420 }}>
+        <div className="flex-1 relative overflow-hidden">
+          {renderCanvas()}
+        </div>
+        {selectedId && (
+          <SkillDetailPanel
+            key={selectedId}
+            skillId={selectedId}
+            status={STATUS_STYLE[graphNodeStatus(selectedId, held, stepById)]}
+            step={stepById.get(selectedId)}
+            nameOf={nameOf}
+            onSelect={setSelectedId}
+            onClose={closePanel}
+          />
+        )}
       </div>
     </div>
   );
