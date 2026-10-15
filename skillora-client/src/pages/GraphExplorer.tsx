@@ -1,9 +1,13 @@
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo } from "react";
 import { PageLoader, ErrorState, EmptyState } from "@/components/ui";
-import { useGraph, type GraphScope } from "@/api/queries";
+import { useActivePath, useGraph, type GraphScope } from "@/api/queries";
 import { toApiError } from "@/api/client";
-import { categoryColor, categoryLabel, formatHours } from "@/lib/format";
+import { useCurrentUser } from "@/auth/AuthContext";
+import { categoryColor, categoryLabel, formatHours, formatPercent } from "@/lib/format";
 import { computeLayout, fitToView, type Point } from "@/lib/graphLayout";
+import { completedForRole, remainingSteps, selectedRankedPath } from "@/lib/pathMetrics";
+import { computeStepStatuses, graphNodeStatus, type GraphNodeStatus, type StepView } from "@/lib/pathStatus";
+import { heldRankMap, refId } from "@/lib/requirements";
 import type { GraphEdge, GraphNode } from "@/api/types";
 
 type Node = GraphNode & { id: string };
@@ -15,6 +19,14 @@ type EdgeTooltip = { edge: GraphEdge; x: number; y: number } | null;
 const ARROW_GAP = 24;
 const GROUP_COLOR = "#f59e0b";
 
+const STATUS_STYLE: Record<GraphNodeStatus, { label: string; color: string; opacity: number }> = {
+  known:         { label: "Known",            color: "#10b981", opacity: 1 },
+  "in-progress": { label: "Up next",          color: "#6366f1", opacity: 1 },
+  unlocked:      { label: "Available",        color: "#818cf8", opacity: 1 },
+  locked:        { label: "Locked",           color: "#94a3b8", opacity: 1 },
+  outside:       { label: "Not in your path", color: "#cbd5e1", opacity: 0.45 },
+};
+
 function edgeTypeLabel(edge: GraphEdge): string {
   if (edge.type === "corequisite_with") return "Co-requisite (informational, not used in path search)";
   if (edge.group) return `Prerequisite — OR-group '${edge.group}': any one is enough`;
@@ -24,10 +36,16 @@ function edgeTypeLabel(edge: GraphEdge): string {
 const MIN_ZOOM = 0.3;
 const MAX_ZOOM = 2;
 const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z));
+// Below this zoom, labels of skills outside the user's path are hidden so they don't pile up.
+const LABEL_ZOOM = 0.6;
 
 export default function GraphExplorer() {
   const [scope, setScope] = useState<GraphScope>("full");
   const graph = useGraph(scope);
+  const user = useCurrentUser();
+  // Step statuses need every prerequisite edge, which the path-scoped graph may leave out.
+  const fullGraph = useGraph("full");
+  const activePath = useActivePath();
 
   const [tooltip, setTooltip] = useState<Tooltip>(null);
   const [edgeTooltip, setEdgeTooltip] = useState<EdgeTooltip>(null);
@@ -43,6 +61,18 @@ export default function GraphExplorer() {
   const edges = useMemo(() => graph.data?.edges ?? [], [graph.data]);
   const nodeById = useMemo(() => new Map(nodes.map(n => [n.id, n])), [nodes]);
   const positions = useMemo(() => computeLayout(nodes, edges), [nodes, edges]);
+
+  // The user's selected route: only a document for the current role, minus steps already completed for it.
+  const held = useMemo(() => heldRankMap(user), [user]);
+  const stepById = useMemo(() => {
+    const doc = activePath.data && activePath.data.targetRoleId === user.targetRoleId?._id ? activePath.data : null;
+    const completedIds = new Set(
+      completedForRole(user).map(c => refId(c.skillId)).filter((id): id is string => !!id)
+    );
+    const remaining = remainingSteps(selectedRankedPath(doc, user.selectedPathRank), completedIds);
+    const steps = computeStepStatuses(remaining, fullGraph.data?.edges, held);
+    return new Map<string, StepView>(steps.map(s => [s.skillId, s]));
+  }, [activePath.data, user, fullGraph.data, held]);
 
   const resetView = useCallback(() => {
     const rect = svgRef.current?.getBoundingClientRect();
@@ -102,6 +132,17 @@ export default function GraphExplorer() {
   }, [dragging]);
 
   const onMouseUp = useCallback(() => setDragging(false), []);
+
+  // Tooltips open to the left/top of the cursor near the right/bottom edge so they stay on screen.
+  function tipPosition(x: number, y: number): React.CSSProperties {
+    const rect = svgRef.current?.getBoundingClientRect();
+    const w = rect?.width ?? Infinity;
+    const h = rect?.height ?? Infinity;
+    return {
+      ...(x > w - 300 ? { right: w - x + 16 } : { left: x + 16 }),
+      ...(y > h - 200 ? { bottom: h - y + 12 } : { top: y - 20 }),
+    };
+  }
 
   function getPrereqs(nodeId: string) {
     return edges
@@ -205,6 +246,8 @@ export default function GraphExplorer() {
               if (!pos) return null;
               const isHovered = hoveredNode === node.id;
               const catColor = categoryColor(node.category);
+              const status = graphNodeStatus(node.id, held, stepById);
+              const style = STATUS_STYLE[status];
 
               return (
                 <g
@@ -218,19 +261,25 @@ export default function GraphExplorer() {
                   onMouseLeave={() => { setHoveredNode(null); setTooltip(null); }}
                   style={{ cursor: "pointer" }}
                 >
-                  {/* Outer ring for category */}
+                  {/* Outer ring for category, inner circle for status */}
                   <circle r={isHovered ? 26 : 22} fill={catColor} opacity={0.15} />
-                  <circle r={isHovered ? 20 : 16} fill={catColor} />
-                  <text
-                    y={isHovered ? 34 : 28}
-                    textAnchor="middle"
-                    fill="var(--foreground)"
-                    fontSize="11"
-                    fontFamily="'DM Sans', sans-serif"
-                    fontWeight="600"
-                  >
-                    {node.name}
-                  </text>
+                  <circle r={isHovered ? 20 : 16} fill={style.color} opacity={isHovered ? 1 : style.opacity} />
+                  {status === "known" && (
+                    <text textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="10">✓</text>
+                  )}
+                  {(isHovered || status !== "outside" || view.zoom >= LABEL_ZOOM) && (
+                    <text
+                      y={isHovered ? 34 : 28}
+                      textAnchor="middle"
+                      fill="var(--foreground)"
+                      fillOpacity={status === "outside" && !isHovered ? 0.7 : 1}
+                      fontSize="11"
+                      fontFamily="'DM Sans', sans-serif"
+                      fontWeight="600"
+                    >
+                      {node.name}
+                    </text>
+                  )}
                 </g>
               );
             })}
@@ -240,12 +289,12 @@ export default function GraphExplorer() {
         {/* Tooltip */}
         {tooltip && (
           <div
-            className="absolute pointer-events-none z-20 bg-card border border-border rounded-xl shadow-xl p-3 min-w-44 max-w-64"
-            style={{ left: tooltip.x + 16, top: tooltip.y - 20 }}
+            className="absolute pointer-events-none z-20 bg-card border border-border rounded-xl shadow-xl p-3 min-w-44 max-w-72"
+            style={tipPosition(tooltip.x, tooltip.y)}
           >
             <p className="font-display font-700 text-sm text-foreground mb-1">{tooltip.node.name}</p>
             <p className="text-xs font-mono text-muted-foreground mb-2">
-              {formatHours(tooltip.node.estHours)} · {categoryLabel(tooltip.node.category)}
+              {categoryLabel(tooltip.node.category)} · {formatHours(tooltip.node.estHours)} · {formatPercent(tooltip.node.marketDemand)} demand
             </p>
             {getPrereqs(tooltip.node.id).length > 0 && (
               <div>
@@ -257,6 +306,23 @@ export default function GraphExplorer() {
                 </div>
               </div>
             )}
+            {(() => {
+              const style = STATUS_STYLE[graphNodeStatus(tooltip.node.id, held, stepById)];
+              const step = stepById.get(tooltip.node.id);
+              return (
+                <>
+                  <div className="mt-2 flex items-center gap-1.5 text-xs font-mono text-foreground">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: style.color }} />
+                    {style.label}
+                  </div>
+                  {step && (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      <span className="font-600 text-foreground">Step #{step.order}</span> — {step.rationale}
+                    </p>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
 
@@ -264,7 +330,7 @@ export default function GraphExplorer() {
         {edgeTooltip && !tooltip && (
           <div
             className="absolute pointer-events-none z-20 bg-card border border-border rounded-xl shadow-xl p-3 max-w-72"
-            style={{ left: edgeTooltip.x + 16, top: edgeTooltip.y - 20 }}
+            style={tipPosition(edgeTooltip.x, edgeTooltip.y)}
           >
             <p className="font-display font-700 text-sm text-foreground mb-1">
               {nodeById.get(edgeTooltip.edge.source)?.name ?? "?"}
@@ -278,14 +344,9 @@ export default function GraphExplorer() {
         {/* Legend */}
         <div className="absolute bottom-4 left-4 bg-card/90 backdrop-blur border border-border rounded-xl p-3 flex flex-col gap-1.5">
           <p className="font-mono text-xs text-muted-foreground uppercase tracking-wider mb-1">Status</p>
-          {[
-            { label: "Completed",   color: "#10b981" },
-            { label: "In Progress", color: "#6366f1" },
-            { label: "Unlocked",    color: "#6366f1", opacity: 0.5 },
-            { label: "Locked",      color: "#94a3b8" },
-          ].map(l => (
+          {Object.values(STATUS_STYLE).map(l => (
             <div key={l.label} className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ background: l.color, opacity: l.opacity ?? 1 }} />
+              <div className="w-3 h-3 rounded-full" style={{ background: l.color, opacity: l.opacity }} />
               <span className="text-xs text-muted-foreground">{l.label}</span>
             </div>
           ))}

@@ -61,3 +61,16 @@ export function prerequisiteGroups(
   }
   return [...mandatory, ...groups.values()];
 }
+
+/** Colour class of a skill in the graph explorer. */
+export type GraphNodeStatus = 'known' | StepStatus | 'outside';
+
+/** Held skills win; otherwise a step of the selected path keeps its step status; anything else is outside the path. */
+export function graphNodeStatus(
+  skillId: string,
+  held: ReadonlyMap<string, number>,
+  stepById: ReadonlyMap<string, Pick<StepView, 'status'>>,
+): GraphNodeStatus {
+  if ((held.get(skillId) ?? 0) >= 1) return 'known';
+  return stepById.get(skillId)?.status ?? 'outside';
+}
