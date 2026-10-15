@@ -1,8 +1,13 @@
-import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { AppProvider, useApp } from "@/context/AppContext";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { AppProvider } from "@/context/AppContext";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { AuthProvider } from "@/auth/AuthContext";
+import { RequireAdmin, RequireAuth, RequireTargetRole } from "@/auth/guards";
+import { queryClient } from "@/lib/queryClient";
 import { ToastContainer } from "@/components/ui";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Navbar from "@/components/Navbar";
 
 import Landing from "@/pages/Landing";
@@ -16,7 +21,7 @@ import Progress from "@/pages/Progress";
 import Settings from "@/pages/Settings";
 import Admin from "@/pages/Admin";
 
-const NO_NAV = ["/", "/auth", "/onboarding/skills", "/onboarding/role"];
+const NO_NAV = ["/", "/login", "/register", "/onboarding/skills", "/onboarding/role"];
 
 function AppShell() {
   const { pathname } = useLocation();
@@ -31,17 +36,20 @@ function AppShell() {
         </div>
       )}
       <Routes>
-        <Route path="/"                   element={<Landing />} />
-        <Route path="/auth"               element={<Auth />} />
-        <Route path="/onboarding/skills"  element={<OnboardingSkills />} />
-        <Route path="/onboarding/role"    element={<OnboardingRole />} />
-        <Route path="/dashboard"          element={<RequireAuth><Dashboard /></RequireAuth>} />
-        <Route path="/graph"              element={<RequireAuth><GraphExplorer /></RequireAuth>} />
-        <Route path="/alternatives"       element={<RequireAuth><Alternatives /></RequireAuth>} />
-        <Route path="/progress"           element={<RequireAuth><Progress /></RequireAuth>} />
-        <Route path="/settings"           element={<RequireAuth><Settings /></RequireAuth>} />
-        <Route path="/admin"              element={<RequireAuth><Admin /></RequireAuth>} />
-        <Route path="*"                   element={<Navigate to="/" replace />} />
+        <Route path="/"                        element={<Landing />} />
+        <Route path="/login"                   element={<Auth mode="login" />} />
+        <Route path="/register"                element={<Auth mode="register" />} />
+        <Route path="/auth"                    element={<Navigate to="/login" replace />} />
+        <Route path="/onboarding/skills"       element={<RequireAuth><OnboardingSkills /></RequireAuth>} />
+        <Route path="/onboarding/role"         element={<RequireAuth><OnboardingRole /></RequireAuth>} />
+        <Route path="/dashboard"               element={<RequireAuth><RequireTargetRole><Dashboard /></RequireTargetRole></RequireAuth>} />
+        <Route path="/dashboard/alternatives"  element={<RequireAuth><RequireTargetRole><Alternatives /></RequireTargetRole></RequireAuth>} />
+        <Route path="/alternatives"            element={<Navigate to="/dashboard/alternatives" replace />} />
+        <Route path="/progress"                element={<RequireAuth><RequireTargetRole><Progress /></RequireTargetRole></RequireAuth>} />
+        <Route path="/graph"                   element={<RequireAuth><GraphExplorer /></RequireAuth>} />
+        <Route path="/settings"                element={<RequireAuth><Settings /></RequireAuth>} />
+        <Route path="/admin"                   element={<RequireAuth><RequireAdmin><Admin /></RequireAdmin></RequireAuth>} />
+        <Route path="*"                        element={<Navigate to="/" replace />} />
       </Routes>
       <ToastContainer />
     </div>
@@ -49,7 +57,7 @@ function AppShell() {
 }
 
 function NavbarMinimal() {
-  const { darkMode, toggleDark } = useApp();
+  const { darkMode, toggleDark } = useTheme();
   return (
     <button
       onClick={toggleDark}
@@ -60,21 +68,22 @@ function NavbarMinimal() {
   );
 }
 
-function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { isLoggedIn } = useApp();
-  const { pathname } = useLocation();
-  if (!isLoggedIn) return <Navigate to="/auth" state={{ from: pathname }} replace />;
-  return <>{children}</>;
-}
-
 export default function App() {
   return (
-    <AppProvider>
-      <ToastProvider>
-        <BrowserRouter>
-          <AppShell />
-        </BrowserRouter>
-      </ToastProvider>
-    </AppProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <ToastProvider>
+            <BrowserRouter>
+              <AuthProvider>
+                <AppProvider>
+                  <AppShell />
+                </AppProvider>
+              </AuthProvider>
+            </BrowserRouter>
+          </ToastProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

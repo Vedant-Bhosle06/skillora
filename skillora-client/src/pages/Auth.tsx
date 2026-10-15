@@ -1,25 +1,41 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Button, Input, Card, Divider } from "@/components/ui";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/auth/AuthContext";
+import { toApiError } from "@/api/client";
 import { useToast } from "@/context/ToastContext";
+import { nextRouteFor } from "@/lib/redirect";
 
 function validateEmail(e: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 }
 
-export default function Auth() {
-  const [mode, setMode] = useState<"login" | "register">("login");
+type Mode = "login" | "register";
+
+interface FormError {
+  message: string;
+  emailTaken?: boolean;
+}
+
+export default function Auth({ mode }: { mode: Mode }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<FormError | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const { setLoggedIn, onboardingDone } = useApp();
+  const { status, user, login, register } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: unknown } | null)?.from;
+
+  // The only post-login redirect: once the session is loaded, leave this page.
+  if (status === "authenticated" && user) {
+    return <Navigate to={nextRouteFor(user, from)} replace />;
+  }
 
   function validate() {
     const e: Record<string, string> = {};
@@ -32,13 +48,33 @@ export default function Auth() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!validate()) return;
+    if (loading || !validate()) return;
+    setFormError(null);
+
     setLoading(true);
-    await new Promise(r => setTimeout(r, 800));
-    setLoading(false);
-    setLoggedIn(true);
-    showToast(mode === "login" ? "Welcome back, Alex!" : "Account created — let's set up your profile", "success");
-    navigate(onboardingDone ? "/dashboard" : "/onboarding/skills");
+    try {
+      if (mode === "register") {
+        await register(name.trim(), email.trim(), password);
+        showToast("Account created — let's set up your profile", "success");
+      } else {
+        const me = await login(email.trim(), password);
+        showToast(`Welcome back, ${me.name}!`, "success");
+      }
+      setPassword("");
+    } catch (err) {
+      const apiErr = toApiError(err);
+      if (apiErr.status === 401) setFormError({ message: "Invalid email or password" });
+      else if (apiErr.status === 409 && mode === "register") setFormError({ message: "An account with this email already exists", emailTaken: true });
+      else setFormError({ message: apiErr.message });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function switchMode() {
+    setErrors({});
+    setFormError(null);
+    navigate(mode === "login" ? "/register" : "/login", { state: location.state, replace: true });
   }
 
   const passStrength = password.length === 0 ? 0 : password.length < 8 ? 1 : password.length < 12 ? 2 : /[A-Z]/.test(password) && /[0-9]/.test(password) ? 4 : 3;
@@ -103,6 +139,18 @@ export default function Auth() {
               )}
             </div>
 
+            {formError && (
+              <div role="alert" className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-600 dark:text-red-400">
+                {formError.message}
+                {formError.emailTaken && (
+                  <>
+                    {" — "}
+                    <Link to="/login" state={location.state} replace onClick={() => { setErrors({}); setFormError(null); }} className="font-500 underline">Sign in instead</Link>
+                  </>
+                )}
+              </div>
+            )}
+
             <Button type="submit" size="lg" className="w-full mt-2" disabled={loading}>
               {loading ? "Please wait…" : mode === "login" ? "Sign in →" : "Create account →"}
             </Button>
@@ -113,7 +161,8 @@ export default function Auth() {
           <p className="text-center text-sm text-muted-foreground">
             {mode === "login" ? "Don't have an account? " : "Already have an account? "}
             <button
-              onClick={() => { setMode(m => m === "login" ? "register" : "login"); setErrors({}); }}
+              type="button"
+              onClick={switchMode}
               className="text-primary font-500 hover:underline"
             >
               {mode === "login" ? "Create one" : "Sign in"}
@@ -122,7 +171,7 @@ export default function Auth() {
 
           {mode === "login" && (
             <p className="text-center text-xs text-muted-foreground mt-3">
-              <button className="hover:underline">Forgot password?</button>
+              Forgot your password? Contact an administrator.
             </p>
           )}
         </Card>

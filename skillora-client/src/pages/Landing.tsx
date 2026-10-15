@@ -1,14 +1,8 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, StatTile, Card } from "@/components/ui";
-import { useApp } from "@/context/AppContext";
-
-const stats = [
-  { label: "Skills Mapped",    value: "2,400+",  sub: "and growing" },
-  { label: "Learning Paths",   value: "18,000",  sub: "generated this month" },
-  { label: "Avg Time to Role", value: "4.2 mo",  sub: "for active learners" },
-  { label: "Demand Accuracy",  value: "94%",     sub: "vs. live job postings" },
-];
+import { useAuth } from "@/auth/AuthContext";
+import { usePublicStats } from "@/api/queries";
 
 const steps = [
   { n: "01", title: "Map Your Skills",     body: "Tell us what you know and at what level. Our proficiency model adapts to your answers — no lengthy assessments." },
@@ -25,13 +19,21 @@ const roadmapTeaser = [
 ];
 
 export default function Landing() {
-  const { isLoggedIn, setLoggedIn, setOnboardingDone } = useApp();
+  const { status } = useAuth();
+  const signedIn = status === "authenticated";
   const navigate = useNavigate();
+  const publicStats = usePublicStats();
+  const live = publicStats.isSuccess ? publicStats.data : null;
 
-  function handleDemo() {
-    setLoggedIn(true);
-    setOnboardingDone(true);
-    navigate("/dashboard");
+  const stats = [
+    { label: "Skills mapped", value: live ? String(live.skillCount) : "—", sub: "in the skill graph" },
+    { label: "Target roles",  value: live ? String(live.roleCount) : "—",  sub: "ranked by demand" },
+    { label: "Search",        value: "A* algorithm",                     sub: "cost + market demand" },
+    { label: "Alternatives",  value: "Up to 3 ranked routes",            sub: "compare the trade-offs" },
+  ];
+
+  function scrollToHowItWorks() {
+    document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
   }
 
   return (
@@ -42,7 +44,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-6 pt-24 pb-20 grid md:grid-cols-2 gap-16 items-center">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary rounded-full text-xs font-mono text-secondary-foreground mb-6">
-              ◉ Now in beta — join 12,000 learners
+              ◉ A* search over a curated skill graph
             </div>
             <h1 className="font-display font-800 text-5xl md:text-6xl leading-tight text-foreground mb-6">
               Your skill graph.<br />
@@ -52,12 +54,12 @@ export default function Landing() {
               SKILLORA maps your existing skills onto a knowledge graph, finds your target role, and builds a personalized, ordered learning roadmap — not a random course list.
             </p>
             <div className="flex flex-wrap gap-3">
-              {isLoggedIn ? (
+              {signedIn ? (
                 <Button size="lg" onClick={() => navigate("/dashboard")}>Open Dashboard →</Button>
               ) : (
                 <>
-                  <Button size="lg" onClick={() => navigate("/auth")}>Get started free →</Button>
-                  <Button size="lg" variant="ghost" onClick={handleDemo}>View demo</Button>
+                  <Button size="lg" onClick={() => navigate("/register")}>Get started free →</Button>
+                  <Button size="lg" variant="ghost" onClick={() => navigate("/login")}>Sign in</Button>
                 </>
               )}
             </div>
@@ -66,7 +68,7 @@ export default function Landing() {
           {/* Roadmap teaser */}
           <div className="hidden md:block">
             <Card className="p-6">
-              <p className="font-display font-700 text-sm text-muted-foreground uppercase tracking-wider mb-4">ML Engineer — Your Path</p>
+              <p className="font-display font-700 text-sm text-muted-foreground uppercase tracking-wider mb-4">Example roadmap</p>
               <div className="flex flex-col gap-0">
                 {roadmapTeaser.map((node, i) => (
                   <div key={node.label} className="flex items-center gap-3">
@@ -105,7 +107,7 @@ export default function Landing() {
       </section>
 
       {/* How it works */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
+      <section id="how-it-works" className="scroll-mt-6 max-w-6xl mx-auto px-6 py-20">
         <div className="text-center mb-14">
           <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-3">How it works</p>
           <h2 className="font-display font-800 text-4xl text-foreground">Three steps to your next role</h2>
@@ -127,8 +129,12 @@ export default function Landing() {
           <h2 className="font-display font-800 text-4xl text-primary-foreground mb-4">Start mapping your growth today</h2>
           <p className="text-primary-foreground/70 mb-8 text-lg">Free forever for individual learners.</p>
           <div className="flex justify-center gap-3">
-            <Button size="lg" variant="secondary" onClick={() => navigate("/auth")}>Create free account</Button>
-            <Button size="lg" className="bg-white/10 text-white border border-white/20 hover:bg-white/20" onClick={handleDemo}>Live demo</Button>
+            {signedIn ? (
+              <Button size="lg" variant="secondary" onClick={() => navigate("/dashboard")}>Open Dashboard →</Button>
+            ) : (
+              <Button size="lg" variant="secondary" onClick={() => navigate("/register")}>Create free account</Button>
+            )}
+            <Button size="lg" className="bg-white/10 text-white border border-white/20 hover:bg-white/20" onClick={scrollToHowItWorks}>How it works</Button>
           </div>
         </div>
       </section>

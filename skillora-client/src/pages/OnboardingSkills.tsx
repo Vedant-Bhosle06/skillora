@@ -1,22 +1,50 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Badge, ProficiencyBadge, Card } from "@/components/ui";
-import { skills, userSkills as defaultUserSkills } from "@/data/mock";
-import type { Proficiency, UserSkill } from "@/data/mock";
+import { Button, ProficiencyBadge, Card, PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import type { Proficiency, Skill } from "@/api/types";
+import { useSaveSkills, useSkillsCatalog, useSkillSearch } from "@/api/queries";
+import { useAuth } from "@/auth/AuthContext";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { categoryLabel, formatHours } from "@/lib/format";
+import { refId } from "@/lib/requirements";
 import { useToast } from "@/context/ToastContext";
 
 const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"];
+
+interface SelectedSkill { skillId: string; proficiency: Proficiency }
 
 export default function OnboardingSkills() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<UserSkill[]>(defaultUserSkills);
-
-  const filtered = skills.filter(s =>
-    s.name.toLowerCase().includes(search.toLowerCase()) ||
-    s.category.toLowerCase().includes(search.toLowerCase())
+  const { user } = useAuth();
+  // Pre-filled from the saved profile, so the page also works for re-editing from Settings.
+  const [selected, setSelected] = useState<SelectedSkill[]>(() =>
+    (user?.currentSkills ?? []).flatMap(s => {
+      const skillId = refId(s.skillId);
+      return skillId ? [{ skillId, proficiency: s.proficiency }] : [];
+    })
   );
+  const saveSkills = useSaveSkills();
+  const debounced = useDebouncedValue(search.trim());
+
+  const catalog = useSkillsCatalog();
+  const searchQuery = useSkillSearch(debounced);
+  const searching = debounced.length > 0;
+
+  // Empty search: the whole catalog grouped by category label, sorted by category then name.
+  const groups = useMemo(() => {
+    const byCategory = new Map<string, Skill[]>();
+    for (const skill of catalog.data ?? []) {
+      const label = categoryLabel(skill.category);
+      const list = byCategory.get(label) ?? [];
+      list.push(skill);
+      byCategory.set(label, list);
+    }
+    return [...byCategory.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([label, list]) => ({ label, skills: [...list].sort((a, b) => a.name.localeCompare(b.name)) }));
+  }, [catalog.data]);
 
   function toggle(skillId: string) {
     setSelected(prev => {
@@ -30,12 +58,97 @@ export default function OnboardingSkills() {
     setSelected(prev => prev.map(s => s.skillId === skillId ? { ...s, proficiency: level } : s));
   }
 
-  function handleNext() {
-    if (selected.length === 0) { showToast("Select at least one skill to continue", "warning"); return; }
-    navigate("/onboarding/role");
+  // The endpoint replaces the whole list, so always send every selected skill.
+  function save(skills: SelectedSkill[]) {
+    saveSkills.mutate(skills, {
+      onSuccess: () => navigate("/onboarding/role"),
+      onError: (err) => showToast(err.message, "error"),
+    });
   }
 
-  const categories = [...new Set(skills.map(s => s.category))];
+  function renderSkillCard(skill: Skill) {
+    const sel = selected.find(s => s.skillId === skill._id);
+    return (
+      <div
+        key={skill._id}
+        title={skill.description || undefined}
+        className={`rounded-lg border transition-all cursor-pointer p-3 ${
+          sel ? "border-primary bg-secondary/50" : "border-border bg-card hover:border-primary/40"
+        }`}
+      >
+        <div className="flex items-center justify-between mb-1" onClick={() => toggle(skill._id)}>
+          <div className="flex items-center gap-2">
+            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center text-xs transition-all ${
+              sel ? "bg-primary border-primary text-white" : "border-border"
+            }`}>
+              {sel && "✓"}
+            </div>
+            <span className="text-sm font-600 text-foreground">{skill.name}</span>
+          </div>
+          <span className="text-xs font-mono text-muted-foreground">{formatHours(skill.estHours)}</span>
+        </div>
+
+        {sel && (
+          <div className="mt-2 flex items-center gap-1 pl-6">
+            {proficiencyLevels.map(level => (
+              <button
+                key={level}
+                onClick={() => setProficiency(skill._id, level)}
+                className={`px-2 py-0.5 rounded-full text-xs font-mono transition-all ${
+                  sel.proficiency === level
+                    ? level === "beginner"     ? "bg-emerald-500 text-white"
+                    : level === "intermediate" ? "bg-amber-500 text-white"
+                                               : "bg-purple-500 text-white"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function renderSkills() {
+    if (catalog.isPending) return <PageLoader label="Loading skills…" />;
+    if (catalog.isError) {
+      return <ErrorState title="Couldn't load skills" message={catalog.error.message} onRetry={() => catalog.refetch()} />;
+    }
+
+    if (searching) {
+      if (searchQuery.isError) {
+        return <ErrorState title="Search failed" message={searchQuery.error.message} onRetry={() => searchQuery.refetch()} />;
+      }
+      if (!searchQuery.data) return <PageLoader label="Searching…" />;
+      if (searchQuery.data.length === 0) {
+        return <EmptyState icon="⌕" title="No skills match" description={`Nothing found for “${debounced}”. Try another name or alias.`} />;
+      }
+      return (
+        <div className="mb-6">
+          <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-3">
+            Results ({searchQuery.data.length})
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {searchQuery.data.map(renderSkillCard)}
+          </div>
+        </div>
+      );
+    }
+
+    if (groups.length === 0) {
+      return <EmptyState icon="◎" title="No skills yet" description="The skill catalog is empty." />;
+    }
+    return groups.map(group => (
+      <div key={group.label} className="mb-6">
+        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-3">{group.label}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {group.skills.map(renderSkillCard)}
+        </div>
+      </div>
+    ));
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -61,7 +174,7 @@ export default function OnboardingSkills() {
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">⌕</span>
           <input
             className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
-            placeholder="Search skills or categories…"
+            placeholder="Search skills by name or alias…"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -70,57 +183,7 @@ export default function OnboardingSkills() {
           )}
         </div>
 
-        {/* Skills by category */}
-        {categories.filter(cat => filtered.some(s => s.category === cat)).map(cat => (
-          <div key={cat} className="mb-6">
-            <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-3">{cat}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {filtered.filter(s => s.category === cat).map(skill => {
-                const sel = selected.find(s => s.skillId === skill.id);
-                return (
-                  <div
-                    key={skill.id}
-                    className={`rounded-lg border transition-all cursor-pointer p-3 ${
-                      sel ? "border-primary bg-secondary/50" : "border-border bg-card hover:border-primary/40"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1" onClick={() => toggle(skill.id)}>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center text-xs transition-all ${
-                          sel ? "bg-primary border-primary text-white" : "border-border"
-                        }`}>
-                          {sel && "✓"}
-                        </div>
-                        <span className="text-sm font-600 text-foreground">{skill.name}</span>
-                      </div>
-                      <span className="text-xs font-mono text-muted-foreground">{skill.estimatedHours}h</span>
-                    </div>
-
-                    {sel && (
-                      <div className="mt-2 flex items-center gap-1 pl-6">
-                        {proficiencyLevels.map(level => (
-                          <button
-                            key={level}
-                            onClick={() => setProficiency(skill.id, level)}
-                            className={`px-2 py-0.5 rounded-full text-xs font-mono transition-all ${
-                              sel.proficiency === level
-                                ? level === "beginner"     ? "bg-emerald-500 text-white"
-                                : level === "intermediate" ? "bg-amber-500 text-white"
-                                                           : "bg-purple-500 text-white"
-                                : "bg-muted text-muted-foreground hover:bg-muted/80"
-                            }`}
-                          >
-                            {level}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+        {renderSkills()}
 
         {/* Selected summary */}
         {selected.length > 0 && (
@@ -128,7 +191,7 @@ export default function OnboardingSkills() {
             <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-3">Selected ({selected.length})</p>
             <div className="flex flex-wrap gap-2">
               {selected.map(s => {
-                const skill = skills.find(sk => sk.id === s.skillId);
+                const skill = catalog.byId.get(s.skillId);
                 return skill ? (
                   <div key={s.skillId} className="flex items-center gap-1.5 bg-card border border-border rounded-full px-3 py-1">
                     <span className="text-xs font-500 text-foreground">{skill.name}</span>
@@ -141,9 +204,14 @@ export default function OnboardingSkills() {
           </Card>
         )}
 
-        <div className="flex justify-end">
-          <Button size="lg" onClick={handleNext}>
-            Next: Pick your role →
+        <div className="flex justify-end items-center gap-3">
+          {selected.length === 0 && (
+            <Button size="lg" variant="secondary" disabled={saveSkills.isPending} onClick={() => save([])}>
+              I'm starting from scratch →
+            </Button>
+          )}
+          <Button size="lg" disabled={selected.length === 0 || saveSkills.isPending} onClick={() => save(selected)}>
+            {saveSkills.isPending ? "Saving…" : "Next: Pick your role →"}
           </Button>
         </div>
       </div>
