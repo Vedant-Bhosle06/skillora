@@ -39,10 +39,11 @@ export default function Navbar() {
     if (signingOut) return;
     setSigningOut(true);
     setAvatarOpen(false);
+    // Leave the guarded page first, so RequireAuth doesn't bounce to /login when the session clears.
+    navigate("/");
     await logout();
     setSigningOut(false);
     showToast("Signed out successfully", "success");
-    navigate("/");
   }
 
   return (
