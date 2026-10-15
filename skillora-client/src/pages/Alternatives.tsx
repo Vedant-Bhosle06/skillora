@@ -1,8 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Badge, Card, PageLoader, ErrorState, EmptyState } from "@/components/ui";
-import { useAlternatives, useSkillsCatalog } from "@/api/queries";
+import { useAlternatives, useSelectPath, useSkillsCatalog } from "@/api/queries";
 import { useCurrentUser } from "@/auth/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
 import TradeoffChart from "@/components/TradeoffChart";
 import { formatHours, formatPercent } from "@/lib/format";
@@ -15,8 +16,20 @@ export default function Alternatives() {
   const pathDoc = fresh.pathDoc && fresh.pathDoc.targetRoleId === user.targetRoleId?._id ? fresh.pathDoc : null;
   const alternatives = useAlternatives(pathDoc?._id ?? null);
   const catalog = useSkillsCatalog();
+  const selectPath = useSelectPath();
+  const { showToast } = useToast();
 
   const skillName = (id: string) => catalog.byId.get(id)?.name ?? "Unknown skill";
+
+  function handleSelect(rank: number) {
+    selectPath.mutate(rank, {
+      onSuccess: () => {
+        showToast(`Switched to ${pathLabel(rank)} — your roadmap has been updated.`, "success");
+        navigate("/dashboard");
+      },
+      onError: (err) => showToast(err.message, "error"),
+    });
+  }
 
   function renderBody() {
     if (fresh.isLoading) return <PageLoader label="Loading your paths…" />;
@@ -124,6 +137,19 @@ export default function Alternatives() {
                     <p className="text-xs text-muted-foreground pl-6">+{path.steps.length - 5} more</p>
                   )}
                 </div>
+              </div>
+
+              {/* CTA */}
+              <div className="p-4 border-t border-border">
+                <Button
+                  size="sm"
+                  variant={isCurrent ? "secondary" : "primary"}
+                  className="w-full justify-center"
+                  disabled={isCurrent || selectPath.isPending}
+                  onClick={() => handleSelect(path.rank)}
+                >
+                  {isCurrent ? "✓ Currently selected" : "Select this path →"}
+                </Button>
               </div>
             </Card>
           );
