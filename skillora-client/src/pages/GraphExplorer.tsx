@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect, useLayoutEffect, useMemo } from "react";
-import { PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import { useNavigate } from "react-router-dom";
+import { Button, PageLoader, ErrorState, EmptyState } from "@/components/ui";
 import SkillDetailPanel from "@/components/SkillDetailPanel";
 import { useActivePath, useGraph, type GraphScope } from "@/api/queries";
 import { toApiError } from "@/api/client";
@@ -41,9 +42,12 @@ const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z));
 const LABEL_ZOOM = 0.6;
 
 export default function GraphExplorer() {
-  const [scope, setScope] = useState<GraphScope>("full");
-  const graph = useGraph(scope);
+  const navigate = useNavigate();
   const user = useCurrentUser();
+  const [scope, setScope] = useState<GraphScope>("full");
+  // scope=path silently returns the full graph when there is no path yet (Gotcha 4), so don't ask for it.
+  const needsPath = scope === "path" && !user.activePathId;
+  const graph = useGraph(scope, !needsPath);
   // Step statuses need every prerequisite edge, which the path-scoped graph may leave out.
   const fullGraph = useGraph("full");
   const activePath = useActivePath();
@@ -53,6 +57,16 @@ export default function GraphExplorer() {
   const [hoveredEdge, setHoveredEdge] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const closePanel = useCallback(() => setSelectedId(null), []);
+
+  const changeScope = (next: GraphScope) => {
+    if (next === scope) return;
+    setScope(next);
+    setSelectedId(null);
+    setHoveredNode(null);
+    setHoveredEdge(null);
+    setTooltip(null);
+    setEdgeTooltip(null);
+  };
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [view, setView] = useState<View>({ zoom: 0.85, pan: { x: 0, y: 0 } });
   const [dragging, setDragging] = useState(false);
@@ -163,6 +177,16 @@ export default function GraphExplorer() {
   const categories = useMemo(() => [...new Set(nodes.map(n => n.category))].sort(), [nodes]);
 
   function renderCanvas() {
+    if (needsPath) {
+      return (
+        <EmptyState
+          icon="◎"
+          title="Compute a path first"
+          description="Pick a target role and compute your learning path on the Dashboard, then come back to see it here."
+          action={<Button onClick={() => navigate("/dashboard")}>Go to Dashboard →</Button>}
+        />
+      );
+    }
     if (graph.isPending) return <PageLoader label="Loading the skill graph…" />;
     if (graph.isError) {
       return (
@@ -392,7 +416,7 @@ export default function GraphExplorer() {
           {(["full", "path"] as const).map(s => (
             <button
               key={s}
-              onClick={() => setScope(s)}
+              onClick={() => changeScope(s)}
               className={`px-3 py-1.5 text-xs font-mono transition-colors ${scope === s ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}
             >
               {s === "full" ? "Full graph" : "My path"}
