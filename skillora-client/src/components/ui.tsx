@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect } from "react";
 import { useToast } from "@/context/ToastContext";
-import type { NodeStatus, Proficiency } from "@/data/mock";
+import type { NodeStatus, Proficiency } from "@/lib/types";
 
 // ── Button ────────────────────────────────────────────────────────────────────
 

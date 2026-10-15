@@ -1,5 +1,5 @@
-export type Proficiency = "beginner" | "intermediate" | "advanced";
-export type NodeStatus = "completed" | "in-progress" | "locked" | "unlocked";
+import type { NodeStatus, Proficiency } from "@/lib/types";
+export type { NodeStatus, Proficiency };
 
 export interface Skill {
   id: string;
