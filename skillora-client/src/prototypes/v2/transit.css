@@ -1,0 +1,41 @@
+/* Prototype v2 · Transit — the learning path as a metro line (wayfinding / transit diagrams). */
+@import 'tailwindcss';
+
+@theme {
+  --font-sign: 'Overpass Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-time: 'Overpass Mono', ui-monospace, monospace;
+  --color-t-bg: var(--t-bg);
+  --color-t-ink: var(--t-ink);
+  --color-t-muted: var(--t-muted);
+  --color-t-rule: var(--t-rule);
+  --color-t-panel: var(--t-panel);
+  --color-t-route: var(--l-route);
+}
+
+:root {
+  --t-bg: #f6f6f3; --t-ink: #14161a; --t-muted: #575c66; --t-rule: #d6d7d1; --t-panel: #ffffff;
+  --l-route: #d42a3c; --l-blue: #1f6fb2; --l-green: #1b8f57; --l-yellow: #c99300; --l-orange: #e2621a; --l-grey: #8c9099;
+  --station: #ffffff; --casing: #f6f6f3;
+  --logo-from: #d42a3c; --logo-to: #d42a3c; --logo-tile-from: #d42a3c; --logo-tile-to: #a81d2d; --foreground: #14161a;
+  color-scheme: light;
+}
+.dark {
+  --t-bg: #0e1013; --t-ink: #f1f1ee; --t-muted: #a3a8b1; --t-rule: #2b2f36; --t-panel: #16191e;
+  --l-route: #ff5263; --l-blue: #58a8ff; --l-green: #3ccb87; --l-yellow: #ffc93c; --l-orange: #ff8a3d; --l-grey: #6b717c;
+  --station: #0e1013; --casing: #0e1013;
+  --logo-from: #ff5263; --logo-to: #ff5263; --foreground: #f1f1ee;
+  color-scheme: dark;
+}
+
+html, body { background: var(--t-bg); }
+body, body * { font-family: var(--font-sign); }
+body { color: var(--t-ink); -webkit-font-smoothing: antialiased; }
+.t-time, .t-time * { font-family: var(--font-time); font-variant-numeric: tabular-nums; }
+::selection { background: var(--l-route); color: #fff; }
+:focus-visible { outline: 3px solid var(--l-yellow); outline-offset: 3px; border-radius: 4px; }
+html { scrollbar-color: var(--t-rule) transparent; }
+
+/* Station signage: a plate with a line-coloured stripe */
+.t-sign { background: var(--t-panel); color: var(--t-ink); box-shadow: 0 1px 0 var(--t-rule), 0 8px 24px -14px rgba(0,0,0,.35); border-radius: 6px; }
+.t-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 2.1rem; height: 1.35rem; padding: 0 .4rem; border-radius: 999px; color: #fff; font-size: 11px; font-weight: 800; letter-spacing: .04em; }
+.dark .t-badge { color: #0e1013; }

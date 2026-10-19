@@ -1,0 +1,40 @@
+/* Prototype v2 · Terrain — the skill graph as a survey map; learning hours as the climb. */
+@import 'tailwindcss';
+
+@theme {
+  --font-map: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-m-paper: var(--m-paper);
+  --color-m-ink: var(--m-ink);
+  --color-m-muted: var(--m-muted);
+  --color-m-line: var(--m-line);
+  --color-m-trail: var(--m-trail);
+  --color-m-water: var(--m-water);
+  --color-m-wash: var(--m-wash);
+}
+
+:root {
+  --m-paper: #eef0e8; --m-ink: #1d241f; --m-muted: #545e57; --m-line: #c9cdbf; --m-wash: #e2e7d8;
+  --m-contour: #b08d63; --m-index: #8a6a44; --m-trail: #c4381f; --m-water: #2b6cb0;
+  --logo-from: #c4381f; --logo-to: #c4381f; --logo-tile-from: #c4381f; --logo-tile-to: #94291a; --foreground: #1d241f;
+  color-scheme: light;
+}
+.dark {
+  --m-paper: #0f1613; --m-ink: #e6ede8; --m-muted: #9eaba3; --m-line: #2a3830; --m-wash: #16221c;
+  --m-contour: #3f5f4d; --m-index: #66907a; --m-trail: #ff7a52; --m-water: #6cb4ff;
+  --logo-from: #ff7a52; --logo-to: #ff7a52; --foreground: #e6ede8;
+  color-scheme: dark;
+}
+
+html, body { background: var(--m-paper); }
+body, body * { font-family: var(--font-map); }
+body { color: var(--m-ink); -webkit-font-smoothing: antialiased; }
+::selection { background: var(--m-trail); color: #fff; }
+:focus-visible { outline: 3px solid var(--m-water); outline-offset: 3px; }
+
+/* Typographic voices of a map */
+.m-display { font-stretch: 125%; font-weight: 800; letter-spacing: 0.01em; }
+.m-place { font-stretch: 80%; font-style: italic; font-weight: 600; }
+.m-figure { font-stretch: 90%; font-variant-numeric: tabular-nums; }
+/* Legend box: ruled frame with a title bar, as on a printed sheet */
+.m-legend { background: var(--m-paper); border: 1.5px solid var(--m-ink); }
+.m-legend-head { border-bottom: 1.5px solid var(--m-ink); }
