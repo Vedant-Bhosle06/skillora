@@ -1,151 +1,120 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button, StatTile, Card } from "@/components/ui";
+import React, { useMemo, useState } from "react";
+import { m, type Variants } from "motion/react";
+import Logo from "@/components/Logo";
+import { usePublicStats, useRoles } from "@/api/queries";
+import { landingGraph } from "@/content/landingGraph";
+import LandingNav from "@/components/landing/LandingNav";
+import HeroScroll from "@/components/landing/HeroScroll";
+import Bento from "@/components/landing/Bento";
+import CursorReveal from "@/components/landing/CursorReveal";
+import { Bezel, Label, PillLink } from "@/components/landing/Glass";
 import { useAuth } from "@/auth/AuthContext";
-import { usePublicStats } from "@/api/queries";
 
-const steps = [
-  { n: "01", title: "Map Your Skills",     body: "Tell us what you know and at what level. Our proficiency model adapts to your answers — no lengthy assessments." },
-  { n: "02", title: "Pick a Target Role",  body: "Browse roles ranked by market demand. See exactly which skills you have, which you need, and by how much." },
-  { n: "03", title: "Follow Your Path",    body: "An ordered, unlockable roadmap guides you from where you are to where you want to be — no guesswork." },
-];
+// Homepage — "Nocturne Glass": a scroll-scrubbed WebGL hero drawn from the real skill graph,
+// glass bento, a cursor-lit map, live roles. Works in light and dark mode.
 
-const roadmapTeaser = [
-  { label: "Python", status: "done",     hours: 40 },
-  { label: "Statistics", status: "done", hours: 32 },
-  { label: "Machine Learning", status: "active", hours: 60 },
-  { label: "Cloud Platforms", status: "next",  hours: 36 },
-  { label: "Deep Learning", status: "locked",  hours: 80 },
-];
+const EXPO = [0.16, 1, 0.3, 1] as const;
+const rise: Variants = {
+  hidden: { opacity: 0, y: 28, filter: "blur(10px)" },
+  visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.9, ease: EXPO } },
+};
+const group: Variants = { hidden: {}, visible: { transition: { staggerChildren: 0.05 } } };
+
+const CATEGORIES = [["data", "Data"], ["engineering", "Engineering"], ["design", "Design"]] as const;
+
+function Roles() {
+  const roles = useRoles();
+  const [cat, setCat] = useState<string>("data");
+  const shown = useMemo(
+    () => (roles.data ?? []).filter(r => r.category === cat).sort((a, b) => b.demandScore - a.demandScore),
+    [roles.data, cat],
+  );
+  return (
+    <section id="roles" className="relative mx-auto max-w-6xl px-5 py-24 sm:px-8 md:py-32">
+      <div className="grid gap-12 md:grid-cols-[1fr_1.4fr]">
+        <m.div variants={rise} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+          <Label>{roles.data ? `${roles.data.length} roles` : "Roles"}</Label>
+          <h2 className="font-statement mt-5 text-[clamp(2.4rem,4.6vw,4rem)] leading-[1.02]">Pick where <span className="italic">you are headed.</span></h2>
+          <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-muted-foreground">Each role lists what it needs, including the places where more than one tool will do.</p>
+          <div className="mt-8 inline-flex rounded-full bg-foreground/[0.04] p-1 ring-1 ring-foreground/10" role="tablist" aria-label="Role category">
+            {CATEGORIES.map(([value, label]) => (
+              <button key={value} role="tab" aria-selected={cat === value} onClick={() => setCat(value)}
+                className={`rounded-full px-4 py-2 text-[13px] ${cat === value ? "bg-foreground/[0.1] text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </m.div>
+        {roles.isError ? (
+          <p className="self-center text-[15px] text-muted-foreground">Roles could not be loaded right now.</p>
+        ) : (
+          <m.ul key={cat} className="grid content-start gap-3 sm:grid-cols-2" variants={group} initial="hidden" animate="visible">
+            {(roles.isPending ? Array.from({ length: 4 }, () => null) : shown).map((r, i) => (
+              <m.li key={r?._id ?? i} variants={rise}>
+                <Bezel core="px-5 py-4">
+                  {r ? (
+                    <>
+                      <p className="font-semibold tracking-tight text-foreground">{r.title}</p>
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="h-1 flex-1 rounded-full bg-foreground/[0.08]"><div className="h-full rounded-full bg-primary" style={{ width: `${r.demandScore * 100}%` }} /></div>
+                        <span className="text-[11px] tabular-nums text-muted-foreground">demand {r.demandScore.toFixed(2)}</span>
+                      </div>
+                      <p className="mt-2 text-[12px] text-muted-foreground">{r.requiredSkills.length} requirements</p>
+                    </>
+                  ) : (
+                    <div className="h-[76px] animate-pulse rounded-xl bg-foreground/[0.05]" />
+                  )}
+                </Bezel>
+              </m.li>
+            ))}
+          </m.ul>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function Close() {
+  const { status } = useAuth();
+  const e = landingGraph.facts.evaluation;
+  return (
+    <section className="relative mx-auto max-w-6xl px-5 pb-16 sm:px-8">
+      <m.div variants={rise} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+        <Bezel core="px-6 py-16 text-center sm:px-16 sm:py-24">
+          <h2 className="font-statement mx-auto max-w-2xl text-[clamp(2.4rem,5vw,4.25rem)] leading-[1.02]">Start with <span className="italic">what you already know.</span></h2>
+          <p className="mx-auto mt-5 max-w-lg text-[15px] leading-relaxed text-muted-foreground">
+            Across {e.profiles} test profiles, plans were {e.meanSavedPct.toFixed(1)}% shorter on average than a generic roadmap, with no step out of order.
+          </p>
+          <div className="mt-10 flex justify-center">
+            {status === "authenticated" ? <PillLink to="/dashboard">Open my dashboard</PillLink> : <PillLink to="/register">Map my skills</PillLink>}
+          </div>
+        </Bezel>
+      </m.div>
+      <footer className="mt-16 flex flex-col items-center justify-between gap-4 text-[13px] text-muted-foreground sm:flex-row">
+        <Logo variant="mark" wordmark size={22} wordmarkClassName="text-[14px]" />
+        <p>{landingGraph.nodes.length} skills · {landingGraph.edges.length} links · built on an A* search</p>
+      </footer>
+    </section>
+  );
+}
 
 export default function Landing() {
-  const { status } = useAuth();
-  const signedIn = status === "authenticated";
-  const navigate = useNavigate();
   const publicStats = usePublicStats();
-  const live = publicStats.isSuccess ? publicStats.data : null;
-
-  const stats = [
-    { label: "Skills mapped", value: live ? String(live.skillCount) : "—", sub: "in the skill graph" },
-    { label: "Target roles",  value: live ? String(live.roleCount) : "—",  sub: "ranked by demand" },
-    { label: "Search",        value: "A* algorithm",                     sub: "cost + market demand" },
-    { label: "Alternatives",  value: "Up to 3 ranked routes",            sub: "compare the trade-offs" },
-  ];
-
-  function scrollToHowItWorks() {
-    document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
-  }
-
+  const stats = {
+    skills: publicStats.data?.skillCount ?? landingGraph.nodes.length,
+    roles: publicStats.data?.roleCount ?? 18,
+  };
   return (
-    <div className="bg-background min-h-screen">
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-accent/6 pointer-events-none" />
-        <div className="max-w-6xl mx-auto px-6 pt-24 pb-20 grid md:grid-cols-2 gap-16 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary rounded-full text-xs font-mono text-secondary-foreground mb-6">
-              ◉ A* search over a curated skill graph
-            </div>
-            <h1 className="font-display font-800 text-5xl md:text-6xl leading-tight text-foreground mb-6">
-              Your skill graph.<br />
-              <span className="text-primary">Your path forward.</span>
-            </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-md">
-              SKILLORA maps your existing skills onto a knowledge graph, finds your target role, and builds a personalized, ordered learning roadmap — not a random course list.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {signedIn ? (
-                <Button size="lg" onClick={() => navigate("/dashboard")}>Open Dashboard →</Button>
-              ) : (
-                <>
-                  <Button size="lg" onClick={() => navigate("/register")}>Get started free →</Button>
-                  <Button size="lg" variant="ghost" onClick={() => navigate("/login")}>Sign in</Button>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Roadmap teaser */}
-          <div className="hidden md:block">
-            <Card className="p-6">
-              <p className="font-display font-700 text-sm text-muted-foreground uppercase tracking-wider mb-4">Example roadmap</p>
-              <div className="flex flex-col gap-0">
-                {roadmapTeaser.map((node, i) => (
-                  <div key={node.label} className="flex items-center gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-mono font-500 border-2 transition-all ${
-                        node.status === "done"   ? "bg-emerald-500 border-emerald-500 text-white" :
-                        node.status === "active" ? "bg-primary border-primary text-white animate-pulse" :
-                        node.status === "next"   ? "bg-card border-primary text-primary" :
-                        "bg-card border-border text-muted-foreground"
-                      }`}>
-                        {node.status === "done" ? "✓" : i + 1}
-                      </div>
-                      {i < roadmapTeaser.length - 1 && (
-                        <div className={`w-0.5 h-8 ${node.status === "done" ? "bg-emerald-300 dark:bg-emerald-700" : "bg-border"}`} />
-                      )}
-                    </div>
-                    <div className={`flex-1 py-1 ${node.status === "locked" ? "opacity-40" : ""}`}>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-sm font-600 ${node.status === "active" ? "text-primary" : "text-foreground"}`}>{node.label}</span>
-                        <span className="text-xs font-mono text-muted-foreground">{node.hours}h</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Stat banner */}
-      <section className="border-y border-border bg-card">
-        <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {stats.map(s => <StatTile key={s.label} {...s} />)}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section id="how-it-works" className="scroll-mt-6 max-w-6xl mx-auto px-6 py-20">
-        <div className="text-center mb-14">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-3">How it works</p>
-          <h2 className="font-display font-800 text-4xl text-foreground">Three steps to your next role</h2>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6">
-          {steps.map(s => (
-            <Card key={s.n} className="p-6">
-              <span className="font-mono font-500 text-4xl text-primary/20 mb-4 block">{s.n}</span>
-              <h3 className="font-display font-700 text-lg text-foreground mb-2">{s.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{s.body}</p>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="bg-primary">
-        <div className="max-w-3xl mx-auto px-6 py-20 text-center">
-          <h2 className="font-display font-800 text-4xl text-primary-foreground mb-4">Start mapping your growth today</h2>
-          <p className="text-primary-foreground/70 mb-8 text-lg">Free forever for individual learners.</p>
-          <div className="flex justify-center gap-3">
-            {signedIn ? (
-              <Button size="lg" variant="secondary" onClick={() => navigate("/dashboard")}>Open Dashboard →</Button>
-            ) : (
-              <Button size="lg" variant="secondary" onClick={() => navigate("/register")}>Create free account</Button>
-            )}
-            <Button size="lg" className="bg-white/10 text-white border border-white/20 hover:bg-white/20" onClick={scrollToHowItWorks}>How it works</Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border bg-card">
-        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="font-display font-800 text-foreground">SKILLORA</span>
-          <p className="text-xs text-muted-foreground">© 2025 Skillora Inc. All rights reserved.</p>
-        </div>
-      </footer>
+    <div className="landing relative min-h-screen bg-background text-foreground">
+      <div className="ambient" aria-hidden><i /><i /><i /></div>
+      <LandingNav />
+      <main className="relative z-10">
+        <HeroScroll stats={stats} />
+        <Bento />
+        <CursorReveal />
+        <Roles />
+        <Close />
+      </main>
     </div>
   );
 }
