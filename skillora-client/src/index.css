@@ -15,45 +15,98 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
+  --color-glow: var(--glow);
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 4px);
   --radius-xl: calc(var(--radius) + 8px);
+  --shadow-glow: var(--glow-shadow);
+  --shadow-elevated: var(--elevated-shadow);
 }
 
+/* Motion tokens. Keep in sync with src/lib/motion.ts.
+   Plain `transition*` utilities use these defaults, so every transition shares one curve. */
+@theme {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Numeric font-weight classes. The codebase uses font-500 … font-800, which Tailwind v4 does
+   not generate (its weight utilities are named: font-medium, font-bold, …), so they rendered at
+   400. These restore the intended weights without touching every page. */
+@utility font-300 { font-weight: 300; }
+@utility font-400 { font-weight: 400; }
+@utility font-500 { font-weight: 500; }
+@utility font-600 { font-weight: 600; }
+@utility font-700 { font-weight: 700; }
+@utility font-800 { font-weight: 800; }
+@utility font-900 { font-weight: 900; }
+
 :root {
-  --background: #F7F8FC;
-  --foreground: #0E0F1A;
+  --duration-fast: 150ms;
+  --duration-base: 240ms;
+  --duration-slow: 420ms;
+  --duration-cinematic: 700ms;
+
+  /* Light theme: cool off-white with purple / blue accents */
+  --background: #F5F6FC;
+  --foreground: #0B0E1F;
   --card: #FFFFFF;
-  --card-foreground: #0E0F1A;
-  --primary: #5B5FEF;
+  --card-foreground: #0B0E1F;
+  --primary: #5B45F0;
   --primary-foreground: #FFFFFF;
-  --secondary: #EEF0FF;
-  --secondary-foreground: #3D42C4;
-  --muted: #F0F1F8;
-  --muted-foreground: #6B7280;
-  --accent: #0EA5E9;
+  --secondary: #EEEBFF;
+  --secondary-foreground: #4530D4;
+  --muted: #EEF0F8;
+  --muted-foreground: #596079;
+  --accent: #0377C4;
   --accent-foreground: #FFFFFF;
-  --border: #E2E5F0;
-  --ring: #5B5FEF;
+  --border: #DDE1F0;
+  --ring: #5B45F0;
+  --glow: rgba(91, 69, 240, 0.28);
   --radius: 10px;
+
+  --glow-shadow: 0 0 0 1px rgba(91, 69, 240, 0.10), 0 8px 30px -6px rgba(91, 69, 240, 0.28);
+  --elevated-shadow: 0 1px 2px rgba(11, 14, 31, 0.06), 0 12px 32px -12px rgba(11, 14, 31, 0.18);
+  --gradient-brand: linear-gradient(135deg, #5B45F0 0%, #0377C4 100%);
+
+  /* Logo (src/components/Logo.tsx). The tile keeps one brand gradient in both themes,
+     matching public/favicon.svg; the bare mark shifts so it stays legible on each background. */
+  --logo-from: #5B45F0;
+  --logo-to: #0377C4;
+  --logo-tile-from: #6C4DFF;
+  --logo-tile-to: #1E88E5;
 }
 
 .dark {
-  --background: #0D0F1A;
-  --foreground: #F0F1FA;
-  --card: #161824;
-  --card-foreground: #F0F1FA;
-  --primary: #6B6FF5;
+  color-scheme: dark;
+
+  /* Dark theme: navy-black with purple and electric-blue accents */
+  --background: #070A16;
+  --foreground: #EEF0FF;
+  --card: #0E1222;
+  --card-foreground: #EEF0FF;
+  --primary: #715DF8;
   --primary-foreground: #FFFFFF;
-  --secondary: #1E2035;
-  --secondary-foreground: #A5A8FF;
-  --muted: #1A1D2E;
-  --muted-foreground: #8B8FA8;
+  --secondary: #181D3D;
+  --secondary-foreground: #BDB6FF;
+  --muted: #121731;
+  --muted-foreground: #959CC0;
   --accent: #38BDF8;
-  --accent-foreground: #0D0F1A;
-  --border: #252840;
-  --ring: #6B6FF5;
+  --accent-foreground: #04121F;
+  --border: #232A52;
+  --ring: #8B7BFF;
+  --glow: rgba(113, 93, 248, 0.45);
+
+  --glow-shadow: 0 0 0 1px rgba(139, 123, 255, 0.18), 0 10px 40px -8px rgba(113, 93, 248, 0.55);
+  --elevated-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 16px 40px -16px rgba(0, 0, 0, 0.7);
+  --gradient-brand: linear-gradient(135deg, #8B7BFF 0%, #38BDF8 100%);
+
+  --logo-from: #8B7BFF;
+  --logo-to: #38BDF8;
 }
 
 html, body, #root {
@@ -78,9 +131,35 @@ h1, h2, h3, h4, h5, h6, .font-display {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
 
-/* Smooth transitions for dark mode */
-* { transition: background-color 0.2s ease, border-color 0.2s ease; }
-a, button { transition: all 0.15s ease; }
+/* Interactive defaults live in the base layer so Tailwind utilities (transition-*, duration-*)
+   still override them. Only paint-cheap properties are transitioned (no `transition: all`). */
+@layer base {
+  a, button, [role="button"], input, select, textarea, summary {
+    transition-property: color, background-color, border-color, outline-color, box-shadow, opacity, transform;
+    transition-duration: var(--duration-fast);
+    transition-timing-function: var(--ease-out-quint);
+  }
+}
+
+/* Smooth colour change while the theme is being switched (class set briefly by ThemeContext),
+   instead of a permanent transition on every element. */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow !important;
+  transition-duration: var(--duration-base) !important;
+  transition-timing-function: var(--ease-out-quint) !important;
+}
+
+/* Reusable visual helpers for the redesign */
+.text-gradient-brand {
+  background-image: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.bg-gradient-brand { background-image: var(--gradient-brand); }
 
 /* Toast animations */
 @keyframes slide-in {
@@ -91,9 +170,134 @@ a, button { transition: all 0.15s ease; }
   from { transform: translateX(0); opacity: 1; }
   to   { transform: translateX(110%); opacity: 0; }
 }
-.toast-enter { animation: slide-in 0.25s ease forwards; }
-.toast-exit  { animation: slide-out 0.25s ease forwards; }
+.toast-enter { animation: slide-in var(--duration-base) var(--ease-out-quint) forwards; }
+.toast-exit  { animation: slide-out var(--duration-base) var(--ease-in-out-smooth) forwards; }
 
 /* Graph canvas */
 .graph-canvas { cursor: grab; }
 .graph-canvas:active { cursor: grabbing; }
+
+/* Reduced motion: near-instant transitions and animations everywhere. Loading spinners keep
+   turning (they convey state); decorative pulses stop after one cycle. JS animations follow
+   the same preference through MotionConfig reducedMotion="user" and src/lib/reducedMotion.ts. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  *:not(.animate-spin), *:not(.animate-spin)::before, *:not(.animate-spin)::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ── Homepage (Nocturne Glass) ──────────────────────────────────────────────────────────
+   Shared by src/pages/Landing.tsx and src/components/landing/*. Every value has a light and
+   a dark version so the theme toggle restyles the whole page, including the WebGL hero. */
+:root {
+  --font-landing: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-wide: 'Syncopate', ui-sans-serif, system-ui, sans-serif;
+  --font-statement: 'Instrument Serif', ui-serif, Georgia, serif;
+
+  --ambient-1: rgba(91, 69, 240, 0.16);
+  --ambient-2: rgba(3, 119, 196, 0.13);
+  --ambient-3: rgba(124, 92, 255, 0.10);
+
+  --glass-shell: rgba(255, 255, 255, 0.42);
+  --glass-shell-ring: rgba(20, 24, 48, 0.07);
+  --glass-core-top: rgba(255, 255, 255, 0.82);
+  --glass-core-bottom: rgba(255, 255, 255, 0.58);
+  --glass-highlight: rgba(255, 255, 255, 0.95);
+  --glass-edge: rgba(20, 24, 48, 0.06);
+  --glass-drop: 0 30px 80px -40px rgba(40, 40, 110, 0.28);
+  --glass-pill: rgba(255, 255, 255, 0.7);
+
+  --graph-node: #7f86ad;
+  --graph-edge: #8d94b8;
+  --graph-held: #0377c4;
+  --graph-route-a: #5b45f0;
+  --graph-route-b: #0377c4;
+  --graph-ready: #5b45f0;
+  --graph-label-bg: rgba(255, 255, 255, 0.82);
+  --graph-label-ink: #14172b;
+}
+
+.dark {
+  --ambient-1: rgba(124, 92, 255, 0.34);
+  --ambient-2: rgba(56, 170, 248, 0.22);
+  --ambient-3: rgba(124, 92, 255, 0.16);
+
+  --glass-shell: rgba(255, 255, 255, 0.025);
+  --glass-shell-ring: rgba(255, 255, 255, 0.06);
+  --glass-core-top: rgba(255, 255, 255, 0.055);
+  --glass-core-bottom: rgba(255, 255, 255, 0.02);
+  --glass-highlight: rgba(255, 255, 255, 0.09);
+  --glass-edge: rgba(255, 255, 255, 0.05);
+  --glass-drop: 0 30px 80px -40px rgba(0, 0, 0, 0.9);
+  --glass-pill: rgba(14, 16, 28, 0.55);
+
+  --graph-node: #9aa3d8;
+  --graph-edge: #8f97c8;
+  --graph-held: #5cc8ff;
+  --graph-route-a: #a597ff;
+  --graph-route-b: #5cc8ff;
+  --graph-ready: #a597ff;
+  --graph-label-bg: rgba(10, 12, 24, 0.72);
+  --graph-label-ink: #eceef6;
+}
+
+.landing, .landing * { font-family: var(--font-landing); }
+/* The app sets a font on every element (`*`), so children must be included explicitly. */
+.landing .font-wide, .landing .font-wide * { font-family: var(--font-wide); }
+.landing .font-wide { text-transform: uppercase; letter-spacing: 0.18em; }
+.landing .font-statement, .landing .font-statement * { font-family: var(--font-statement); font-weight: 400; }
+.landing .font-statement { letter-spacing: -0.01em; }
+
+/* Ambient light pools: fixed, never on scrolling content. */
+.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.ambient i { position: absolute; border-radius: 9999px; filter: blur(90px); animation: ambient-drift 28s var(--ease-out-quint) infinite alternate; }
+.ambient i:nth-child(1) { width: 46vw; height: 46vw; left: -12vw; top: -14vw; background: var(--ambient-1); }
+.ambient i:nth-child(2) { width: 40vw; height: 40vw; right: -14vw; top: 22vh; background: var(--ambient-2); animation-duration: 34s; }
+.ambient i:nth-child(3) { width: 34vw; height: 34vw; left: 30vw; bottom: -20vw; background: var(--ambient-3); animation-duration: 40s; }
+@keyframes ambient-drift { to { transform: translate3d(4vw, 3vh, 0) scale(1.08); } }
+
+/* Double-bezel glass: an outer tray and an inner plate with concentric radii. */
+.glass-shell {
+  border-radius: 2rem; padding: 0.375rem; background: var(--glass-shell);
+  box-shadow: 0 0 0 1px var(--glass-shell-ring), var(--glass-drop);
+}
+.glass-core {
+  position: relative; height: 100%; overflow: hidden; border-radius: calc(2rem - 0.375rem);
+  background: linear-gradient(180deg, var(--glass-core-top), var(--glass-core-bottom));
+  box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 0 0 1px var(--glass-edge);
+  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+.glass-pill {
+  background: var(--glass-pill);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 0 0 1px var(--glass-shell-ring), 0 20px 50px -24px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%);
+}
+
+/* Labels the WebGL hero positions over its nodes. */
+.graph-label {
+  position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: none;
+  margin: -2.6rem 0 0 0; translate: -50% 0;
+  padding: 0.3rem 0.7rem; border-radius: 9999px; font-size: 12px; font-weight: 600;
+  color: var(--graph-label-ink); background: var(--graph-label-bg);
+  box-shadow: inset 0 0 0 1px var(--glass-shell-ring);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  transition: opacity 240ms var(--ease-out-quint);
+}
+.graph-map-label { font-size: 15px; font-weight: 600; fill: var(--foreground); paint-order: stroke; stroke: var(--background); stroke-width: 4px; }
+
+/* Cursor reveal: the lit layer shows only inside a soft circle that follows the pointer. */
+.reveal-lit {
+  -webkit-mask-image: radial-gradient(circle var(--reveal-r, 170px) at var(--mx, 50%) var(--my, 50%), #000 35%, transparent 72%);
+  mask-image: radial-gradient(circle var(--reveal-r, 170px) at var(--mx, 50%) var(--my, 50%), #000 35%, transparent 72%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient i { animation: none; }
+  .reveal-lit { -webkit-mask-image: none; mask-image: none; }
+}

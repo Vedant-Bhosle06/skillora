@@ -5,6 +5,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { toApiError } from "@/api/client";
 import { useToast } from "@/context/ToastContext";
 import { nextRouteFor } from "@/lib/redirect";
+import Logo from "@/components/Logo";
 
 function validateEmail(e: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
@@ -85,15 +86,7 @@ export default function Auth({ mode }: { mode: Mode }) {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4">
-            <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="4" r="2" fill="white" />
-              <circle cx="3" cy="12" r="2" fill="white" opacity=".7" />
-              <circle cx="13" cy="12" r="2" fill="white" opacity=".7" />
-              <line x1="8" y1="6" x2="3" y2="10" stroke="white" strokeWidth="1.5" />
-              <line x1="8" y1="6" x2="13" y2="10" stroke="white" strokeWidth="1.5" />
-            </svg>
-          </div>
+          <Logo variant="tile" size={44} decorative className="mb-4" />
           <h1 className="font-display font-800 text-2xl text-foreground">SKILLORA</h1>
           <p className="text-muted-foreground text-sm mt-1">{mode === "login" ? "Sign in to your account" : "Create your free account"}</p>
         </div>

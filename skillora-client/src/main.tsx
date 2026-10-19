@@ -11,6 +11,12 @@ import '@fontsource/dm-sans/700.css'
 import '@fontsource/dm-sans/800.css'
 import '@fontsource/jetbrains-mono/400.css'
 import '@fontsource/jetbrains-mono/500.css'
+// Homepage faces (files are only downloaded where a page actually uses them)
+import '@fontsource-variable/plus-jakarta-sans'
+import '@fontsource/syncopate/400.css'
+import '@fontsource/syncopate/700.css'
+import '@fontsource/instrument-serif/400.css'
+import '@fontsource/instrument-serif/400-italic.css'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

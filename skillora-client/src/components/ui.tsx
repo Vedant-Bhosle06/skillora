@@ -1,5 +1,7 @@
 import React, { ReactNode, useEffect, useId, useRef } from "react";
+import { AnimatePresence, m } from "motion/react";
 import { useToast } from "@/context/ToastContext";
+import { fadeIn, scaleIn } from "@/lib/motion";
 import type { NodeStatus, Proficiency } from "@/lib/types";
 
 // ── Button ────────────────────────────────────────────────────────────────────
@@ -11,10 +13,12 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export function Button({ variant = "primary", size = "md", className = "", children, ...props }: ButtonProps) {
-  const base = "inline-flex items-center gap-2 font-display font-600 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
+  // Press feedback (scale) on every variant; the primary button also lifts and glows on hover.
+  // Movement is dropped for users who prefer reduced motion.
+  const base = "inline-flex items-center gap-2 font-display font-600 rounded-md transition-[color,background-color,border-color,box-shadow,opacity,translate,scale] duration-(--duration-fast) ease-out-quint active:scale-[0.97] motion-reduce:translate-none motion-reduce:scale-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:pointer-events-none";
   const sizes = { sm: "px-3 py-1.5 text-sm", md: "px-4 py-2 text-sm", lg: "px-6 py-3 text-base" };
   const variants = {
-    primary:   "bg-primary text-primary-foreground hover:opacity-90 active:scale-95 shadow-sm",
+    primary:   "bg-primary text-primary-foreground shadow-sm hover:shadow-glow hover:-translate-y-px active:translate-y-0",
     secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border",
     ghost:     "bg-transparent text-foreground hover:bg-muted border border-border",
     danger:    "bg-red-600 text-white hover:bg-red-700 shadow-sm",
@@ -97,7 +101,7 @@ export function Card({ children, className = "", hover = false, onClick, selecte
     <div
       onClick={onClick}
       {...interactive}
-      className={`bg-card text-card-foreground border border-border rounded-xl shadow-sm ${hover ? "hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer" : ""} ${onClick ? "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring" : ""} ${className}`}
+      className={`bg-card text-card-foreground border border-border rounded-xl shadow-sm ${hover ? "cursor-pointer transition-[translate,box-shadow,border-color] duration-(--duration-base) ease-out-quint hover:-translate-y-0.5 hover:shadow-glow hover:border-primary/40 motion-reduce:translate-none" : ""} ${onClick ? "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring" : ""} ${className}`}
     >
       {children}
     </div>
@@ -138,24 +142,43 @@ export function Modal({ open, onClose, title, children, className = "" }: ModalP
     return () => opener?.focus?.();
   }, [open]);
 
-  if (!open) return null;
+  // Callers often clear the data behind a dialog in the same update that closes it. Keep showing
+  // the last open content while the exit animation plays, so it doesn't flash empty.
+  const shown = useRef({ title, children, className });
+  if (open) shown.current = { title, children, className };
+  const content = shown.current;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className={`relative bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto ${className}`}
-      >
-        <div className="flex items-center justify-between p-5 border-b border-border">
-          <h2 id={titleId} className="font-display font-700 text-lg text-foreground">{title}</h2>
-          <button ref={closeRef} onClick={onClose} aria-label="Close dialog" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">✕</button>
+    <AnimatePresence>
+      {open && (
+        <div key="modal" className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <m.div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={onClose}
+            variants={fadeIn}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+          />
+          <m.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            className={`relative bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto ${content.className}`}
+            variants={scaleIn}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <div className="flex items-center justify-between p-5 border-b border-border">
+              <h2 id={titleId} className="font-display font-700 text-lg text-foreground">{content.title}</h2>
+              <button ref={closeRef} onClick={onClose} aria-label="Close dialog" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">✕</button>
+            </div>
+            <div ref={bodyRef} className="p-5">{content.children}</div>
+          </m.div>
         </div>
-        <div ref={bodyRef} className="p-5">{children}</div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 }
 
