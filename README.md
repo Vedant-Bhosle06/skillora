@@ -58,6 +58,8 @@ cd skillora-client && npm install && npm run dev
 
 API documentation while running: `http://localhost:5000/api/docs` (Node) and `http://localhost:5001/docs` (path service).
 
+> **macOS:** the system uses port 5000 for AirPlay Receiver, so the API cannot bind to it. On a Mac set `PORT=5050` in `skillora-api/.env` and set `VITE_API_BASE_URL=http://localhost:5050` in `skillora-client/.env`.
+
 ## Documentation
 
 | Document | Contents |
@@ -66,6 +68,7 @@ API documentation while running: `http://localhost:5000/api/docs` (Node) and `ht
 | [docs/PRD.md](docs/PRD.md) | Problem, users, scope, success metrics, deliverable status |
 | [docs/SRS.md](docs/SRS.md) | Functional and non-functional requirements |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, flows, security, deployment |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Free hosting on Vercel + Render + Atlas: setup, env vars, cold starts |
 | [docs/adr/](docs/adr/README.md) | Architecture decision records |
 | [docs/DATA_MODEL.md](docs/DATA_MODEL.md) | MongoDB collections |
 | [docs/API.md](docs/API.md) | Endpoint reference and client behaviour |

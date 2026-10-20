@@ -14,6 +14,7 @@ Start here. Each document has one job; together they replace the former single s
 | [API.md](API.md) | Every endpoint (API-N-\*, API-P-\*), conventions, error codes, behaviour clients must handle, page → endpoint map | Frontend and backend developers |
 | [ALGORITHM.md](ALGORITHM.md) | The path-computation algorithm exactly as implemented, with a worked example | Developers, evaluators |
 | [HOW_IT_WORKS.md](HOW_IT_WORKS.md) | Plain-language walkthrough of the whole system | New readers, viva preparation |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Deploying for free: Vercel (client), Render (API, path service), Atlas; env vars, cold starts, troubleshooting | Developers, operators |
 | [DEV_SETUP.md](DEV_SETUP.md) | Running the three services locally, tests, troubleshooting | Developers |
 | [USER_GUIDE.md](USER_GUIDE.md) | How to use the app as a learner or admin, with screenshots (deliverable D7 user guide) | End users, evaluators |
 | [CHANGELOG.md](CHANGELOG.md) | Specification and design history, v1.0 → v4.1 | Everyone |

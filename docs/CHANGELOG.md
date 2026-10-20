@@ -1,6 +1,20 @@
 # Changelog
 
-All notable changes to SKILLORA's specification and design. Versions refer to the documentation set (spec v1.0–v4.1); code changes are traceable through git history. Each entry records the issue found and the fix applied. Design rationale for major changes is in the [ADRs](adr/README.md).
+All notable changes to SKILLORA's specification and design. Versions refer to the documentation set (spec v1.0–v4.2); code changes are traceable through git history. Each entry records the issue found and the fix applied. Design rationale for major changes is in the [ADRs](adr/README.md).
+
+## v4.2 — 2026-10-20
+
+Transit frontend redesign, undo for completed skills, and free-tier deployment configuration.
+
+| # | Issue found | Fix applied |
+|---|---|---|
+| 1 | The frontend still used the original purple interface, with a progress ring and a generic dashboard. | Redesigned as **Transit** ([DESIGN.md](../DESIGN.md)): the path is a metro line, Progress has a journey line, the graph uses the same palette, and light and dark themes are both supported. [USER_GUIDE.md](USER_GUIDE.md) reworded to match. |
+| 2 | A skill marked complete by mistake could not be reversed. | Added **API-N-14b** `DELETE /api/users/me/skills/complete/:skillId` (same 200 / 202 shapes as API-N-14, 404 if not completed). The client offers **Undo** in the "marked complete" message and **Mark as not done** on completed skills. |
+| 3 | three.js shipped in the client bundle only for the landing hero. | Removed; the hero is built in code with SVG, with a still version for reduced motion. |
+| 4 | Heavy routes (graph, admin, progress) were in the main bundle. | Lazy-loaded per route. |
+| 5 | Graph hover gave no reason for a locked skill and was not keyboard accessible. | Hover cards say "Locked: still needs …"; nodes are focusable and show the card on focus. |
+| 6 | No deployment configuration; CORS accepted a single origin; free hosting sleeps when idle. | `render.yaml` (two free Render web services), `skillora-client/vercel.json` (SPA rewrite, security headers), `CLIENT_ORIGIN` accepts a comma-separated list, the API binds to `$PORT`, `dnspython` added for Atlas `mongodb+srv` URIs. See [DEPLOYMENT.md](DEPLOYMENT.md). |
+| 7 | A cold path service made the first compute fail or time out. | The API polls the path service `/health` with backoff (up to 60 s, honouring `PYTHON_TIMEOUT_MS`) before compute and pings it once at startup; the client pings `/api/stats/public` on the landing and auth pages and shows "Waking the planner" after 4 s of waiting. Client request timeout raised to 75 s (90 s for compute). |
 
 ## v4.1 — 2026-10-15
 

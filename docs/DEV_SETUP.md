@@ -23,6 +23,8 @@ Ask a teammate privately for `MONGO_URI` and `INTERNAL_API_KEY`. Never paste the
 
 All three must run at the same time for the full application.
 
+> **macOS:** the system uses port 5000 for AirPlay Receiver, so the API cannot bind to it. On a Mac set `PORT=5050` in `skillora-api/.env` and set `VITE_API_BASE_URL=http://localhost:5050` in `skillora-client/.env`.
+
 ## 1. Clone
 
 ```bash
@@ -141,4 +143,5 @@ There is no endpoint to promote a user. In Atlas, open the `users` collection an
 | `429 Too many requests` on login | Rate limit (10 / minute / IP); wait a minute |
 | Admin edit not reflected in paths | The path service was down during the edit; restart it or run `node scripts/seed.js` to trigger a reload |
 | `ModuleNotFoundError` in Python | Virtual environment not activated, or dependencies not installed |
+| API fails to start or answers `403` from AirPlay on a Mac | macOS holds port 5000 for AirPlay Receiver. Set `PORT=5050` in `skillora-api/.env` and `VITE_API_BASE_URL=http://localhost:5050` in `skillora-client/.env` |
 | Port already in use | Stop the other process, or change `PORT` / `--port` |
