@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* `dark:` follows the app's .dark class (the theme toggle), not the OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -15,13 +18,24 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
-  --color-glow: var(--glow);
-  --radius-sm: calc(var(--radius) - 2px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 4px);
-  --radius-xl: calc(var(--radius) + 8px);
-  --shadow-glow: var(--glow-shadow);
-  --shadow-elevated: var(--elevated-shadow);
+  --color-station: var(--station);
+  --color-casing: var(--casing);
+  --color-line-route: var(--line-route);
+  --color-line-alt: var(--line-alt);
+  --color-line-data: var(--line-data);
+  --color-line-web: var(--line-web);
+  --color-line-cloud: var(--line-cloud);
+  --color-line-design: var(--line-design);
+  --color-line-grey: var(--line-grey);
+  /* Flat sign panels: small radii. */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 10px;
+  --shadow-sign: var(--sign-shadow);
+  --font-sans: 'Overpass Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Overpass Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Overpass Mono', ui-monospace, monospace;
 }
 
 /* Motion tokens. Keep in sync with src/lib/motion.ts.
@@ -51,79 +65,99 @@
   --duration-slow: 420ms;
   --duration-cinematic: 700ms;
 
-  /* Light theme: cool off-white with purple / blue accents */
-  --background: #F5F6FC;
-  --foreground: #0B0E1F;
-  --card: #FFFFFF;
-  --card-foreground: #0B0E1F;
-  --primary: #5B45F0;
-  --primary-foreground: #FFFFFF;
-  --secondary: #EEEBFF;
-  --secondary-foreground: #4530D4;
-  --muted: #EEF0F8;
-  --muted-foreground: #596079;
-  --accent: #0377C4;
-  --accent-foreground: #FFFFFF;
-  --border: #DDE1F0;
-  --ring: #5B45F0;
-  --glow: rgba(91, 69, 240, 0.28);
-  --radius: 10px;
+  /* Light theme: paper with ink and one signal-red accent. See DESIGN.md. */
+  --background: #f6f6f3;
+  --foreground: #14161a;
+  --card: #ffffff;
+  --card-foreground: #14161a;
+  --primary: #d42a3c;
+  --primary-foreground: #ffffff;
+  --secondary: #ecece8;
+  --secondary-foreground: #14161a;
+  --muted: #ecece8;
+  --muted-foreground: #575c66;
+  --accent: #1f6fb2;
+  --accent-foreground: #ffffff;
+  --border: #d6d7d1;
+  --ring: #14161a;
+  --radius: 6px;
 
-  --glow-shadow: 0 0 0 1px rgba(91, 69, 240, 0.10), 0 8px 30px -6px rgba(91, 69, 240, 0.28);
-  --elevated-shadow: 0 1px 2px rgba(11, 14, 31, 0.06), 0 12px 32px -12px rgba(11, 14, 31, 0.18);
-  --gradient-brand: linear-gradient(135deg, #5B45F0 0%, #0377C4 100%);
+  --station: #ffffff;
+  --casing: #f6f6f3;
+  --sign-shadow: 0 1px 0 var(--border);
 
-  /* Logo (src/components/Logo.tsx). The tile keeps one brand gradient in both themes,
-     matching public/favicon.svg; the bare mark shifts so it stays legible on each background. */
-  --logo-from: #5B45F0;
-  --logo-to: #0377C4;
-  --logo-tile-from: #6C4DFF;
-  --logo-tile-to: #1E88E5;
+  /* Line colours: the route is always signal red; the others code a skill's kind. */
+  --line-route: #d42a3c;
+  --line-alt: #e2621a;
+  --line-data: #1f6fb2;
+  --line-web: #1b8f57;
+  --line-cloud: #0f8a8f;
+  --line-design: #c99300;
+  --line-grey: #8c9099;
+
+  /* Logo (src/components/Logo.tsx): flat signal red, no gradient. */
+  --logo-from: #d42a3c;
+  --logo-to: #d42a3c;
+  --logo-tile-from: #d42a3c;
+  --logo-tile-to: #a81d2d;
 }
 
 .dark {
   color-scheme: dark;
 
-  /* Dark theme: navy-black with purple and electric-blue accents */
-  --background: #070A16;
-  --foreground: #EEF0FF;
-  --card: #0E1222;
-  --card-foreground: #EEF0FF;
-  --primary: #715DF8;
-  --primary-foreground: #FFFFFF;
-  --secondary: #181D3D;
-  --secondary-foreground: #BDB6FF;
-  --muted: #121731;
-  --muted-foreground: #959CC0;
-  --accent: #38BDF8;
-  --accent-foreground: #04121F;
-  --border: #232A52;
-  --ring: #8B7BFF;
-  --glow: rgba(113, 93, 248, 0.45);
+  /* Dark theme: night with the same red, lifted for contrast. */
+  --background: #0e1013;
+  --foreground: #f1f1ee;
+  --card: #16191e;
+  --card-foreground: #f1f1ee;
+  --primary: #ff5263;
+  --primary-foreground: #0e1013;
+  --secondary: #1d2127;
+  --secondary-foreground: #f1f1ee;
+  --muted: #1d2127;
+  --muted-foreground: #a3a8b1;
+  --accent: #58a8ff;
+  --accent-foreground: #0e1013;
+  --border: #2b2f36;
+  --ring: #f1f1ee;
 
-  --glow-shadow: 0 0 0 1px rgba(139, 123, 255, 0.18), 0 10px 40px -8px rgba(113, 93, 248, 0.55);
-  --elevated-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 16px 40px -16px rgba(0, 0, 0, 0.7);
-  --gradient-brand: linear-gradient(135deg, #8B7BFF 0%, #38BDF8 100%);
+  --station: #0e1013;
+  --casing: #0e1013;
 
-  --logo-from: #8B7BFF;
-  --logo-to: #38BDF8;
+  --line-route: #ff5263;
+  --line-alt: #ff8a3d;
+  --line-data: #58a8ff;
+  --line-web: #3ccb87;
+  --line-cloud: #4fd1d4;
+  --line-design: #ffc93c;
+  --line-grey: #6b717c;
+
+  --logo-from: #ff5263;
+  --logo-to: #ff5263;
 }
 
 html, body, #root {
   height: 100%;
 }
 
-* {
-  font-family: 'Inter', sans-serif;
+body {
+  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6, .font-display {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-display);
 }
 
+/* Mono is for times, hours and codes only. */
 .font-mono, code, pre {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
+
+::selection { background: var(--primary); color: var(--primary-foreground); }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -152,26 +186,15 @@ h1, h2, h3, h4, h5, h6, .font-display {
   transition-timing-function: var(--ease-out-quint) !important;
 }
 
-/* Reusable visual helpers for the redesign */
-.text-gradient-brand {
-  background-image: var(--gradient-brand);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.bg-gradient-brand { background-image: var(--gradient-brand); }
+/* Focus: a clear ink ring, never colour-only. */
+:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; border-radius: 4px; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline-offset: 0; }
 
-/* Toast animations */
-@keyframes slide-in {
-  from { transform: translateX(110%); opacity: 0; }
-  to   { transform: translateX(0); opacity: 1; }
-}
-@keyframes slide-out {
-  from { transform: translateX(0); opacity: 1; }
-  to   { transform: translateX(110%); opacity: 0; }
-}
-.toast-enter { animation: slide-in var(--duration-base) var(--ease-out-quint) forwards; }
-.toast-exit  { animation: slide-out var(--duration-base) var(--ease-in-out-smooth) forwards; }
+/* Toasts fade only (200ms); there is no movement to remove for reduced motion. */
+@keyframes toast-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes toast-out { from { opacity: 1; } to { opacity: 0; } }
+.toast-enter { animation: toast-in 200ms ease-out forwards; }
+.toast-exit  { animation: toast-out 200ms ease-in forwards; }
 
 /* Graph canvas */
 .graph-canvas { cursor: grab; }
@@ -190,114 +213,4 @@ h1, h2, h3, h4, h5, h6, .font-display {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
-}
-
-/* ── Homepage (Nocturne Glass) ──────────────────────────────────────────────────────────
-   Shared by src/pages/Landing.tsx and src/components/landing/*. Every value has a light and
-   a dark version so the theme toggle restyles the whole page, including the WebGL hero. */
-:root {
-  --font-landing: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-wide: 'Syncopate', ui-sans-serif, system-ui, sans-serif;
-  --font-statement: 'Instrument Serif', ui-serif, Georgia, serif;
-
-  --ambient-1: rgba(91, 69, 240, 0.16);
-  --ambient-2: rgba(3, 119, 196, 0.13);
-  --ambient-3: rgba(124, 92, 255, 0.10);
-
-  --glass-shell: rgba(255, 255, 255, 0.42);
-  --glass-shell-ring: rgba(20, 24, 48, 0.07);
-  --glass-core-top: rgba(255, 255, 255, 0.82);
-  --glass-core-bottom: rgba(255, 255, 255, 0.58);
-  --glass-highlight: rgba(255, 255, 255, 0.95);
-  --glass-edge: rgba(20, 24, 48, 0.06);
-  --glass-drop: 0 30px 80px -40px rgba(40, 40, 110, 0.28);
-  --glass-pill: rgba(255, 255, 255, 0.7);
-
-  --graph-node: #7f86ad;
-  --graph-edge: #8d94b8;
-  --graph-held: #0377c4;
-  --graph-route-a: #5b45f0;
-  --graph-route-b: #0377c4;
-  --graph-ready: #5b45f0;
-  --graph-label-bg: rgba(255, 255, 255, 0.82);
-  --graph-label-ink: #14172b;
-}
-
-.dark {
-  --ambient-1: rgba(124, 92, 255, 0.34);
-  --ambient-2: rgba(56, 170, 248, 0.22);
-  --ambient-3: rgba(124, 92, 255, 0.16);
-
-  --glass-shell: rgba(255, 255, 255, 0.025);
-  --glass-shell-ring: rgba(255, 255, 255, 0.06);
-  --glass-core-top: rgba(255, 255, 255, 0.055);
-  --glass-core-bottom: rgba(255, 255, 255, 0.02);
-  --glass-highlight: rgba(255, 255, 255, 0.09);
-  --glass-edge: rgba(255, 255, 255, 0.05);
-  --glass-drop: 0 30px 80px -40px rgba(0, 0, 0, 0.9);
-  --glass-pill: rgba(14, 16, 28, 0.55);
-
-  --graph-node: #9aa3d8;
-  --graph-edge: #8f97c8;
-  --graph-held: #5cc8ff;
-  --graph-route-a: #a597ff;
-  --graph-route-b: #5cc8ff;
-  --graph-ready: #a597ff;
-  --graph-label-bg: rgba(10, 12, 24, 0.72);
-  --graph-label-ink: #eceef6;
-}
-
-.landing, .landing * { font-family: var(--font-landing); }
-/* The app sets a font on every element (`*`), so children must be included explicitly. */
-.landing .font-wide, .landing .font-wide * { font-family: var(--font-wide); }
-.landing .font-wide { text-transform: uppercase; letter-spacing: 0.18em; }
-.landing .font-statement, .landing .font-statement * { font-family: var(--font-statement); font-weight: 400; }
-.landing .font-statement { letter-spacing: -0.01em; }
-
-/* Ambient light pools: fixed, never on scrolling content. */
-.ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.ambient i { position: absolute; border-radius: 9999px; filter: blur(90px); animation: ambient-drift 28s var(--ease-out-quint) infinite alternate; }
-.ambient i:nth-child(1) { width: 46vw; height: 46vw; left: -12vw; top: -14vw; background: var(--ambient-1); }
-.ambient i:nth-child(2) { width: 40vw; height: 40vw; right: -14vw; top: 22vh; background: var(--ambient-2); animation-duration: 34s; }
-.ambient i:nth-child(3) { width: 34vw; height: 34vw; left: 30vw; bottom: -20vw; background: var(--ambient-3); animation-duration: 40s; }
-@keyframes ambient-drift { to { transform: translate3d(4vw, 3vh, 0) scale(1.08); } }
-
-/* Double-bezel glass: an outer tray and an inner plate with concentric radii. */
-.glass-shell {
-  border-radius: 2rem; padding: 0.375rem; background: var(--glass-shell);
-  box-shadow: 0 0 0 1px var(--glass-shell-ring), var(--glass-drop);
-}
-.glass-core {
-  position: relative; height: 100%; overflow: hidden; border-radius: calc(2rem - 0.375rem);
-  background: linear-gradient(180deg, var(--glass-core-top), var(--glass-core-bottom));
-  box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 0 0 1px var(--glass-edge);
-  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
-}
-.glass-pill {
-  background: var(--glass-pill);
-  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 0 0 1px var(--glass-shell-ring), 0 20px 50px -24px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(20px) saturate(150%); -webkit-backdrop-filter: blur(20px) saturate(150%);
-}
-
-/* Labels the WebGL hero positions over its nodes. */
-.graph-label {
-  position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: none;
-  margin: -2.6rem 0 0 0; translate: -50% 0;
-  padding: 0.3rem 0.7rem; border-radius: 9999px; font-size: 12px; font-weight: 600;
-  color: var(--graph-label-ink); background: var(--graph-label-bg);
-  box-shadow: inset 0 0 0 1px var(--glass-shell-ring);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  transition: opacity 240ms var(--ease-out-quint);
-}
-.graph-map-label { font-size: 15px; font-weight: 600; fill: var(--foreground); paint-order: stroke; stroke: var(--background); stroke-width: 4px; }
-
-/* Cursor reveal: the lit layer shows only inside a soft circle that follows the pointer. */
-.reveal-lit {
-  -webkit-mask-image: radial-gradient(circle var(--reveal-r, 170px) at var(--mx, 50%) var(--my, 50%), #000 35%, transparent 72%);
-  mask-image: radial-gradient(circle var(--reveal-r, 170px) at var(--mx, 50%) var(--my, 50%), #000 35%, transparent 72%);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ambient i { animation: none; }
-  .reveal-lit { -webkit-mask-image: none; mask-image: none; }
 }

@@ -6,6 +6,7 @@ import { useToast } from "@/context/ToastContext";
 import Logo from "@/components/Logo";
 import { AnimatePresence, m } from "motion/react";
 import { menuReveal } from "@/lib/motion";
+import { CloseIcon, MenuIcon, MoonIcon, SettingsIcon, SignOutIcon, SunIcon } from "@/components/transit/icons";
 
 const navLinks = [
   { label: "Dashboard",  to: "/dashboard" },
@@ -50,70 +51,75 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-40 h-14 bg-card/90 backdrop-blur border-b border-border flex items-center px-4 md:px-6 gap-4">
+    <nav className="sticky top-0 z-40 h-14 border-b-2 border-border bg-background flex items-center px-4 md:px-8 gap-3" aria-label="Main">
       {/* Logo */}
-      <Link to="/" aria-label="SKILLORA home" className="flex items-center shrink-0 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-        <Logo variant="tile" wordmark size={28} />
+      <Link to="/" aria-label="SKILLORA home" className="flex min-h-11 items-center shrink-0 rounded-md">
+        <Logo variant="mark" wordmark size={26} wordmarkClassName="text-[17px]" />
       </Link>
 
       {/* Desktop nav */}
       {signedIn && (
-        <div className="hidden md:flex items-center gap-1 flex-1">
-          {filteredLinks.map(l => (
-            <Link
-              key={l.to}
-              to={l.to}
-              className={`px-3 py-1.5 rounded-lg text-sm font-500 transition-colors ${
-                isActive(pathname, l.to)
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              {l.label}
-            </Link>
-          ))}
+        <div className="hidden md:flex items-stretch gap-1 flex-1 ml-4 h-full">
+          {filteredLinks.map(l => {
+            const active = isActive(pathname, l.to);
+            return (
+              <Link
+                key={l.to}
+                to={l.to}
+                aria-current={active ? "page" : undefined}
+                className={`relative flex items-center px-3 text-[15px] font-700 ${active ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                {l.label}
+                {/* The platform bar under the active line. */}
+                {active && <span className="absolute inset-x-2 -bottom-0.5 h-1 rounded-full bg-primary" aria-hidden="true" />}
+              </Link>
+            );
+          })}
         </div>
       )}
 
-      <div className="flex items-center gap-2 ml-auto">
+      <div className="flex items-center gap-1 ml-auto">
         {/* Dark mode toggle */}
         <button
           onClick={toggleDark}
-          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Toggle dark mode"
+          className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-muted text-foreground transition-colors"
+          aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
         >
-          {darkMode ? "☀" : "☽"}
+          {darkMode ? <SunIcon /> : <MoonIcon />}
         </button>
 
         {signedIn ? (
           <div className="relative">
             <button
               onClick={() => setAvatarOpen(o => !o)}
-              className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-display font-700"
+              className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-display font-800"
               aria-label="Account menu"
+              aria-expanded={avatarOpen}
             >
-              {user.name.trim().charAt(0).toUpperCase() || "?"}
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background">
+                {user.name.trim().charAt(0).toUpperCase() || "?"}
+              </span>
             </button>
             {avatarOpen && <div className="fixed inset-0" onClick={() => setAvatarOpen(false)} />}
             <AnimatePresence>
               {avatarOpen && (
                 <m.div
                   key="avatar-menu"
-                  className="absolute right-0 top-10 bg-card border border-border rounded-xl shadow-lg w-52 overflow-hidden z-50 origin-top-right"
+                  className="absolute right-0 top-12 bg-card border-2 border-foreground rounded-md w-56 overflow-hidden z-50 origin-top-right"
                   variants={menuReveal}
                   initial="hidden"
                   animate="visible"
                   exit="exit"
                 >
                   <div className="px-4 py-3 border-b border-border">
-                    <p className="font-display font-600 text-sm text-foreground truncate">{user.name}</p>
+                    <p className="font-display font-700 text-sm text-foreground truncate">{user.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
-                  <Link to="/settings" onClick={() => setAvatarOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors">
-                    ⚙ Settings
+                  <Link to="/settings" onClick={() => setAvatarOpen(false)} className="flex min-h-11 items-center gap-2 px-4 text-sm font-600 text-foreground hover:bg-muted transition-colors">
+                    <SettingsIcon size={16} /> Settings
                   </Link>
-                  <button onClick={handleLogout} disabled={signingOut} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-muted transition-colors">
-                    ↩ Sign out
+                  <button onClick={handleLogout} disabled={signingOut} className="w-full min-h-11 flex items-center gap-2 px-4 text-sm font-600 text-primary hover:bg-muted transition-colors">
+                    <SignOutIcon size={16} /> Sign out
                   </button>
                 </m.div>
               )}
@@ -121,44 +127,46 @@ export default function Navbar() {
           </div>
         ) : status === "anonymous" ? (
           // Still holding a token while /users/me loads or the API is unreachable: not signed out.
-          <Link to="/login" className="px-3 py-1.5 text-sm font-500 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity">
+          <Link to="/login" className="inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-[15px] font-800 text-primary-foreground hover:opacity-90">
             Sign in
           </Link>
         ) : null}
 
         {/* Mobile hamburger */}
         {signedIn && (
-          <button onClick={() => setMenuOpen(o => !o)} aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-foreground">
-            ☰
+          <button onClick={() => setMenuOpen(o => !o)} aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen} className="md:hidden w-11 h-11 flex items-center justify-center rounded-full hover:bg-muted text-foreground">
+            {menuOpen ? <CloseIcon /> : <MenuIcon />}
           </button>
         )}
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu: a full-width sheet of 44px rows */}
       <AnimatePresence>
         {menuOpen && signedIn && (
           <m.div
             key="mobile-menu"
-            className="absolute top-14 left-0 right-0 bg-card border-b border-border shadow-lg p-3 flex flex-col gap-1 md:hidden z-40 origin-top"
+            className="absolute top-14 left-0 right-0 bg-background border-b-2 border-border flex flex-col md:hidden z-40 origin-top"
             variants={menuReveal}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
-            {filteredLinks.map(l => (
-              <Link
-                key={l.to}
-                to={l.to}
-                onClick={() => setMenuOpen(false)}
-                className={`px-3 py-2 rounded-lg text-sm font-500 transition-colors ${
-                  isActive(pathname, l.to)
-                    ? "bg-secondary text-secondary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
-              >
-                {l.label}
-              </Link>
-            ))}
+            {filteredLinks.map(l => {
+              const active = isActive(pathname, l.to);
+              return (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  onClick={() => setMenuOpen(false)}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex min-h-12 items-center border-l-4 px-5 text-base font-700 ${
+                    active ? "border-primary text-foreground bg-muted" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {l.label}
+                </Link>
+              );
+            })}
           </m.div>
         )}
       </AnimatePresence>

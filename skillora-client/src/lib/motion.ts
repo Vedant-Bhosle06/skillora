@@ -45,24 +45,9 @@ export const scaleIn: Variants = {
   exit: { opacity: 0, scale: 0.98, transition: transitions.fast },
 };
 
-/** Route changes: a quick fade out, then the new page fades up into place. */
-export const pageTransition: Variants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.32, ease: EASE.outQuint } },
-  exit: { opacity: 0, transition: { duration: 0.12, ease: EASE.inOutSmooth } },
-};
-
 /** Dropdowns and menus that open from the navbar. */
 export const menuReveal: Variants = {
   hidden: { opacity: 0, y: -6, scale: 0.98 },
   visible: { opacity: 1, y: 0, scale: 1, transition: transitions.fast },
   exit: { opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.1, ease: EASE.inOutSmooth } },
 };
-
-/** Parent variant that reveals its children one after another. */
-export function stagger(staggerChildren = 0.06, delayChildren = 0): Variants {
-  return {
-    hidden: {},
-    visible: { transition: { staggerChildren, delayChildren } },
-  };
-}

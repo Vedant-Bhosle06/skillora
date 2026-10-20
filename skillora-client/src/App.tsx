@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "motion/react";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -6,23 +7,25 @@ import { ToastProvider } from "@/context/ToastContext";
 import { AuthProvider } from "@/auth/AuthContext";
 import { RequireAdmin, RequireAuth, RequireTargetRole } from "@/auth/guards";
 import { queryClient } from "@/lib/queryClient";
-import { ToastContainer } from "@/components/ui";
+import { PageLoader, ToastContainer } from "@/components/ui";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import MotionProvider from "@/components/MotionProvider";
 import PageTransition from "@/components/PageTransition";
 import { useRouteScroll } from "@/hooks/useRouteScroll";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { MoonIcon, SunIcon } from "@/components/transit/icons";
 
 import Landing from "@/pages/Landing";
 import Auth from "@/pages/Auth";
 import OnboardingSkills from "@/pages/OnboardingSkills";
 import OnboardingRole from "@/pages/OnboardingRole";
 import Dashboard from "@/pages/Dashboard";
-import GraphExplorer from "@/pages/GraphExplorer";
-import Alternatives from "@/pages/Alternatives";
-import Progress from "@/pages/Progress";
-import Settings from "@/pages/Settings";
-import Admin from "@/pages/Admin";
+const GraphExplorer = lazy(() => import("@/pages/GraphExplorer"));
+const Alternatives = lazy(() => import("@/pages/Alternatives"));
+const Progress = lazy(() => import("@/pages/Progress"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const Admin = lazy(() => import("@/pages/Admin"));
 
 const NO_NAV = ["/", "/login", "/register", "/onboarding/skills", "/onboarding/role"];
 
@@ -34,7 +37,7 @@ function AppShell() {
   const restoreScroll = useRouteScroll();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       {showNav && <Navbar />}
       {/* The homepage carries its own theme toggle in its navigation. */}
       {!showNav && pathname !== "/" && (
@@ -42,9 +45,11 @@ function AppShell() {
           <NavbarMinimal />
         </div>
       )}
-      {/* One keyed wrapper per path: the old page fades out before the new one enters. */}
+      {/* One keyed wrapper per path: the old page slides out before the new one enters. */}
+      <div className="flex-1">
       <AnimatePresence mode="wait" initial={false}>
         <PageTransition key={pathname} onMount={restoreScroll}>
+          <Suspense fallback={<PageLoader />}>
           <Routes location={location}>
             <Route path="/"                        element={<Landing />} />
             <Route path="/login"                   element={<Auth mode="login" />} />
@@ -61,8 +66,12 @@ function AppShell() {
             <Route path="/admin"                   element={<RequireAuth><RequireAdmin><Admin /></RequireAdmin></RequireAuth>} />
             <Route path="*"                        element={<Navigate to="/" replace />} />
           </Routes>
+          </Suspense>
         </PageTransition>
       </AnimatePresence>
+      </div>
+      {/* The graph is a full-height tool; auth and onboarding are focused flows. */}
+      {showNav && pathname !== "/graph" && <Footer />}
       <ToastContainer />
     </div>
   );
@@ -73,10 +82,10 @@ function NavbarMinimal() {
   return (
     <button
       onClick={toggleDark}
-      aria-label="Toggle dark mode"
-      className="w-8 h-8 flex items-center justify-center rounded-lg bg-card border border-border shadow text-muted-foreground hover:text-foreground"
+      aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+      className="w-11 h-11 flex items-center justify-center rounded-full bg-card border-2 border-border text-foreground hover:border-foreground"
     >
-      {darkMode ? "☀" : "☽"}
+      {darkMode ? <SunIcon /> : <MoonIcon />}
     </button>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { categoryColor, categoryLabel, formatDate, formatDateTime, formatHours, formatPercent, pluralize, rankLabel } from '@/lib/format';
+import { categoryColor, categoryLabel, demandWord, formatDate, formatDateTime, formatHours, formatPercent, pluralize, rankLabel } from '@/lib/format';
 
 describe('formatHours', () => {
   it('keeps one decimal', () => expect(formatHours(12.5)).toBe('12.5h'));
@@ -53,9 +53,9 @@ describe('categoryLabel', () => {
 
 describe('categoryColor', () => {
   it('uses the fixed colour for known categories', () => {
-    expect(categoryColor('programming')).toBe('#6366f1');
-    expect(categoryColor('soft-skill')).toBe('#e11d48');
-    expect(categoryColor('cloud')).toBe('#10b981');
+    expect(categoryColor('programming')).toBe('#1f6fb2');
+    expect(categoryColor('soft-skill')).toBe('#8c9099');
+    expect(categoryColor('cloud')).toBe('#0f8a8f');
   });
   it('is deterministic for unknown categories', () => {
     const a = categoryColor('zz-test-new');
@@ -79,5 +79,15 @@ describe('pluralize', () => {
   });
   it('accepts an irregular plural', () => {
     expect(pluralize(2, 'category', 'categories')).toBe('2 categories');
+  });
+});
+
+describe('demandWord', () => {
+  it('uses plain words for the thresholds', () => {
+    expect(demandWord(0.9)).toBe('High demand');
+    expect(demandWord(0.75)).toBe('High demand');
+    expect(demandWord(0.6)).toBe('Steady demand');
+    expect(demandWord(0.55)).toBe('Steady demand');
+    expect(demandWord(0.2)).toBe('Niche');
   });
 });

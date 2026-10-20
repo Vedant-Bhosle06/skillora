@@ -7,7 +7,7 @@ import { getActivePath, getAlternatives, getHistory, selectPath } from '@/api/pa
 import { getRole, getRoles } from '@/api/roles';
 import { getAllSkills, getGraph, getPublicStats, getSkill, searchSkills } from '@/api/skills';
 import type { EdgeInput, Proficiency, RoleInput, Skill, SkillInput } from '@/api/types';
-import { completeSkill, deleteAccount, removeSkill, saveSkills, setTargetRole, updateSkillProficiency } from '@/api/users';
+import { completeSkill, deleteAccount, removeSkill, saveSkills, setTargetRole, uncompleteSkill, updateSkillProficiency } from '@/api/users';
 
 const FIVE_MIN = 5 * 60_000;
 
@@ -171,6 +171,11 @@ export function useSelectPath() {
 /** No automatic invalidation: the progress page handles the 200/202/error cases. */
 export function useCompleteSkill() {
   return useMutation({ mutationFn: (skillId: string) => completeSkill(skillId) });
+}
+
+/** No automatic invalidation: the progress page refreshes the same keys as for completing a skill. */
+export function useUncompleteSkill() {
+  return useMutation({ mutationFn: (skillId: string) => uncompleteSkill(skillId) });
 }
 
 /** No invalidation: the caller runs clearSession() afterwards. */

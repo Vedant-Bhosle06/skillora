@@ -1,8 +1,9 @@
-import React, { ReactNode, useEffect, useId, useRef } from "react";
+import React, { ReactNode, useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, m } from "motion/react";
-import { useToast } from "@/context/ToastContext";
+import { useToast, type Toast } from "@/context/ToastContext";
 import { fadeIn, scaleIn } from "@/lib/motion";
 import type { NodeStatus, Proficiency } from "@/lib/types";
+import { CheckIcon, CloseIcon, InfoIcon, LockIcon, StationIcon, TrainIcon, WarningIcon } from "@/components/transit/icons";
 
 // ── Button ────────────────────────────────────────────────────────────────────
 
@@ -13,15 +14,14 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export function Button({ variant = "primary", size = "md", className = "", children, ...props }: ButtonProps) {
-  // Press feedback (scale) on every variant; the primary button also lifts and glows on hover.
-  // Movement is dropped for users who prefer reduced motion.
-  const base = "inline-flex items-center gap-2 font-display font-600 rounded-md transition-[color,background-color,border-color,box-shadow,opacity,translate,scale] duration-(--duration-fast) ease-out-quint active:scale-[0.97] motion-reduce:translate-none motion-reduce:scale-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:pointer-events-none";
-  const sizes = { sm: "px-3 py-1.5 text-sm", md: "px-4 py-2 text-sm", lg: "px-6 py-3 text-base" };
+  // Pills with a 44px minimum target. Press feedback is a small scale, dropped for reduced motion.
+  const base = "inline-flex min-h-11 items-center justify-center gap-2 rounded-full font-display font-700 transition-[color,background-color,border-color,opacity,scale] duration-(--duration-fast) ease-out-quint active:scale-[0.98] motion-reduce:scale-none disabled:opacity-50 disabled:pointer-events-none";
+  const sizes = { sm: "px-4 text-sm", md: "px-5 text-[15px]", lg: "px-7 text-base" };
   const variants = {
-    primary:   "bg-primary text-primary-foreground shadow-sm hover:shadow-glow hover:-translate-y-px active:translate-y-0",
-    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border",
-    ghost:     "bg-transparent text-foreground hover:bg-muted border border-border",
-    danger:    "bg-red-600 text-white hover:bg-red-700 shadow-sm",
+    primary:   "bg-primary text-primary-foreground hover:opacity-90",
+    secondary: "border-2 border-foreground bg-transparent text-foreground hover:bg-foreground hover:text-background",
+    ghost:     "bg-transparent text-foreground hover:bg-muted",
+    danger:    "border-2 border-primary bg-transparent text-primary hover:bg-primary hover:text-primary-foreground",
   };
   return (
     <button className={`${base} ${sizes[size]} ${variants[variant]} ${className}`} {...props}>
@@ -40,20 +40,21 @@ interface BadgeProps {
 
 const badgeVariants: Record<string, string> = {
   default:      "bg-muted text-muted-foreground",
-  beginner:     "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  intermediate: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-  advanced:     "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-  completed:    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  "in-progress":"bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  locked:       "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
-  unlocked:     "bg-secondary text-secondary-foreground",
-  demand:       "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
+  beginner:     "border border-line-web text-foreground",
+  intermediate: "border border-line-design text-foreground",
+  advanced:     "border border-line-alt text-foreground",
+  completed:    "bg-primary text-primary-foreground",
+  "in-progress":"border border-primary text-primary",
+  locked:       "bg-muted text-muted-foreground",
+  unlocked:     "border border-foreground text-foreground",
+  demand:       "bg-muted text-foreground",
   outline:      "border border-border text-muted-foreground bg-transparent",
 };
 
+/** A small roundel pill. Colour is never the only signal: the text always says what it means. */
 export function Badge({ children, variant = "default", className = "" }: BadgeProps) {
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-mono font-500 ${badgeVariants[variant]} ${className}`}>
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-700 ${badgeVariants[variant]} ${className}`}>
       {children}
     </span>
   );
@@ -61,7 +62,12 @@ export function Badge({ children, variant = "default", className = "" }: BadgePr
 
 export function StatusBadge({ status }: { status: NodeStatus }) {
   const labels: Record<NodeStatus, string> = { completed: "Completed", "in-progress": "Up next", locked: "Locked", unlocked: "Available" };
-  const icons: Record<NodeStatus, string> = { completed: "✓", "in-progress": "◉", locked: "🔒", unlocked: "◎" };
+  const icons: Record<NodeStatus, ReactNode> = {
+    completed: <CheckIcon size={12} strokeWidth={2.4} />,
+    "in-progress": <TrainIcon size={12} />,
+    locked: <LockIcon size={12} />,
+    unlocked: <StationIcon size={12} />,
+  };
   return <Badge variant={status}>{icons[status]} {labels[status]}</Badge>;
 }
 
@@ -97,11 +103,12 @@ export function Card({ children, className = "", hover = false, onClick, selecte
   const interactive = onClick
     ? { role: "button", tabIndex: 0, onKeyDown: activateOnKey(onClick), "aria-pressed": selected }
     : {};
+  // A flat sign panel: 1px border, and a signal-red top rule when selected.
   return (
     <div
       onClick={onClick}
       {...interactive}
-      className={`bg-card text-card-foreground border border-border rounded-xl shadow-sm ${hover ? "cursor-pointer transition-[translate,box-shadow,border-color] duration-(--duration-base) ease-out-quint hover:-translate-y-0.5 hover:shadow-glow hover:border-primary/40 motion-reduce:translate-none" : ""} ${onClick ? "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring" : ""} ${className}`}
+      className={`bg-card text-card-foreground border rounded-lg ${selected ? "border-foreground shadow-[inset_0_4px_0_0_var(--primary)]" : "border-border"} ${hover ? "cursor-pointer transition-[border-color] duration-(--duration-base) ease-out-quint hover:border-foreground" : ""} ${className}`}
     >
       {children}
     </div>
@@ -153,7 +160,7 @@ export function Modal({ open, onClose, title, children, className = "" }: ModalP
       {open && (
         <div key="modal" className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <m.div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/60"
             onClick={onClose}
             variants={fadeIn}
             initial="hidden"
@@ -164,7 +171,7 @@ export function Modal({ open, onClose, title, children, className = "" }: ModalP
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className={`relative bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto ${content.className}`}
+            className={`relative bg-card border-2 border-foreground rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto ${content.className}`}
             variants={scaleIn}
             initial="hidden"
             animate="visible"
@@ -172,7 +179,7 @@ export function Modal({ open, onClose, title, children, className = "" }: ModalP
           >
             <div className="flex items-center justify-between p-5 border-b border-border">
               <h2 id={titleId} className="font-display font-700 text-lg text-foreground">{content.title}</h2>
-              <button ref={closeRef} onClick={onClose} aria-label="Close dialog" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">✕</button>
+              <button ref={closeRef} onClick={onClose} aria-label="Close dialog" className="w-11 h-11 -m-2 flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"><CloseIcon size={18} /></button>
             </div>
             <div ref={bodyRef} className="p-5">{content.children}</div>
           </m.div>
@@ -184,24 +191,74 @@ export function Modal({ open, onClose, title, children, className = "" }: ModalP
 
 // ── Toast Container ───────────────────────────────────────────────────────────
 
-export function ToastContainer() {
-  const { toasts } = useToast();
-  const icons: Record<string, string> = { success: "✓", error: "✕", info: "ℹ", warning: "⚠" };
-  const colors: Record<string, string> = {
-    success: "border-l-4 border-emerald-500",
-    error:   "border-l-4 border-red-500",
-    info:    "border-l-4 border-primary",
-    warning: "border-l-4 border-amber-500",
-  };
+// Halo in the page colour keeps bare text legible over any content without drawing a box.
+const TOAST_HALO = [
+  "0 0 2px", "0 0 5px", "0 0 9px", "1px 0 0", "-1px 0 0", "0 1px 0", "0 -1px 0",
+].map(o => `${o} var(--background)`).join(", ");
+
+function ToastItem({ toast }: { toast: Toast }) {
+  const { dismissToast } = useToast();
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const paused = hovered || focused;
+  const remaining = useRef(toast.duration);
+  const startedAt = useRef(0);
+
+  // The timer runs only while the pointer and keyboard focus are elsewhere.
+  useEffect(() => {
+    if (paused || toast.exiting) return;
+    startedAt.current = Date.now();
+    const id = setTimeout(() => dismissToast(toast.id), remaining.current);
+    return () => {
+      clearTimeout(id);
+      remaining.current = Math.max(1000, remaining.current - (Date.now() - startedAt.current));
+    };
+  }, [paused, toast.exiting, toast.id, dismissToast]);
+
+  const subtle = toast.type === "success" || toast.type === "info";
+  const panelAccent = toast.type === "error" ? "border-t-4 border-t-primary" : "border-t-4 border-t-line-design";
+  const Icon = toast.type === "error" ? CloseIcon : WarningIcon;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2">
-      {toasts.map(t => (
-        <div key={t.id} className={`${t.exiting ? "toast-exit" : "toast-enter"} bg-card border border-border ${colors[t.type]} rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 min-w-72 max-w-sm`}>
-          <span className="text-sm">{icons[t.type]}</span>
-          <span className="text-sm text-foreground font-500">{t.message}</span>
-        </div>
-      ))}
+    <div
+      className={`${toast.exiting ? "toast-exit" : "toast-enter"} pointer-events-auto flex max-w-[min(32rem,calc(100vw-2rem))] items-center justify-center ${
+        subtle ? "gap-1 text-foreground" : `gap-3 rounded-md border border-border bg-card px-4 py-2 ${panelAccent}`
+      }`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+    >
+      {!subtle && <Icon size={16} className={toast.type === "error" ? "shrink-0 text-primary" : "shrink-0 text-foreground"} />}
+      <span
+        className={`py-2 text-center text-[15px] font-bold ${toast.type === "error" ? "text-primary" : "text-foreground"}`}
+        style={subtle ? { textShadow: TOAST_HALO } : undefined}
+      >
+        {toast.message}
+      </span>
+      {toast.action && (
+        <button
+          type="button"
+          onClick={() => { toast.action!.onClick(); dismissToast(toast.id); }}
+          className="min-h-11 shrink-0 px-3 text-[15px] font-bold text-foreground underline underline-offset-4"
+          style={subtle ? { textShadow: TOAST_HALO } : undefined}
+        >
+          {toast.action.label}
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function ToastContainer() {
+  const { toasts } = useToast();
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="pointer-events-none fixed bottom-6 left-1/2 z-[100] flex w-max -translate-x-1/2 flex-col items-center gap-1"
+    >
+      {toasts.map(t => <ToastItem key={t.id} toast={t} />)}
     </div>
   );
 }
@@ -209,21 +266,24 @@ export function ToastContainer() {
 // ── Stat Tile ─────────────────────────────────────────────────────────────────
 
 export function StatTile({ label, value, sub, accent = false }: { label: string; value: string; sub?: string; accent?: boolean }) {
+  // A board cell: sentence-case label above, big tabular number below.
   return (
-    <div className={`rounded-xl border border-border p-4 ${accent ? "bg-primary text-primary-foreground" : "bg-card"}`}>
-      <p className={`text-xs font-mono uppercase tracking-wider mb-1 ${accent ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{label}</p>
-      <p className={`font-display font-800 text-2xl ${accent ? "text-primary-foreground" : "text-foreground"}`}>{value}</p>
-      {sub && <p className={`text-xs mt-0.5 ${accent ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{sub}</p>}
+    <div className={`rounded-md border p-4 ${accent ? "border-foreground bg-foreground text-background" : "border-border bg-card"}`}>
+      <p className={`text-sm font-600 mb-1 ${accent ? "text-background/80" : "text-muted-foreground"}`}>{label}</p>
+      <p className={`font-display font-800 text-3xl tabular-nums leading-tight ${accent ? "text-background" : "text-foreground"}`}>{value}</p>
+      {sub && <p className={`text-sm mt-0.5 ${accent ? "text-background/80" : "text-muted-foreground"}`}>{sub}</p>}
     </div>
   );
 }
 
 // ── Empty State ───────────────────────────────────────────────────────────────
 
-export function EmptyState({ icon, title, description, action }: { icon: string; title: string; description: string; action?: ReactNode }) {
+export function EmptyState({ icon, title, description, action }: { icon?: ReactNode; title: string; description: string; action?: ReactNode }) {
+  // Pass an SVG icon. Plain-text glyphs from older callers are replaced by a station dot.
+  const mark = icon && typeof icon !== "string" ? icon : icon === "🔒" ? <LockIcon size={28} /> : <StationIcon size={28} />;
   return (
     <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center text-3xl mb-4">{icon}</div>
+      <div className="w-16 h-16 rounded-md border border-border bg-muted flex items-center justify-center text-foreground mb-4">{mark}</div>
       <h3 className="font-display font-700 text-lg text-foreground mb-2">{title}</h3>
       <p className="text-muted-foreground text-sm max-w-xs mb-6">{description}</p>
       {action}
@@ -234,10 +294,18 @@ export function EmptyState({ icon, title, description, action }: { icon: string;
 // ── Progress Bar ──────────────────────────────────────────────────────────────
 
 export function ProgressBar({ value, max, className = "" }: { value: number; max: number; className?: string }) {
-  const pct = Math.min(100, Math.round((value / max) * 100));
+  // A line with stop ticks: the filled part is the route travelled so far.
+  const pct = max > 0 ? Math.min(100, Math.max(0, Math.round((value / max) * 100))) : 0;
   return (
-    <div className={`h-2 bg-muted rounded-full overflow-hidden ${className}`}>
-      <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+    <div
+      role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}
+      className={`relative h-3 flex items-center ${className}`}
+    >
+      <div className="absolute inset-x-0 h-1.5 rounded-full bg-border" />
+      <div className="absolute left-0 h-1.5 rounded-full bg-primary transition-[width] duration-500" style={{ width: `${pct}%` }} />
+      {[0, 25, 50, 75, 100].map(t => (
+        <span key={t} className={`absolute h-3 w-3 -translate-x-1/2 rounded-full border-2 ${pct >= t ? "border-primary" : "border-line-grey"} bg-station`} style={{ left: `${t}%` }} />
+      ))}
     </div>
   );
 }
@@ -261,8 +329,8 @@ function useFieldIds(id: string | undefined, hint?: string, error?: string) {
 function FieldMessages({ fieldId, hint, error }: { fieldId: string; hint?: string; error?: string }) {
   return (
     <>
-      {hint && !error && <p id={`${fieldId}-hint`} className="text-xs text-muted-foreground">{hint}</p>}
-      {error && <p id={`${fieldId}-error`} className="text-xs text-red-500">{error}</p>}
+      {hint && !error && <p id={`${fieldId}-hint`} className="text-sm text-muted-foreground">{hint}</p>}
+      {error && <p id={`${fieldId}-error`} className="text-sm font-600 text-primary">{error}</p>}
     </>
   );
 }
@@ -271,12 +339,12 @@ export function Input({ label, error, hint, className = "", id, ...props }: Inpu
   const { fieldId, describedBy } = useFieldIds(id, hint, error);
   return (
     <div className="flex flex-col gap-1">
-      {label && <label htmlFor={fieldId} className="text-sm font-500 text-foreground">{label}</label>}
+      {label && <label htmlFor={fieldId} className="text-sm font-600 text-foreground">{label}</label>}
       <input
         id={fieldId}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
-        className={`px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent placeholder:text-muted-foreground transition-all ${error ? "border-red-500" : ""} ${className}`}
+        className={`px-3 py-2 min-h-11 rounded-md border border-line-grey bg-card text-foreground text-[15px] placeholder:text-muted-foreground transition-colors ${error ? "!border-primary border-2" : ""} ${className}`}
         {...props}
       />
       <FieldMessages fieldId={fieldId} hint={hint} error={error} />
@@ -297,12 +365,12 @@ export function Select({ label, error, hint, className = "", id, children, ...pr
   const { fieldId, describedBy } = useFieldIds(id, hint, error);
   return (
     <div className="flex flex-col gap-1">
-      {label && <label htmlFor={fieldId} className="text-sm font-500 text-foreground">{label}</label>}
+      {label && <label htmlFor={fieldId} className="text-sm font-600 text-foreground">{label}</label>}
       <select
         id={fieldId}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
-        className={`px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all ${error ? "border-red-500" : ""} ${className}`}
+        className={`px-3 py-2 min-h-11 rounded-md border border-line-grey bg-card text-foreground text-[15px] transition-colors ${error ? "!border-primary border-2" : ""} ${className}`}
         {...props}
       >
         {children}
@@ -324,12 +392,12 @@ export function Textarea({ label, error, hint, className = "", id, ...props }: T
   const { fieldId, describedBy } = useFieldIds(id, hint, error);
   return (
     <div className="flex flex-col gap-1">
-      {label && <label htmlFor={fieldId} className="text-sm font-500 text-foreground">{label}</label>}
+      {label && <label htmlFor={fieldId} className="text-sm font-600 text-foreground">{label}</label>}
       <textarea
         id={fieldId}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
-        className={`px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent placeholder:text-muted-foreground transition-all ${error ? "border-red-500" : ""} ${className}`}
+        className={`px-3 py-2 min-h-11 rounded-md border border-line-grey bg-card text-foreground text-[15px] placeholder:text-muted-foreground transition-colors ${error ? "!border-primary border-2" : ""} ${className}`}
         {...props}
       />
       <FieldMessages fieldId={fieldId} hint={hint} error={error} />
@@ -341,20 +409,6 @@ export function Textarea({ label, error, hint, className = "", id, ...props }: T
 
 export function Divider({ className = "" }: { className?: string }) {
   return <div className={`h-px bg-border ${className}`} />;
-}
-
-// ── Demand score bar ──────────────────────────────────────────────────────────
-
-export function DemandBar({ score }: { score: number }) {
-  const color = score >= 90 ? "bg-rose-500" : score >= 75 ? "bg-amber-500" : "bg-emerald-500";
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-        <div className={`h-full ${color} rounded-full`} style={{ width: `${score}%` }} />
-      </div>
-      <span className="text-xs font-mono text-muted-foreground">{score}</span>
-    </div>
-  );
 }
 
 // ── Spinner ───────────────────────────────────────────────────────────────────
@@ -385,35 +439,10 @@ export function PageLoader({ label = "Loading…" }: { label?: string }) {
 export function ErrorState({ title = "Something went wrong", message, onRetry }: { title?: string; message: string; onRetry?: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-3xl mb-4">⚠</div>
+      <div className="w-16 h-16 rounded-md border-2 border-primary text-primary flex items-center justify-center mb-4"><WarningIcon size={28} /></div>
       <h3 className="font-display font-700 text-lg text-foreground mb-2">{title}</h3>
       <p className="text-muted-foreground text-sm max-w-sm mb-6">{message}</p>
       {onRetry && <Button variant="secondary" onClick={onRetry}>Try again</Button>}
-    </div>
-  );
-}
-
-// ── Progress Ring ─────────────────────────────────────────────────────────────
-
-export function ProgressRing({ value, size = 88, stroke = 8, label }: { value: number; size?: number; stroke?: number; label?: string }) {
-  const clamped = Math.min(1, Math.max(0, Number.isFinite(value) ? value : 0));
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const pct = Math.round(clamped * 100);
-  return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" strokeWidth={stroke} className="stroke-muted" />
-        <circle
-          cx={size / 2} cy={size / 2} r={radius} fill="none" strokeWidth={stroke} strokeLinecap="round"
-          className="stroke-primary transition-all duration-500"
-          strokeDasharray={`${circumference * clamped} ${circumference}`}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display font-800 text-lg text-foreground">{pct}%</span>
-        {label && <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{label}</span>}
-      </div>
     </div>
   );
 }
