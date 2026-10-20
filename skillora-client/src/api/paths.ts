@@ -2,7 +2,7 @@ import { api, ApiError } from '@/api/client';
 import type { AlternativesResponse, ComputedPathDoc, MessageResponse } from '@/api/types';
 
 // Compute may wait for the path service to wake (up to ~60 s) before it runs.
-const COMPUTE_TIMEOUT_MS = 90000;
+const COMPUTE_TIMEOUT_MS = 120000;
 
 export async function computePath(): Promise<ComputedPathDoc> {
   const res = await api.post<ComputedPathDoc>('/paths/compute', undefined, { timeout: COMPUTE_TIMEOUT_MS });
