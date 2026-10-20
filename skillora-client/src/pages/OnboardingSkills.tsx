@@ -1,13 +1,19 @@
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button, ProficiencyBadge, Card, PageLoader, ErrorState, EmptyState, activateOnKey } from "@/components/ui";
+import { Link, useNavigate } from "react-router-dom";
+import { Button, PageLoader, ErrorState, EmptyState } from "@/components/ui";
 import type { Proficiency, Skill } from "@/api/types";
 import { useSaveSkills, useSkillsCatalog, useSkillSearch } from "@/api/queries";
 import { useAuth } from "@/auth/AuthContext";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { categoryLabel, formatHours } from "@/lib/format";
 import { refId } from "@/lib/requirements";
+import { unlocks } from "@/lib/unlocks";
 import { useToast } from "@/context/ToastContext";
+import Logo from "@/components/Logo";
+import OnboardingProgress from "@/components/OnboardingProgress";
+import { DepartureBoard, SignPanel, StationChip } from "@/components/transit";
+import { ArrowIcon, CloseIcon, SearchIcon } from "@/components/transit/icons";
+import { lineFor } from "@/components/landing/data";
 
 const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"];
 
@@ -46,6 +52,17 @@ export default function OnboardingSkills() {
       .map(([label, list]) => ({ label, skills: [...list].sort((a, b) => a.name.localeCompare(b.name)) }));
   }, [catalog.data]);
 
+  // What the chosen skills open next: the same prerequisite rule the planner uses.
+  const categoryBySlug = useMemo(() => new Map((catalog.data ?? []).map(s => [s.slug, s.category])), [catalog.data]);
+  const board = useMemo(() => {
+    const known = new Set<string>();
+    for (const s of selected) {
+      const slug = catalog.byId.get(s.skillId)?.slug;
+      if (slug) known.add(slug);
+    }
+    return unlocks(known);
+  }, [selected, catalog.byId]);
+
   function toggle(skillId: string) {
     setSelected(prev => {
       const exists = prev.find(s => s.skillId === skillId);
@@ -66,56 +83,17 @@ export default function OnboardingSkills() {
     });
   }
 
-  function renderSkillCard(skill: Skill) {
-    const sel = selected.find(s => s.skillId === skill._id);
+  function renderChip(skill: Skill) {
     return (
-      <div
+      <StationChip
         key={skill._id}
-        title={skill.description || undefined}
-        className={`rounded-lg border transition-all cursor-pointer p-3 ${
-          sel ? "border-primary bg-secondary/50" : "border-border bg-card hover:border-primary/40"
-        }`}
+        pressed={selected.some(s => s.skillId === skill._id)}
+        onToggle={() => toggle(skill._id)}
+        color={lineFor(skill.category)}
       >
-        <div
-          className="flex items-center justify-between mb-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          role="checkbox"
-          aria-checked={!!sel}
-          aria-label={skill.name}
-          tabIndex={0}
-          onClick={() => toggle(skill._id)}
-          onKeyDown={activateOnKey(() => toggle(skill._id))}
-        >
-          <div className="flex items-center gap-2">
-            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center text-xs transition-all ${
-              sel ? "bg-primary border-primary text-white" : "border-border"
-            }`}>
-              {sel && "✓"}
-            </div>
-            <span className="text-sm font-600 text-foreground">{skill.name}</span>
-          </div>
-          <span className="text-xs font-mono text-muted-foreground">{formatHours(skill.estHours)}</span>
-        </div>
-
-        {sel && (
-          <div className="mt-2 flex items-center gap-1 pl-6">
-            {proficiencyLevels.map(level => (
-              <button
-                key={level}
-                onClick={() => setProficiency(skill._id, level)}
-                className={`px-2 py-0.5 rounded-full text-xs font-mono transition-all ${
-                  sel.proficiency === level
-                    ? level === "beginner"     ? "bg-emerald-500 text-white"
-                    : level === "intermediate" ? "bg-amber-500 text-white"
-                                               : "bg-purple-500 text-white"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                {level}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+        <span title={skill.description || undefined}>{skill.name}</span>
+        <span className="font-mono text-xs opacity-70">{formatHours(skill.estHours)}</span>
+      </StationChip>
     );
   }
 
@@ -131,96 +109,134 @@ export default function OnboardingSkills() {
       }
       if (!searchQuery.data) return <PageLoader label="Searching…" />;
       if (searchQuery.data.length === 0) {
-        return <EmptyState icon="⌕" title="No skills match" description={`Nothing found for “${debounced}”. Try another name or alias.`} />;
+        return <EmptyState icon={<SearchIcon size={28} />} title="No skills match" description={`Nothing found for “${debounced}”. Try another name or alias.`} />;
       }
       return (
-        <div className="mb-6">
-          <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-3">
-            Results ({searchQuery.data.length})
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {searchQuery.data.map(renderSkillCard)}
-          </div>
-        </div>
+        <section className="mb-8" aria-label="Search results">
+          <h2 className="mb-3 border-b-4 border-foreground pb-2 text-lg font-800">Results ({searchQuery.data.length})</h2>
+          <div className="flex flex-wrap gap-2">{searchQuery.data.map(renderChip)}</div>
+        </section>
       );
     }
 
     if (groups.length === 0) {
-      return <EmptyState icon="◎" title="No skills yet" description="The skill catalog is empty." />;
+      return <EmptyState icon={<SearchIcon size={28} />} title="No skills yet" description="The skill catalog is empty." />;
     }
     return groups.map(group => (
-      <div key={group.label} className="mb-6">
-        <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-3">{group.label}</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {group.skills.map(renderSkillCard)}
-        </div>
-      </div>
+      <section key={group.label} className="mb-8" aria-label={group.label}>
+        <h2 className="mb-3 flex items-center gap-2 border-b-4 pb-2 text-lg font-800" style={{ borderColor: lineFor(group.skills[0]?.category) }}>
+          {group.label}
+          <span className="font-mono text-sm font-400 text-muted-foreground">{group.skills.length}</span>
+        </h2>
+        <div className="flex flex-wrap gap-2">{group.skills.map(renderChip)}</div>
+      </section>
     ));
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto px-6 py-12">
-        {/* Step indicator */}
-        <div className="flex items-center gap-3 mb-10">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-mono font-700">1</div>
-            <span className="text-sm font-600 text-foreground">Your Skills</span>
-          </div>
-          <div className="flex-1 h-0.5 bg-border max-w-12" />
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full border border-border text-muted-foreground flex items-center justify-center text-xs font-mono">2</div>
-            <span className="text-sm text-muted-foreground">Target Role</span>
-          </div>
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12">
+        <div className="mb-10 flex flex-wrap items-center justify-between gap-4 pr-14">
+          <Link to="/" aria-label="SKILLORA home" className="flex min-h-11 items-center rounded-md">
+            <Logo variant="mark" wordmark size={26} wordmarkClassName="text-[17px]" />
+          </Link>
+          <OnboardingProgress step={1} />
         </div>
 
-        <h1 className="font-display font-800 text-3xl text-foreground mb-2">What do you already know?</h1>
-        <p className="text-muted-foreground mb-8">Select every skill you have experience with and set your proficiency level. Don't undersell yourself.</p>
+        <h1 className="mb-2 text-[clamp(2rem,4vw,3rem)] font-[850] leading-[1.05] tracking-[-0.02em] text-foreground">Pick the stations you already know.</h1>
+        <p className="mb-8 max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
+          Select every skill you have experience with, then set a level for each. The board shows what they open next. Don't undersell yourself.
+        </p>
 
-        {/* Search */}
-        <div className="relative mb-6">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">⌕</span>
-          <input
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
-            placeholder="Search skills by name or alias…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          {search && (
-            <button onClick={() => setSearch("")} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs">✕</button>
-          )}
-        </div>
-
-        {renderSkills()}
-
-        {/* Selected summary */}
-        {selected.length > 0 && (
-          <Card className="p-4 mb-6 bg-muted/50">
-            <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-3">Selected ({selected.length})</p>
-            <div className="flex flex-wrap gap-2">
-              {selected.map(s => {
-                const skill = catalog.byId.get(s.skillId);
-                return skill ? (
-                  <div key={s.skillId} className="flex items-center gap-1.5 bg-card border border-border rounded-full px-3 py-1">
-                    <span className="text-xs font-500 text-foreground">{skill.name}</span>
-                    <ProficiencyBadge level={s.proficiency} />
-                    <button onClick={() => toggle(s.skillId)} aria-label={`Remove ${skill.name}`} className="text-muted-foreground hover:text-foreground text-xs ml-0.5">✕</button>
-                  </div>
-                ) : null;
-              })}
+        <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-start">
+          <div>
+            {/* Search */}
+            <div className="relative mb-8">
+              <SearchIcon size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                aria-label="Search skills by name or alias"
+                className="min-h-11 w-full rounded-md border border-line-grey bg-card pl-10 pr-12 text-[15px] text-foreground placeholder:text-muted-foreground"
+                placeholder="Search skills by name or alias…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              {search && (
+                <button onClick={() => setSearch("")} aria-label="Clear search" className="absolute right-0.5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground">
+                  <CloseIcon size={16} />
+                </button>
+              )}
             </div>
-          </Card>
-        )}
 
-        <div className="flex justify-end items-center gap-3">
-          {selected.length === 0 && (
-            <Button size="lg" variant="secondary" disabled={saveSkills.isPending} onClick={() => save([])}>
-              I'm starting from scratch →
-            </Button>
-          )}
-          <Button size="lg" disabled={selected.length === 0 || saveSkills.isPending} onClick={() => save(selected)}>
-            {saveSkills.isPending ? "Saving…" : "Next: Pick your role →"}
-          </Button>
+            {renderSkills()}
+          </div>
+
+          <aside className="flex flex-col gap-6 lg:sticky lg:top-6" aria-label="Your stations">
+            <SignPanel rule="var(--line-route)">
+              <h2 className="px-5 pt-4 text-lg font-800">
+                Your stations <span className="font-mono text-sm font-400 text-muted-foreground">{selected.length}</span>
+              </h2>
+              {selected.length === 0 ? (
+                <p className="px-5 pb-5 pt-2 text-base text-muted-foreground">Nothing yet. Pick a station on the left, or start from scratch.</p>
+              ) : (
+                <ul className="mt-2 max-h-[22rem] divide-y divide-border overflow-auto">
+                  {selected.map(s => {
+                    const skill = catalog.byId.get(s.skillId);
+                    if (!skill) return null;
+                    return (
+                      <li key={s.skillId} className="px-5 py-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-base font-700">{skill.name}</span>
+                          <button onClick={() => toggle(s.skillId)} aria-label={`Remove ${skill.name}`} className="-mr-2 flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground hover:text-foreground">
+                            <CloseIcon size={16} />
+                          </button>
+                        </div>
+                        <div role="group" aria-label={`Level for ${skill.name}`} className="mt-1 flex flex-wrap gap-1.5">
+                          {proficiencyLevels.map(level => (
+                            <button
+                              key={level}
+                              type="button"
+                              aria-pressed={s.proficiency === level}
+                              onClick={() => setProficiency(s.skillId, level)}
+                              className={`min-h-11 rounded-full border-2 px-3.5 text-sm font-700 ${
+                                s.proficiency === level ? "border-foreground bg-foreground text-background" : "border-border bg-card text-foreground hover:border-foreground"
+                              }`}
+                            >
+                              {level}
+                            </button>
+                          ))}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </SignPanel>
+
+            <DepartureBoard
+              title="Next departures"
+              count={`${board.length} ${board.length === 1 ? "stop" : "stops"}`}
+              empty="Pick a station to see where it leads."
+              maxHeightClass="max-h-72"
+              rows={board.map(n => ({
+                key: n.slug,
+                color: lineFor(categoryBySlug.get(n.slug)),
+                label: n.name,
+                detail: `from ${n.via.join(" + ")}`,
+              }))}
+            />
+
+            <div className="flex flex-wrap items-center gap-3">
+              {selected.length === 0 && (
+                <Button size="lg" variant="secondary" disabled={saveSkills.isPending} onClick={() => save([])}>
+                  I'm starting from scratch <ArrowIcon size={16} />
+                </Button>
+              )}
+              <Button size="lg" disabled={selected.length === 0 || saveSkills.isPending} onClick={() => save(selected)}>
+                {saveSkills.isPending ? "Saving…" : "Next: choose your destination"}
+                {!saveSkills.isPending && <ArrowIcon size={16} />}
+              </Button>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
