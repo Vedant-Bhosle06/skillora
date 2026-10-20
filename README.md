@@ -2,6 +2,8 @@
 
 > A personalised upskilling-path recommender that models skills as a knowledge graph and computes the minimum-effort, prerequisite-respecting learning path to a target role with A\* search.
 
+**Live demo:** [skillora-black.vercel.app](https://skillora-black.vercel.app) · API docs: [skillora-api-i3cs.onrender.com/api/docs](https://skillora-api-i3cs.onrender.com/api/docs). Hosted on free tiers: the first load after a quiet spell can take about a minute while the services wake up.
+
 ## What it does
 
 A user enters the skills they already have and picks a target job role. SKILLORA computes the cheapest ordered set of skills still to learn, explains why each step is there, offers ranked alternative routes (for example Tableau versus Power BI), and recomputes the plan as the user marks skills complete. Scope and goals: [docs/PRD.md](docs/PRD.md).

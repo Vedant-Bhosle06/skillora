@@ -31,7 +31,7 @@ let waking = null;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function waitUntilAwake() {
-  const deadline = Date.now() + Math.min(timeoutMs(), 60000);
+  const deadline = Date.now() + Math.min(timeoutMs(), 90000);
   let delay = 1000;
   for (;;) {
     try {

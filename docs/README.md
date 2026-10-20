@@ -2,6 +2,8 @@
 
 Start here. Each document has one job; together they replace the former single specification (see [the mapping below](#where-the-old-specification-went)).
 
+**Live:** app <https://skillora-black.vercel.app> · API docs <https://skillora-api-i3cs.onrender.com/api/docs> · path service docs <https://skillora-path.onrender.com/docs> (see [DEPLOYMENT.md](DEPLOYMENT.md#9-live-urls)).
+
 ## Documents
 
 | Document | Answers | Audience |

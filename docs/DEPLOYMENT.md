@@ -44,10 +44,10 @@ Do the steps in this order. The Render services need the Vercel URL for `CLIENT_
    - `skillora-api`: `MONGO_URI`, `JWT_SECRET`, `INTERNAL_API_KEY`, `CLIENT_ORIGIN`, `PYTHON_SERVICE_URL`
    - `skillora-path`: `MONGO_URI`, `INTERNAL_API_KEY` (the same value as on the API)
 4. For `CLIENT_ORIGIN` enter `http://localhost:5173` for now; you will change it in step 3.
-5. For `PYTHON_SERVICE_URL` enter the public URL of the path service, `https://skillora-path.onrender.com` (the name in `render.yaml` decides the subdomain; if Render adds a suffix because the name is taken, use the URL shown on the `skillora-path` page).
+5. For `PYTHON_SERVICE_URL` enter the public URL of the path service, `https://skillora-path.onrender.com` for this deployment (the name in `render.yaml` decides the subdomain; if Render adds a suffix because the name is taken, use the URL shown on the `skillora-path` page).
 6. Apply. Wait for both services to be **Live**. Check:
-   - `https://skillora-api.onrender.com/api/stats/public` returns the skill and role counts.
-   - `https://skillora-api.onrender.com/api/docs` shows Swagger.
+   - `https://skillora-api-i3cs.onrender.com/api/stats/public` returns the skill and role counts.
+   - `https://skillora-api-i3cs.onrender.com/api/docs` shows Swagger.
    - `https://skillora-path.onrender.com/health` returns `"graphLoaded": true`.
 
 > **Why `PYTHON_SERVICE_URL` is typed in, not wired automatically.** Render can inject a service's private `host:port` with `fromService`/`hostport`, but that has no scheme and relies on private networking between sleeping free services. A plain public URL is the simplest reliable option. (The API also accepts a value with no scheme and adds `http://`, so the private form would work if you ever switch.)
@@ -57,15 +57,15 @@ Do the steps in this order. The Render services need the Vercel URL for `CLIENT_
 1. In Vercel choose **Add New, Project** and import the repository.
 2. **Root Directory:** `skillora-client`.
 3. **Framework Preset:** Vite (build command `npm run build`, output `dist`; the defaults are right).
-4. **Environment Variables:** `VITE_API_BASE_URL` = `https://skillora-api.onrender.com` (the API origin, no trailing path). This is required: the production build fails without it, because it also builds the page's Content-Security-Policy from this value.
-5. Deploy. Vercel gives you a URL such as `https://<your-app>.vercel.app`.
+4. **Environment Variables:** `VITE_API_BASE_URL` = `https://skillora-api-i3cs.onrender.com` (the API origin, no trailing path). This is required: the production build fails without it, because it also builds the page's Content-Security-Policy from this value.
+5. Deploy. Vercel gives you a URL such as `https://<your-app>.vercel.app` (this deployment: `https://skillora-black.vercel.app`).
 
 ### Step 3: set CLIENT_ORIGIN on Render
 
 Open the `skillora-api` service, Environment, and set `CLIENT_ORIGIN` to the Vercel URL. To keep local development working as well, give a comma-separated list:
 
 ```
-https://<your-app>.vercel.app,http://localhost:5173
+https://skillora-black.vercel.app,http://localhost:5173
 ```
 
 Use the exact origin: scheme and host, no path. A trailing slash is ignored. Save; Render redeploys the API.
@@ -91,7 +91,7 @@ Register, pick skills and a role, and confirm a path appears. The first request 
 | `INTERNAL_API_KEY` | yes (secret) | Sent to the path service as `X-Internal-Key`; must match the path service. |
 | `CLIENT_ORIGIN` | yes | Allowed browser origin(s) for CORS. One origin or a comma-separated list. Defaults to `http://localhost:5173`. |
 | `PYTHON_SERVICE_URL` | yes | Public URL of the path service. |
-| `PYTHON_TIMEOUT_MS` | preset `60000` | Timeout for path-service calls and the budget for waking it. |
+| `PYTHON_TIMEOUT_MS` | preset `90000` | Timeout for path-service calls and the budget for waking it. |
 | `JWT_EXPIRES_IN` | preset `7d` | Token lifetime. |
 | `NODE_ENV` | preset `production` | Enables proxy trust so rate limiting sees real client IPs. |
 | `PORT` | set by Render | Port the API binds to. Do not set it yourself. (On a Mac locally, use `5050`.) |
@@ -123,8 +123,8 @@ Run it once per secret. Use a **new** `JWT_SECRET` and a **new** `INTERNAL_API_K
 - To make the wait painless:
   - The landing, sign-in and register pages send one quiet request to `/api/stats/public`, which starts waking the API before you sign in.
   - When the API starts it pings the path service `/health` once.
-  - Before computing a path the API calls the path service `/health` and retries with backoff for up to about 60 s (never longer than `PYTHON_TIMEOUT_MS`), then makes the real call. If the service never answers, the usual 503 handling applies.
-  - The client waits up to 75 s for ordinary requests and 90 s for path computation, and after 4 s of waiting shows "Waking the planner — free hosting sleeps when idle. This can take up to a minute."
+  - Before computing a path the API calls the path service `/health` and retries with backoff for up to about 90 s (never longer than `PYTHON_TIMEOUT_MS`; a measured cold start of the path service took about 53 s), then makes the real call. If the service never answers, the usual 503 handling applies.
+  - The client waits up to 75 s for ordinary requests and 120 s for path computation, complete and undo, and after 4 s of waiting shows "Waking the planner — free hosting sleeps when idle. This can take up to a minute."
 - Vercel Hobby is free for non-commercial use and has no cold start for the static client.
 
 ## 6. Redeploys
@@ -152,12 +152,12 @@ The GitHub Student Pack includes a free `.me` domain for a year. In Vercel, Proj
 
 ## 9. Live URLs
 
-To be filled in after deployment.
-
 | What | URL |
 |---|---|
-| App | `https://<your-app>.vercel.app` |
-| API | `https://<your-api>.onrender.com` |
-| API docs | `https://<your-api>.onrender.com/api/docs` |
-| Path service | `https://<your-path-service>.onrender.com` |
-| Path service docs | `https://<your-path-service>.onrender.com/docs` |
+| App | https://skillora-black.vercel.app |
+| API | https://skillora-api-i3cs.onrender.com |
+| API docs (Swagger) | https://skillora-api-i3cs.onrender.com/api/docs |
+| Path service | https://skillora-path.onrender.com |
+| Path service docs (FastAPI) | https://skillora-path.onrender.com/docs |
+
+The API's subdomain has a suffix (`-i3cs`) because Render added one when `skillora-api` was created. The free services sleep when idle, so the first request after a quiet spell takes about a minute (see [section 5](#5-cold-starts-and-limits)).

@@ -14,7 +14,7 @@ Transit frontend redesign, undo for completed skills, and free-tier deployment c
 | 4 | Heavy routes (graph, admin, progress) were in the main bundle. | Lazy-loaded per route. |
 | 5 | Graph hover gave no reason for a locked skill and was not keyboard accessible. | Hover cards say "Locked: still needs …"; nodes are focusable and show the card on focus. |
 | 6 | No deployment configuration; CORS accepted a single origin; free hosting sleeps when idle. | `render.yaml` (two free Render web services), `skillora-client/vercel.json` (SPA rewrite, security headers), `CLIENT_ORIGIN` accepts a comma-separated list, the API binds to `$PORT`, `dnspython` added for Atlas `mongodb+srv` URIs. See [DEPLOYMENT.md](DEPLOYMENT.md). |
-| 7 | A cold path service made the first compute fail or time out. | The API polls the path service `/health` with backoff (up to 60 s, honouring `PYTHON_TIMEOUT_MS`) before compute and pings it once at startup; the client pings `/api/stats/public` on the landing and auth pages and shows "Waking the planner" after 4 s of waiting. Client request timeout raised to 75 s (90 s for compute). |
+| 7 | A cold path service made the first compute fail or time out. | The API polls the path service `/health` with backoff (up to 90 s, honouring `PYTHON_TIMEOUT_MS`; preset 90000) before compute and pings it once at startup; the client pings `/api/stats/public` on the landing and auth pages and shows "Waking the planner" after 4 s of waiting. Client request timeout raised to 75 s (120 s for compute, complete and undo). |
 
 ## v4.1 — 2026-10-15
 

@@ -37,12 +37,12 @@ export async function deleteAccount(): Promise<MessageResponse> {
 
 /** 200 gives { message, path } (new document); 202 gives { recomputePending: true, message }. */
 export async function completeSkill(skillId: string): Promise<CompleteSkillResponse> {
-  const res = await api.post<CompleteSkillResponse>('/users/me/skills/complete', { skillId }, { timeout: 90000 });
+  const res = await api.post<CompleteSkillResponse>('/users/me/skills/complete', { skillId }, { timeout: 120000 });
   return res.data;
 }
 
 /** Undo a completion for the current target role. Same 200 / 202 shapes as completeSkill. */
 export async function uncompleteSkill(skillId: string): Promise<CompleteSkillResponse> {
-  const res = await api.delete<CompleteSkillResponse>(`/users/me/skills/complete/${enc(skillId)}`, { timeout: 90000 });
+  const res = await api.delete<CompleteSkillResponse>(`/users/me/skills/complete/${enc(skillId)}`, { timeout: 120000 });
   return res.data;
 }
