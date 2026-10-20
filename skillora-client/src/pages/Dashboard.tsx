@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Button, Badge, Card, PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import { Button, Badge, Card, PageLoader, WakingNote, ErrorState, EmptyState } from "@/components/ui";
 import { ArrowIcon, CheckIcon, LineDiagram, ServiceList, ServiceRow, SignPanel, WarningIcon } from "@/components/transit";
 import type { LineStop, StopState } from "@/components/transit";
 import SkillDetailPanel from "@/components/SkillDetailPanel";
@@ -77,7 +77,7 @@ export default function Dashboard() {
   if (loadError) return <ErrorState title="Couldn't load your roadmap" message={loadError.message} onRetry={reload} />;
   if (needsRole) return <PageLoader label="Taking you to role selection…" />;
   if (!pathDoc) {
-    if (isComputing || !failure) return <PageLoader label="Computing your optimal path…" />;
+    if (isComputing || !failure) return <PageLoader label="Computing your optimal path…" waking />;
     return (
       <ErrorState
         title={failure.status === 503 ? "Path service unavailable" : "Couldn't compute your path"}
@@ -144,6 +144,7 @@ export default function Dashboard() {
         {isComputing && (
           <div className="mb-4">
             <Badge variant="in-progress">Recalculating…</Badge>
+            <WakingNote pending className="mt-2" />
           </div>
         )}
         <div className={isComputing ? "pointer-events-none opacity-50 transition-opacity" : "transition-opacity"} aria-busy={isComputing}>

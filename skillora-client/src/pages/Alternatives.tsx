@@ -39,7 +39,7 @@ export default function Alternatives() {
       return <ErrorState title="Couldn't load your paths" message={fresh.loadError.message} onRetry={fresh.reload} />;
     }
     if (!pathDoc) {
-      if (fresh.isComputing) return <PageLoader label="Computing your optimal path…" />;
+      if (fresh.isComputing) return <PageLoader label="Computing your optimal path…" waking />;
       return (
         <EmptyState
           icon={<RouteIcon size={28} />}

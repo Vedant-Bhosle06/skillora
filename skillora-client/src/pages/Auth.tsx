@@ -7,6 +7,7 @@ import { useToast } from "@/context/ToastContext";
 import { nextRouteFor } from "@/lib/redirect";
 import Logo from "@/components/Logo";
 import LineIllustration from "@/components/landing/LineIllustration";
+import { useWakeApi } from "@/hooks/useWakeApi";
 import { SignPanel } from "@/components/transit";
 import { ArrowIcon, WarningIcon } from "@/components/transit/icons";
 
@@ -22,6 +23,7 @@ interface FormError {
 }
 
 export default function Auth({ mode }: { mode: Mode }) {
+  useWakeApi();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");

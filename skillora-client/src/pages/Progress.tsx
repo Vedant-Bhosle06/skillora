@@ -210,7 +210,7 @@ export default function Progress() {
     );
   }
   if (!pathDoc) {
-    if (isComputing || !failure) return <PageLoader label="Computing your optimal path…" />;
+    if (isComputing || !failure) return <PageLoader label="Computing your optimal path…" waking />;
     return (
       <ErrorState
         title={failure.status === 503 ? "Path service unavailable" : "Couldn't compute your path"}

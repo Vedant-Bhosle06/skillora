@@ -1,6 +1,6 @@
 import React, { startTransition, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Input, Card, Badge, ProficiencyBadge, Modal, EmptyState, PageLoader, ErrorState } from "@/components/ui";
+import { Button, Input, Card, Badge, ProficiencyBadge, Modal, EmptyState, PageLoader, WakingNote, ErrorState } from "@/components/ui";
 import { useAuth, useCurrentUser } from "@/auth/AuthContext";
 import { useDeleteAccount, useRemoveSkill, useRoles, useSetTargetRole, useUpdateProficiency } from "@/api/queries";
 import { refId } from "@/lib/requirements";
@@ -293,6 +293,7 @@ export default function Settings() {
                 >
                   {setTargetRole.isPending ? "Saving…" : "Save role"}
                 </Button>
+                <WakingNote pending={setTargetRole.isPending} />
               </>
             )}
           </div>

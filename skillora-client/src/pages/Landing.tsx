@@ -8,10 +8,12 @@ import FromHere from "@/components/landing/FromHere";
 import Status from "@/components/landing/Status";
 import Destinations from "@/components/landing/Destinations";
 import Close from "@/components/landing/Close";
+import { useWakeApi } from "@/hooks/useWakeApi";
 
 // Homepage: the learning path as a metro line. Every figure comes from the real dataset snapshot
 // (src/content/landing-graph.json). Works in light and dark mode; reduced motion gets a still hero.
 export default function Landing() {
+  useWakeApi();
   const reduced = usePrefersReducedMotion();
   return (
     <div className="min-h-screen bg-background text-foreground">
