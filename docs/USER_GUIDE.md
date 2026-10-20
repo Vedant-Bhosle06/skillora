@@ -2,7 +2,7 @@
 
 > **Status:** v1.1 · deliverable D7 (user guide) · wording matches the Transit interface (v4.2)
 >
-> **Note:** the screenshots below were taken before the Transit redesign. They will be refreshed after the first deployment; where a picture and the text differ, the text is current.
+> **Live app:** <https://skillora-black.vercel.app>. The screenshots below show the current Transit interface in light mode (plus one dark-mode view), taken with sample data for the worked example.
 
 SKILLORA builds you a personal, ordered learning roadmap for the job role you want. You tell it what you already know, pick a role, and it works out the shortest sensible sequence of skills to learn, explains why each one is there, and updates the plan as you make progress.
 
@@ -46,25 +46,25 @@ Go to **Settings → Account → Sign out**. This ends your session on the serve
 
 ## 2. Onboarding
 
-Onboarding has two steps, shown at the top of the page: **Your Skills** and **Target Role**.
+Onboarding has two steps, shown at the top of the page: **Your skills** and **Your destination**.
 
 ### Step 1: Your skills
 
-Tick every skill you already have. Skills are grouped by domain (Cloud, Database, Programming, Tool…), and each card shows roughly how many hours it takes to learn. Use the search box to find a skill quickly.
+Pick every skill you already have. Skills are grouped by domain (Cloud, Concept, Database, Programming, Tool…), and each one shows roughly how many hours it takes to learn. Use the search box to find a skill quickly.
 
-When you tick a skill, choose how well you know it: **beginner**, **intermediate** or **advanced**. Be honest but don't undersell yourself. A higher level can remove whole steps from your roadmap.
+Chosen skills appear in the **Your stations** panel, where you set how well you know each one: **beginner**, **intermediate** or **advanced**. Be honest but don't undersell yourself. A higher level can remove whole steps from your roadmap.
 
-In the example, Python is ticked at *beginner* and SQL at *intermediate*. New to everything? Click **I'm starting from scratch**.
+The **Next departures** board below it shows what your skills open up next. In the example, Python is set at *beginner* and SQL at *intermediate*. New to everything? Click **I'm starting from scratch**.
 
 ![Choosing skills and proficiency](user-guide/03-onboarding-skills.png)
 
-Click **Next: Pick your role**.
+Click **Next: choose your destination**.
 
 ### Step 2: Target role
 
-Each role card shows its field, a short description, its **market demand** bar and how many of its requirements you already meet (**has / needs**, for example *1/5 requirements met*). Click **Details** to see exactly which skills and levels the role requires. Sort or search to narrow the list.
+Roles are listed by field. Each row shows the role's **market demand** (for example *High demand*) and how many of its requirements you already meet (**has / needs**, for example *1/5 requirements met*). Click **Requirements** to see a short description and exactly which skills and levels the role requires, each marked *Have it*, *Need it* or *Have Beginner, need Intermediate*. Where any one of several tools will do (such as Power BI or Tableau) it says so. Sort or search to narrow the list.
 
-Select a role and click **Generate my path**.
+Click a role to select it (it is marked *Selected*), then click **Generate my path** at the bottom of the page.
 
 ![Choosing a target role](user-guide/04-onboarding-role.png)
 
@@ -82,12 +82,12 @@ The dashboard is your home page. It shows your roadmap as a metro line: each ski
 - **Journey line.** A single horizontal line with a train showing how far along you are ("% of the way there") and how many stops are done.
 - **Your stops.** Your skills in the order to learn them, drawn along the line. Each stop shows:
   - its estimated hours;
-  - its status: **Up next** (the one to start now), **Available** (prerequisites done) or **Locked** (an earlier stop is still needed);
+  - its state, shown by the marker on the line: **Up next** (the one to start now), **Available** (prerequisites done) or **Locked** (an earlier stop is still needed, with a line such as "Needs Python first");
   - the level change, e.g. *New → Beginner* or *Beginner → Intermediate*;
   - a plain reason why it is there, such as "Required for this role" or "Tableau route is 5h cheaper than Excel → Power BI route".
   Select a stop to open its skill details.
-- **Other routes.** If more than one route exists, a short preview with **Select this path**.
-- **Service status.** Time left, whether the order is valid (no stop comes before what it needs) and whether your plan is up to date.
+- **Other routes.** If more than one route exists, a short preview (hours, demand, score, and which skills it adds or drops) with **Select this path**.
+- **Service status.** Time left, whether the order is valid (no stop comes before what it needs) and whether your plan is up to date. Scroll down to see it.
 
 To record that you've learned a skill, open **Progress** and mark it complete there.
 
@@ -95,26 +95,30 @@ To record that you've learned a skill, open **Progress** and mark it complete th
 
 ## 4. Comparing alternatives
 
-Some roles let you choose between skills. The Data Analyst role needs *a* BI tool: Power BI **or** Tableau. Each choice gives a different route. Open **Alternatives** in the top bar (or **Compare paths** on the dashboard) to see them side by side.
+Some roles let you choose between skills. The Data Analyst role needs *a* BI tool: Power BI **or** Tableau. Each choice gives a different route. Open **Alternatives** in the top bar (or **Compare paths** on the dashboard) to see them side by side. The screenshot is cut off after the first charts; scroll the page for the rest.
 
 ![Comparing alternative paths](user-guide/06-alternatives.png)
 
-Each route card shows:
+The page has three parts:
 
-- **Hours**: total learning time for the remaining steps.
-- **Demand**: the average market demand of the skills on that route.
-- **Score**: a combined ranking. It mixes time (70 %) and demand (30 %): `0.7 × hours/maxHours + 0.3 × (1 − demand)`. **Lower is better.** The best-scoring route is marked *recommended*.
-- **Sequence**: the skills in order, with hours each.
+- **The routes on one map.** Every route is drawn as a line (your route in red, alternatives in other colours). Skills on every route sit where the lines meet; skills that belong to only one route are labelled *Primary only* or *Alternative 1 only*, each with its hours.
+- **Compare the routes.** One row per route showing:
+  - **Time**: total learning hours for the remaining steps.
+  - **Demand**: the average market demand of the skills on that route.
+  - **Stops**: how many skills it contains.
+  - **Score**: a combined ranking. It mixes time (70 %) and demand (30 %): `0.7 × hours/maxHours + 0.3 × (1 − demand)`. **Lower is better.** The best-scoring route is marked *recommended*.
+  - What the route chooses instead of the primary one (for example "Chooses Excel, Power BI instead of Tableau").
+- **Hours against demand.** A chart placing each route by hours and market demand.
 
 Click **Select this path** to switch to another route; your dashboard and progress follow it. Your active route is marked **Currently selected**.
 
-> In the screenshot the learner has already finished Tableau, so only one route is left ("Only one route exists for your profile"). Before that, the same page showed two routes: *Tableau* (60 h) and *Excel → Power BI* (65 h).
+> In the screenshot the learner has not started yet, so two routes exist: *Tableau* (60 h, primary) and *Excel → Power BI* (65 h). Once Tableau is finished, only one route is left ("Only one route exists for your profile").
 
 ---
 
 ## 5. Tracking progress
 
-Open **Progress** in the top bar.
+Open **Progress** in the top bar. The page is titled **Journey log**. The screenshots show the learner after finishing Tableau.
 
 ![Progress overview](user-guide/07-progress.png)
 

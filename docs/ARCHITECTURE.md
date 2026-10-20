@@ -232,20 +232,35 @@ The template is [`.env.example`](../.env.example); setup steps are in [DEV_SETUP
 
 **Local development:** three processes (client 5173, api 5000, path service 5001) against the shared Atlas database `skillora_dev`.
 
-**Target (v1 submission, pending):**
+**Production (live):** the client, API and path service run on free tiers; the database is MongoDB Atlas M0.
 
 ```mermaid
 flowchart LR
-    user([Browser]) --> fe["Static hosting<br/>React build"]
-    user --> be["Node API<br/>(web service)"]
-    be -- "X-Internal-Key" --> ps["Path service<br/>(web service)"]
-    be --> atlas[(MongoDB Atlas)]
+    user([Browser]) --> fe["Vercel Hobby<br/>static React build<br/>skillora-black.vercel.app"]
+    user --> be["Render Free<br/>skillora-api (Node)<br/>skillora-api-i3cs.onrender.com"]
+    be -- "X-Internal-Key" --> ps["Render Free<br/>skillora-path (FastAPI)<br/>skillora-path.onrender.com"]
+    be --> atlas[("MongoDB Atlas M0")]
     ps --> atlas
 ```
 
-- Production values: `NODE_ENV=production`, `CLIENT_ORIGIN` = the frontend URL, `PYTHON_SERVICE_URL` = the path-service URL, `VITE_API_BASE_URL` = the API URL.
-- Free tiers that sleep idle services need a longer `PYTHON_TIMEOUT_MS` (≈ 60 000) or a `/health` wake-up call.
-- Atlas network access must allow the hosts' outbound IPs; the database user should have `readWrite` on the application database only.
+| Piece | Platform | Notes |
+|---|---|---|
+| Client | Vercel Hobby | Static Vite build. `skillora-client/vercel.json` rewrites every route to `index.html` (SPA). The page's Content-Security-Policy is a `<meta>` tag generated at build time from `VITE_API_BASE_URL`, so `connect-src` allows only `'self'` and the API origin. |
+| API | Render Free web service `skillora-api` | Defined in [`render.yaml`](../render.yaml) (Blueprint). |
+| Path service | Render Free web service `skillora-path` | Also in `render.yaml`. Called by the API over its public HTTPS URL. |
+| Database | MongoDB Atlas M0 | Network access `0.0.0.0/0` (Render free has no static outbound IPs); protected by a strong password. |
+
+**Environment and secrets.** Values are never committed. Secrets (`MONGO_URI`, `JWT_SECRET`, `INTERNAL_API_KEY`) are typed into the Render dashboard (`sync: false` in `render.yaml`); production secrets differ from local ones and `INTERNAL_API_KEY` is identical on the API and the path service. `CLIENT_ORIGIN` (API) lists the allowed browser origins, `PYTHON_SERVICE_URL` (API) is the path service's public URL, and `VITE_API_BASE_URL` is set in Vercel and baked into the client build (changing it needs a redeploy). `NODE_ENV=production` makes the API trust the proxy so rate limiting sees real client IPs.
+
+**Cold starts.** Render Free services sleep after 15 minutes without traffic and take about a minute to wake. Mitigations:
+
+- The landing, sign-in and register pages send one quiet request to `/api/stats/public`, which wakes the API before the user signs in.
+- On startup the API pings the path service `/health`; before computing a path it polls `/health` with backoff (within `PYTHON_TIMEOUT_MS`, 90 s; measured cold start about 53 s) and then makes the real call.
+- The client waits up to 75 s for ordinary requests and 120 s for path computation, complete and undo, and shows "Waking the planner" after 4 s.
+
+**Limits.** Free web services get 750 instance-hours per month (sleeping time is not counted). Two always-on services would need about 1,488 hours, so no keep-alive pinger is used.
+
+**Releases.** Render and Vercel deploy automatically on every push to `main`. Full steps, variables and troubleshooting: [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## 11. Repository layout
 
