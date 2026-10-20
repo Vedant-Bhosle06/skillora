@@ -147,4 +147,37 @@ router.post('/me/skills/complete', auth, async (req, res) => {
   }
 });
 
+// API-N-14b: DELETE /api/users/me/skills/complete/:skillId (undo a completion)
+router.delete('/me/skills/complete/:skillId', auth, async (req, res) => {
+  const { skillId } = req.params;
+  if (!isId(skillId)) throw new AppError(400, 'A valid skillId is required');
+
+  const user = await User.findById(req.user.id).lean();
+  if (!user) throw new AppError(404, 'User not found');
+  if (!user.targetRoleId) throw new AppError(400, 'No target role set');
+
+  const done = user.completedSkills.some(c =>
+    c.skillId.toString() === skillId && String(c.targetRoleId) === String(user.targetRoleId));
+  if (!done) throw new AppError(404, 'Skill is not completed for this target role');
+
+  // Completion only ever pushed to completedSkills (currentSkills is untouched), so pulling the
+  // entry is a full undo; the held-skill map is derived from both lists at compute time.
+  await User.findByIdAndUpdate(req.user.id, {
+    $pull: { completedSkills: { skillId, targetRoleId: user.targetRoleId } }
+  });
+
+  try {
+    const newPath = await runComputeChain(req.user.id);
+    res.json({ message: 'Completion undone and path recomputed', path: newPath });
+  } catch (err) {
+    if (err instanceof AppError && err.status === 503) {
+      return res.status(202).json({
+        recomputePending: true,
+        message: 'Completion undone; path will recompute on next dashboard load'
+      });
+    }
+    throw err;
+  }
+});
+
 module.exports = router;

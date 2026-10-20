@@ -341,6 +341,23 @@ const paths = {
     }
   },
 
+  '/api/users/me/skills/complete/{skillId}': {
+    delete: {
+      tags: ['Users'],
+      summary: 'API-N-14b: Undo a completed skill and recompute',
+      security: secured,
+      parameters: [idParam('skillId', 'Skill id')],
+      responses: {
+        200: ok({ type: 'object', properties: { message: { type: 'string' }, path: ref('ComputedPath') } }, 'Undone and path recomputed'),
+        202: ok(
+          { type: 'object', properties: { recomputePending: { type: 'boolean' }, message: { type: 'string' } } },
+          'Undone; recompute pending (Python service down)'
+        ),
+        ...pick(400, 401, 404)
+      }
+    }
+  },
+
   // ── Paths ──
   '/api/paths/compute': {
     post: {
