@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* `dark:` follows the app's .dark class (the theme toggle), not the OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -15,62 +18,146 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 2px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 4px);
-  --radius-xl: calc(var(--radius) + 8px);
+  --color-station: var(--station);
+  --color-casing: var(--casing);
+  --color-line-route: var(--line-route);
+  --color-line-alt: var(--line-alt);
+  --color-line-data: var(--line-data);
+  --color-line-web: var(--line-web);
+  --color-line-cloud: var(--line-cloud);
+  --color-line-design: var(--line-design);
+  --color-line-grey: var(--line-grey);
+  /* Flat sign panels: small radii. */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 10px;
+  --shadow-sign: var(--sign-shadow);
+  --font-sans: 'Overpass Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Overpass Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Overpass Mono', ui-monospace, monospace;
 }
 
+/* Motion tokens. Keep in sync with src/lib/motion.ts.
+   Plain `transition*` utilities use these defaults, so every transition shares one curve. */
+@theme {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Numeric font-weight classes. The codebase uses font-500 … font-800, which Tailwind v4 does
+   not generate (its weight utilities are named: font-medium, font-bold, …), so they rendered at
+   400. These restore the intended weights without touching every page. */
+@utility font-300 { font-weight: 300; }
+@utility font-400 { font-weight: 400; }
+@utility font-500 { font-weight: 500; }
+@utility font-600 { font-weight: 600; }
+@utility font-700 { font-weight: 700; }
+@utility font-800 { font-weight: 800; }
+@utility font-900 { font-weight: 900; }
+
 :root {
-  --background: #F7F8FC;
-  --foreground: #0E0F1A;
-  --card: #FFFFFF;
-  --card-foreground: #0E0F1A;
-  --primary: #5B5FEF;
-  --primary-foreground: #FFFFFF;
-  --secondary: #EEF0FF;
-  --secondary-foreground: #3D42C4;
-  --muted: #F0F1F8;
-  --muted-foreground: #6B7280;
-  --accent: #0EA5E9;
-  --accent-foreground: #FFFFFF;
-  --border: #E2E5F0;
-  --ring: #5B5FEF;
-  --radius: 10px;
+  --duration-fast: 150ms;
+  --duration-base: 240ms;
+  --duration-slow: 420ms;
+  --duration-cinematic: 700ms;
+
+  /* Light theme: paper with ink and one signal-red accent. See DESIGN.md. */
+  --background: #f6f6f3;
+  --foreground: #14161a;
+  --card: #ffffff;
+  --card-foreground: #14161a;
+  --primary: #d42a3c;
+  --primary-foreground: #ffffff;
+  --secondary: #ecece8;
+  --secondary-foreground: #14161a;
+  --muted: #ecece8;
+  --muted-foreground: #575c66;
+  --accent: #1f6fb2;
+  --accent-foreground: #ffffff;
+  --border: #d6d7d1;
+  --ring: #14161a;
+  --radius: 6px;
+
+  --station: #ffffff;
+  --casing: #f6f6f3;
+  --sign-shadow: 0 1px 0 var(--border);
+
+  /* Line colours: the route is always signal red; the others code a skill's kind. */
+  --line-route: #d42a3c;
+  --line-alt: #e2621a;
+  --line-data: #1f6fb2;
+  --line-web: #1b8f57;
+  --line-cloud: #0f8a8f;
+  --line-design: #c99300;
+  --line-grey: #8c9099;
+
+  /* Logo (src/components/Logo.tsx): flat signal red, no gradient. */
+  --logo-from: #d42a3c;
+  --logo-to: #d42a3c;
+  --logo-tile-from: #d42a3c;
+  --logo-tile-to: #a81d2d;
 }
 
 .dark {
-  --background: #0D0F1A;
-  --foreground: #F0F1FA;
-  --card: #161824;
-  --card-foreground: #F0F1FA;
-  --primary: #6B6FF5;
-  --primary-foreground: #FFFFFF;
-  --secondary: #1E2035;
-  --secondary-foreground: #A5A8FF;
-  --muted: #1A1D2E;
-  --muted-foreground: #8B8FA8;
-  --accent: #38BDF8;
-  --accent-foreground: #0D0F1A;
-  --border: #252840;
-  --ring: #6B6FF5;
+  color-scheme: dark;
+
+  /* Dark theme: night with the same red, lifted for contrast. */
+  --background: #0e1013;
+  --foreground: #f1f1ee;
+  --card: #16191e;
+  --card-foreground: #f1f1ee;
+  --primary: #ff5263;
+  --primary-foreground: #0e1013;
+  --secondary: #1d2127;
+  --secondary-foreground: #f1f1ee;
+  --muted: #1d2127;
+  --muted-foreground: #a3a8b1;
+  --accent: #58a8ff;
+  --accent-foreground: #0e1013;
+  --border: #2b2f36;
+  --ring: #f1f1ee;
+
+  --station: #0e1013;
+  --casing: #0e1013;
+
+  --line-route: #ff5263;
+  --line-alt: #ff8a3d;
+  --line-data: #58a8ff;
+  --line-web: #3ccb87;
+  --line-cloud: #4fd1d4;
+  --line-design: #ffc93c;
+  --line-grey: #6b717c;
+
+  --logo-from: #ff5263;
+  --logo-to: #ff5263;
 }
 
 html, body, #root {
   height: 100%;
 }
 
-* {
-  font-family: 'Inter', sans-serif;
+body {
+  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6, .font-display {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-display);
 }
 
+/* Mono is for times, hours and codes only. */
 .font-mono, code, pre {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
+
+::selection { background: var(--primary); color: var(--primary-foreground); }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -78,22 +165,52 @@ h1, h2, h3, h4, h5, h6, .font-display {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
 
-/* Smooth transitions for dark mode */
-* { transition: background-color 0.2s ease, border-color 0.2s ease; }
-a, button { transition: all 0.15s ease; }
+/* Interactive defaults live in the base layer so Tailwind utilities (transition-*, duration-*)
+   still override them. Only paint-cheap properties are transitioned (no `transition: all`). */
+@layer base {
+  a, button, [role="button"], input, select, textarea, summary {
+    transition-property: color, background-color, border-color, outline-color, box-shadow, opacity, transform;
+    transition-duration: var(--duration-fast);
+    transition-timing-function: var(--ease-out-quint);
+  }
+}
 
-/* Toast animations */
-@keyframes slide-in {
-  from { transform: translateX(110%); opacity: 0; }
-  to   { transform: translateX(0); opacity: 1; }
+/* Smooth colour change while the theme is being switched (class set briefly by ThemeContext),
+   instead of a permanent transition on every element. */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow !important;
+  transition-duration: var(--duration-base) !important;
+  transition-timing-function: var(--ease-out-quint) !important;
 }
-@keyframes slide-out {
-  from { transform: translateX(0); opacity: 1; }
-  to   { transform: translateX(110%); opacity: 0; }
-}
-.toast-enter { animation: slide-in 0.25s ease forwards; }
-.toast-exit  { animation: slide-out 0.25s ease forwards; }
+
+/* Focus: a clear ink ring, never colour-only. */
+:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; border-radius: 4px; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline-offset: 0; }
+
+/* Toasts fade only (200ms); there is no movement to remove for reduced motion. */
+@keyframes toast-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes toast-out { from { opacity: 1; } to { opacity: 0; } }
+.toast-enter { animation: toast-in 200ms ease-out forwards; }
+.toast-exit  { animation: toast-out 200ms ease-in forwards; }
 
 /* Graph canvas */
 .graph-canvas { cursor: grab; }
 .graph-canvas:active { cursor: grabbing; }
+
+/* Reduced motion: near-instant transitions and animations everywhere. Loading spinners keep
+   turning (they convey state); decorative pulses stop after one cycle. JS animations follow
+   the same preference through MotionConfig reducedMotion="user" and src/lib/reducedMotion.ts. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  *:not(.animate-spin), *:not(.animate-spin)::before, *:not(.animate-spin)::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

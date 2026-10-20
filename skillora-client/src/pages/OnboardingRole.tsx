@@ -1,22 +1,28 @@
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button, Badge, DemandBar, Card, Modal, PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import { Link, useNavigate } from "react-router-dom";
+import { Button, Badge, PageLoader, ErrorState, EmptyState } from "@/components/ui";
 import { useRoleDetail, useRoles, useSetTargetRole } from "@/api/queries";
 import type { Role, RoleDetail } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
 import { useToast } from "@/context/ToastContext";
-import { categoryLabel, rankLabel } from "@/lib/format";
+import { categoryLabel, demandWord, rankLabel } from "@/lib/format";
 import { RANK, heldRankMap, requirementStatus, roleMatch } from "@/lib/requirements";
+import Logo from "@/components/Logo";
+import OnboardingProgress from "@/components/OnboardingProgress";
+import { ExpandMark } from "@/components/landing/Destinations";
+import { ArrowIcon, CheckIcon, CloseIcon, SearchIcon } from "@/components/transit/icons";
 
 type SortKey = "demand" | "az";
 
 type DetailRequirement = RoleDetail["requiredSkills"][number];
 
-const demandPct = (role: Pick<Role, "demandScore">) => Math.round(role.demandScore * 100);
-
 function optionName(opt: DetailRequirement["anyOfSkills"][number]): string {
   return opt.name ?? opt.slug ?? "Unknown skill";
 }
+
+// Role categories shown as groups, in this order; anything else falls under "Other".
+const GROUPS: [string, string][] = [["data", "Data"], ["engineering", "Engineering"], ["design", "Design"]];
+const groupOf = (r: Role) => (GROUPS.some(([c]) => c === r.category) ? (r.category as string) : "other");
 
 function RequirementRow({ req, held }: { req: DetailRequirement; held: Map<string, number> }) {
   const status = requirementStatus(req, held);
@@ -26,7 +32,7 @@ function RequirementRow({ req, held }: { req: DetailRequirement; held: Map<strin
 
   let badge: React.ReactNode;
   if (status.met) {
-    badge = <Badge variant="completed">✓ Have it{isGroup && bestOption ? ` (${optionName(bestOption)})` : ""}</Badge>;
+    badge = <Badge variant="completed"><CheckIcon size={12} /> Have it{isGroup && bestOption ? ` (${optionName(bestOption)})` : ""}</Badge>;
   } else if (status.bestRank > 0) {
     badge = <Badge variant="in-progress">Have {rankLabel(status.bestRank)} — need {rankLabel(RANK[req.minProficiency])}</Badge>;
   } else {
@@ -34,18 +40,16 @@ function RequirementRow({ req, held }: { req: DetailRequirement; held: Map<strin
   }
 
   return (
-    <div className="flex items-start justify-between gap-3 py-2 border-b border-border last:border-0">
+    <li className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1 border-b border-border py-2.5 last:border-0">
       <div className="min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className={`text-sm ${status.met ? "text-foreground" : "text-muted-foreground"}`}>{title}</span>
-          <Badge variant="outline">min {rankLabel(RANK[req.minProficiency])}</Badge>
-        </div>
-        {isGroup && (
-          <p className="text-xs text-muted-foreground mt-0.5">Any one of: {req.anyOfSkills.map(optionName).join(" / ")}</p>
-        )}
+        <p className={`text-[15px] font-700 ${status.met ? "text-foreground" : "text-muted-foreground"}`}>
+          {isGroup ? req.anyOfSkills.map(optionName).join(" or ") : title}
+          <span className="ml-2 font-400 text-muted-foreground">· min {rankLabel(RANK[req.minProficiency])}{isGroup && req.label ? ` · ${req.label}` : ""}</span>
+        </p>
+        {isGroup && <p className="text-sm text-muted-foreground">Any one of these will do.</p>}
       </div>
       <div className="shrink-0">{badge}</div>
-    </div>
+    </li>
   );
 }
 
@@ -56,13 +60,13 @@ export default function OnboardingRole() {
   const rolesQuery = useRoles();
   const setTargetRole = useSetTargetRole();
   const [selected, setSelected] = useState<string | null>(() => user?.targetRoleId?._id ?? null);
+  // The role whose requirements are open (one at a time).
   const [drawer, setDrawer] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("demand");
 
   const held = useMemo(() => heldRankMap(user), [user]);
   const drawerQuery = useRoleDetail(drawer);
-  const drawerTitle = drawerQuery.data?.title ?? rolesQuery.data?.find(r => r._id === drawer)?.title ?? "";
 
   const visibleRoles = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -85,42 +89,46 @@ export default function OnboardingRole() {
     });
   }
 
+  const groups = useMemo(() => {
+    const list = [...GROUPS, ["other", "Other"] as [string, string]];
+    return list.map(([cat, label]) => ({ cat, label, roles: visibleRoles.filter(r => groupOf(r) === cat) })).filter(g => g.roles.length > 0);
+  }, [visibleRoles]);
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        {/* Step indicator */}
-        <div className="flex items-center gap-3 mb-10">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-mono">✓</div>
-            <span className="text-sm text-muted-foreground">Your Skills</span>
-          </div>
-          <div className="flex-1 h-0.5 bg-primary max-w-12" />
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-mono font-700">2</div>
-            <span className="text-sm font-600 text-foreground">Target Role</span>
-          </div>
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-8 sm:py-12">
+        <div className="mb-10 flex flex-wrap items-center justify-between gap-4 pr-14">
+          <Link to="/" aria-label="SKILLORA home" className="flex min-h-11 items-center rounded-md">
+            <Logo variant="mark" wordmark size={26} wordmarkClassName="text-[17px]" />
+          </Link>
+          <OnboardingProgress step={2} />
         </div>
 
-        <h1 className="font-display font-800 text-3xl text-foreground mb-2">Where do you want to go?</h1>
-        <p className="text-muted-foreground mb-8">Each role shows live market demand. Click any card for a detailed skill breakdown.</p>
+        <h1 className="mb-2 text-[clamp(2rem,4vw,3rem)] font-[850] leading-[1.05] tracking-[-0.02em] text-foreground">Choose your destination.</h1>
+        <p className="mb-8 max-w-2xl text-[17px] leading-relaxed text-muted-foreground">
+          Open a role to see what it asks for. Where any one of several tools will do, it says so. Demand is an expert estimate.
+        </p>
 
         {/* Search + sort */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="mb-8 flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">⌕</span>
+            <SearchIcon size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
-              className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
+              aria-label="Search roles"
+              className="min-h-11 w-full rounded-md border border-line-grey bg-card pl-10 pr-12 text-[15px] text-foreground placeholder:text-muted-foreground"
               placeholder="Search roles…"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
             {search && (
-              <button onClick={() => setSearch("")} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs">✕</button>
+              <button onClick={() => setSearch("")} aria-label="Clear search" className="absolute right-0.5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground">
+                <CloseIcon size={16} />
+              </button>
             )}
           </div>
           <select
             aria-label="Sort roles"
-            className="px-3 py-2.5 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="min-h-11 rounded-md border border-line-grey bg-card px-3 text-[15px] text-foreground"
             value={sort}
             onChange={e => setSort(e.target.value as SortKey)}
           >
@@ -135,100 +143,85 @@ export default function OnboardingRole() {
           <ErrorState title="Couldn't load roles" message={rolesQuery.error.message} onRetry={() => rolesQuery.refetch()} />
         ) : visibleRoles.length === 0 ? (
           <EmptyState
-            icon="◎"
+            icon={<SearchIcon size={28} />}
             title={search ? "No roles match" : "No roles yet"}
             description={search ? `Nothing found for “${search.trim()}”.` : "No target roles have been added yet."}
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {visibleRoles.map(role => {
-              const match = roleMatch(role, held);
-              const score = demandPct(role);
-              const isSelected = selected === role._id;
-
-              return (
-                <Card
-                  key={role._id}
-                  hover
-                  onClick={() => setSelected(role._id)}
-                  selected={isSelected}
-                  className={`p-4 transition-all flex flex-col ${isSelected ? "ring-2 ring-primary border-primary" : ""}`}
-                >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex-1">
-                      <h3 className="font-display font-700 text-sm text-foreground mb-1">{role.title}</h3>
-                      {role.category && <Badge variant="outline">{categoryLabel(role.category)}</Badge>}
-                    </div>
-                    {isSelected && <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs">✓</div>}
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3 line-clamp-2" title={role.description}>{role.description}</p>
-
-                  <div className="mb-3 mt-auto">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-mono text-muted-foreground">Market demand</span>
-                      {score >= 90 && <Badge variant="demand">🔥 Hot</Badge>}
-                    </div>
-                    <DemandBar score={score} />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs text-muted-foreground">
-                      <span className={`font-600 ${match.met === match.total ? "text-emerald-500" : "text-foreground"}`}>{match.met}/{match.total}</span> requirements met
-                    </div>
-                    <button
-                      onClick={e => { e.stopPropagation(); setDrawer(role._id); }}
-                      className="text-xs text-primary hover:underline font-500"
-                    >
-                      Details →
-                    </button>
-                  </div>
-                </Card>
-              );
-            })}
+          <div className="mb-10 flex flex-col gap-10">
+            {groups.map(group => (
+              <section key={group.cat} aria-label={group.label}>
+                <h2 className="border-b-4 border-foreground pb-2 text-xl font-800">{group.label}</h2>
+                <ul>
+                  {group.roles.map(role => {
+                    const match = roleMatch(role, held);
+                    const isSelected = selected === role._id;
+                    const open = drawer === role._id;
+                    return (
+                      <li key={role._id} className={`border-b border-border ${isSelected ? "border-l-4 border-l-primary bg-card" : ""}`}>
+                        <div className="flex items-stretch">
+                          <button
+                            type="button"
+                            aria-pressed={isSelected}
+                            onClick={() => setSelected(role._id)}
+                            className="flex min-h-14 flex-1 flex-col items-start justify-center gap-0.5 rounded-md px-3 py-3 text-left"
+                          >
+                            <span className="flex items-center gap-2 text-base font-800 text-foreground">
+                              {role.title}
+                              {isSelected && <span className="inline-flex items-center gap-1 text-sm font-700 text-primary"><CheckIcon size={14} /> Selected</span>}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {demandWord(role.demandScore)} · <span className="font-mono">{match.met}/{match.total}</span> requirements met
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            aria-expanded={open}
+                            aria-label={`${open ? "Hide" : "Show"} requirements for ${role.title}`}
+                            onClick={() => setDrawer(open ? null : role._id)}
+                            className={`group flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-700 text-foreground hover:bg-muted ${open ? "[&>svg]:rotate-45" : ""}`}
+                          >
+                            <span className="hidden sm:inline">Requirements</span>
+                            <ExpandMark />
+                          </button>
+                        </div>
+                        {open && (
+                          <div className="px-3 pb-4">
+                            {role.description && <p className="mb-2 max-w-xl text-[15px] text-muted-foreground">{role.description}</p>}
+                            {drawerQuery.isPending ? (
+                              <PageLoader label="Loading role…" />
+                            ) : drawerQuery.isError ? (
+                              <ErrorState title="Couldn't load this role" message={drawerQuery.error.message} onRetry={() => drawerQuery.refetch()} />
+                            ) : drawerQuery.data.requiredSkills.length === 0 ? (
+                              <p className="text-[15px] text-muted-foreground">This role has no required skills yet.</p>
+                            ) : (
+                              <ul>
+                                {drawerQuery.data.requiredSkills.map((req, i) => (
+                                  <RequirementRow key={req._id ?? i} req={req} held={held} />
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))}
           </div>
         )}
 
-        <div className="flex justify-between items-center">
-          <button onClick={() => navigate("/onboarding/skills")} className="text-sm text-muted-foreground hover:text-foreground">← Back</button>
+        <div className="flex items-center justify-between gap-3">
+          <button onClick={() => navigate("/onboarding/skills")} className="inline-flex min-h-11 items-center gap-2 rounded-md px-2 text-[15px] font-700 text-foreground hover:bg-muted">
+            <ArrowIcon size={16} className="rotate-180" /> Back
+          </button>
           <Button size="lg" onClick={handleSelect} disabled={!selected || setTargetRole.isPending}>
-            {setTargetRole.isPending ? "Saving…" : "Generate my path →"}
+            {setTargetRole.isPending ? "Saving…" : "Generate my path"}
+            {!setTargetRole.isPending && <ArrowIcon size={16} />}
           </Button>
         </div>
       </div>
-
-      {/* Role detail drawer */}
-      <Modal open={!!drawer} onClose={() => setDrawer(null)} title={drawerTitle} className="max-w-md">
-        {drawerQuery.isPending ? (
-          <PageLoader label="Loading role…" />
-        ) : drawerQuery.isError ? (
-          <ErrorState title="Couldn't load this role" message={drawerQuery.error.message} onRetry={() => drawerQuery.refetch()} />
-        ) : (
-          <div>
-            <div className="flex items-start gap-4 mb-5">
-              <p className="flex-1 text-sm text-muted-foreground">{drawerQuery.data.description}</p>
-              <Badge variant={demandPct(drawerQuery.data) >= 90 ? "demand" : "default"}>Demand {demandPct(drawerQuery.data)}%</Badge>
-            </div>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Required Skills</p>
-              <p className="text-xs text-muted-foreground">
-                {roleMatch(drawerQuery.data, held).met}/{drawerQuery.data.requiredSkills.length} met
-              </p>
-            </div>
-            {drawerQuery.data.requiredSkills.length === 0 ? (
-              <EmptyState icon="✓" title="No requirements" description="This role has no required skills yet." />
-            ) : (
-              <div className="flex flex-col gap-2">
-                {drawerQuery.data.requiredSkills.map((req, i) => (
-                  <RequirementRow key={req._id ?? i} req={req} held={held} />
-                ))}
-              </div>
-            )}
-            <Button className="w-full mt-5" onClick={() => { setSelected(drawerQuery.data._id); setDrawer(null); }}>
-              Select this role →
-            </Button>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

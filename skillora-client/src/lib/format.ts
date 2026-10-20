@@ -40,19 +40,20 @@ export function categoryLabel(cat: string): string {
     .join(' ');
 }
 
+// Transit line colours (the same hues as --line-* in index.css), for places that need a hex value.
 const CATEGORY_COLORS: Record<string, string> = {
-  programming: '#6366f1',
-  framework: '#8b5cf6',
-  tool: '#0ea5e9',
-  concept: '#14b8a6',
-  database: '#f97316',
-  math: '#f59e0b',
-  domain: '#ec4899',
-  cloud: '#10b981',
-  'soft-skill': '#e11d48',
+  programming: '#1f6fb2',
+  framework: '#1b8f57',
+  tool: '#c99300',
+  concept: '#8c9099',
+  database: '#e2621a',
+  math: '#0f8a8f',
+  domain: '#e2621a',
+  cloud: '#0f8a8f',
+  'soft-skill': '#8c9099',
 };
 
-const FALLBACK_PALETTE = ['#64748b', '#0891b2', '#7c3aed', '#ca8a04', '#db2777', '#059669'];
+const FALLBACK_PALETTE = ['#1f6fb2', '#1b8f57', '#c99300', '#e2621a', '#0f8a8f', '#8c9099'];
 
 /** Fixed colour for known categories; a stable hash colour for anything an admin adds later. */
 export function categoryColor(cat: string): string {
@@ -68,4 +69,9 @@ const RANK_LABELS = ['New', 'Beginner', 'Intermediate', 'Advanced'];
 /** Proficiency rank 0..3 -> label. */
 export function rankLabel(rank: number): string {
   return RANK_LABELS[rank] ?? RANK_LABELS[0];
+}
+
+/** Demand is an expert estimate (0..1), so it is shown in words, never as a decimal. */
+export function demandWord(d: number): string {
+  return d >= 0.75 ? 'High demand' : d >= 0.55 ? 'Steady demand' : 'Niche';
 }

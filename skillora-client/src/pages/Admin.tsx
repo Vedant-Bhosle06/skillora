@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, EmptyState, ErrorState, Input, Modal, PageLoader, Select, StatTile } from "@/components/ui";
 import { useAdminEdges, useAdminMetrics, useDeleteEdge, useDeleteRole, useDeleteSkill, useRoles, useSkillsCatalog } from "@/api/queries";
 import { ApiError } from "@/api/client";
+import { ArrowIcon, LockIcon, PlusIcon, RouteIcon, SearchIcon, StationIcon, WarningIcon } from "@/components/transit/icons";
 import type { GraphMetrics, Role, Skill, SkillEdge } from "@/api/types";
 import { categoryLabel, formatHours, formatPercent, pluralize } from "@/lib/format";
 import { useToast } from "@/context/ToastContext";
@@ -28,8 +29,8 @@ export default function Admin() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <EmptyState
-          icon="🔒"
-          title="Access Restricted"
+          icon={<LockIcon size={28} />}
+          title="Access restricted"
           description="Your account no longer has administrator access."
           action={<Button onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>}
         />
@@ -60,8 +61,8 @@ export default function Admin() {
   const edges = edgesQuery.data ?? [];
   const roles = rolesQuery.data ?? [];
 
-  const tabs: Array<{ id: Tab; label: string }> = [
-    { id: "health", label: `Graph Health${metricsQuery.data && !metricsQuery.data.isDAG ? " ⚠" : ""}` },
+  const tabs: Array<{ id: Tab; label: ReactNode }> = [
+    { id: "health", label: <>Graph health{metricsQuery.data && !metricsQuery.data.isDAG && <WarningIcon size={14} className="ml-1.5 inline" aria-label="Cycle detected" role="img" aria-hidden={false} />}</> },
     { id: "skills", label: `Skills (${skills.length})` },
     { id: "edges",  label: `Edges (${edges.length})` },
     { id: "roles",  label: `Roles (${roles.length})` },
@@ -73,7 +74,7 @@ export default function Admin() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h1 className="font-display font-800 text-2xl text-foreground">Admin Panel</h1>
+              <h1 className="font-display font-800 text-2xl text-foreground">Admin panel</h1>
               <Badge variant="demand">Admin</Badge>
             </div>
             <p className="text-muted-foreground text-sm">Manage skills, graph edges, and roles</p>
@@ -86,8 +87,8 @@ export default function Admin() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-4 py-2.5 text-sm font-500 border-b-2 -mb-px whitespace-nowrap transition-colors ${
-                tab === t.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+              className={`min-h-11 px-4 text-sm font-700 border-b-4 -mb-px whitespace-nowrap transition-colors ${
+                tab === t.id ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               {t.label}
@@ -162,36 +163,36 @@ function HealthPanel({ metrics, isPending, error, onRetry, edges, byId }: {
         <StatTile label="OR-groups" value={String(metrics.groupCount)} />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <StatTile label="Cycles" value={metrics.isDAG ? "✓ None" : "⚠ Detected"} accent={metrics.isDAG} />
-        <StatTile label="Orphan Nodes" value={String(metrics.orphanCount)} sub={metrics.orphanCount > 0 ? "no prerequisite edges" : "all connected"} />
-        <StatTile label="Avg Degree" value={metrics.avgDegree.toFixed(2)} sub="in + out prerequisites per node" />
-        <StatTile label="Max Depth" value={metrics.maxDepth === null ? "—" : String(metrics.maxDepth)} sub="longest prerequisite chain" />
+        <StatTile label="Cycles" value={metrics.isDAG ? "None" : "Detected"} accent={metrics.isDAG} />
+        <StatTile label="Orphan nodes" value={String(metrics.orphanCount)} sub={metrics.orphanCount > 0 ? "no prerequisite edges" : "all connected"} />
+        <StatTile label="Average degree" value={metrics.avgDegree.toFixed(2)} sub="in + out prerequisites per node" />
+        <StatTile label="Max depth" value={metrics.maxDepth === null ? "—" : String(metrics.maxDepth)} sub="longest prerequisite chain" />
       </div>
 
       {!metrics.isDAG && (
-        <Card className="p-4 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/10 mb-4">
-          <p className="text-sm font-600 text-amber-700 dark:text-amber-400 mb-1">⚠ Cycle Warning</p>
-          <p className="text-xs text-amber-600 dark:text-amber-300">
+        <Card className="p-4 border-2 border-primary mb-4">
+          <p className="flex items-center gap-2 text-sm font-700 text-primary mb-1"><WarningIcon size={16} /> Cycle warning</p>
+          <p className="text-sm text-foreground">
             A circular dependency exists in the skill graph, so path generation may fail.
-            {cycleNames.length > 0 && <> Cycle: <span className="font-mono">{cycleNames.join(" → ")}</span></>}
+            {cycleNames.length > 0 && <> Cycle: <span className="font-mono">{cycleNames.join(" to ")}</span></>}
           </p>
         </Card>
       )}
 
       {orphans.length > 0 && (
         <Card className="p-4 mb-4">
-          <p className="font-display font-700 text-sm text-foreground mb-1">Orphan Nodes ({metrics.orphanCount})</p>
-          <p className="text-xs text-muted-foreground mb-3">Skills with no prerequisite edge (co-requisites don't count).</p>
+          <p className="font-display font-700 text-sm text-foreground mb-1">Orphan nodes ({metrics.orphanCount})</p>
+          <p className="text-sm text-muted-foreground mb-3">Skills with no prerequisite edge (co-requisites don't count).</p>
           <div className="flex flex-wrap gap-2">
             {orphans.map(o => (
-              <span key={o.skillId} className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-full font-mono">{o.name}</span>
+              <span key={o.skillId} className="text-xs border border-line-design text-foreground px-2.5 py-1 rounded-full font-mono">{o.name}</span>
             ))}
           </div>
         </Card>
       )}
 
       <Card className="p-4">
-        <p className="font-display font-700 text-sm text-foreground mb-3">Degree Distribution</p>
+        <p className="font-display font-700 text-sm text-foreground mb-3">Degree distribution</p>
         {topDegree.length === 0 ? (
           <p className="text-xs text-muted-foreground">No edges yet.</p>
         ) : (
@@ -200,7 +201,7 @@ function HealthPanel({ metrics, isPending, error, onRetry, edges, byId }: {
               <div key={s.id} className="flex items-center gap-3">
                 <span className="text-xs text-foreground w-32 sm:w-48 truncate" title={s.name}>{s.name}</span>
                 <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-accent rounded-full" style={{ width: `${(s.degree / maxDegree) * 100}%` }} />
+                  <div className="h-full bg-primary rounded-full" style={{ width: `${(s.degree / maxDegree) * 100}%` }} />
                 </div>
                 <span className="font-mono text-xs text-muted-foreground w-6 text-right">{s.degree}</span>
               </div>
@@ -225,7 +226,7 @@ function ConfirmDeleteModal({ open, title, children, error, pending, onConfirm, 
   return (
     <Modal open={open} onClose={() => { if (!pending) onClose(); }} title={title}>
       <div className="text-sm text-muted-foreground mb-5 flex flex-col gap-2">{children}</div>
-      {error && <p className="text-sm text-red-500 mb-4" role="alert">{error}</p>}
+      {error && <p className="text-sm font-600 text-primary mb-4" role="alert">{error}</p>}
       <div className="flex gap-2">
         <Button variant="ghost" className="flex-1" onClick={onClose} disabled={pending}>Cancel</Button>
         <Button variant="danger" className="flex-1 justify-center" onClick={onConfirm} disabled={pending}>
@@ -274,17 +275,17 @@ function SkillsTab({ skills }: { skills: Skill[] }) {
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, slug or category…" aria-label="Search skills" />
         </div>
         <span className="text-xs text-muted-foreground font-mono">{visible.length} / {skills.length}</span>
-        <Button size="sm" className="ml-auto" onClick={() => setFormSkill("new")}>+ Add skill</Button>
+        <Button size="sm" className="ml-auto" onClick={() => setFormSkill("new")}><PlusIcon size={14} /> Add skill</Button>
       </div>
 
       {skills.length === 0 ? (
-        <EmptyState icon="🧩" title="No skills yet" description="Add the first skill to start the graph." />
+        <EmptyState icon={<StationIcon size={28} />} title="No skills yet" description="Add the first skill to start the graph." />
       ) : visible.length === 0 ? (
-        <EmptyState icon="🔍" title="No matching skills" description="Try a different search term." />
+        <EmptyState icon={<SearchIcon size={28} />} title="No matching skills" description="Try a different search term." />
       ) : (
-        <Card className="divide-y divide-border">
+        <Card className="divide-y divide-border overflow-hidden">
           {visible.map(skill => (
-            <div key={skill._id} className="flex items-center justify-between px-4 py-3">
+            <div key={skill._id} className="flex flex-wrap items-center justify-between gap-y-1 px-4 py-2 odd:bg-muted/50">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                   <span className="font-600 text-sm text-foreground">{skill.name}</span>
@@ -293,13 +294,13 @@ function SkillsTab({ skills }: { skills: Skill[] }) {
                 </div>
                 <p className="text-xs text-muted-foreground truncate" title={skill.description || undefined}>{skill.description}</p>
               </div>
-              <div className="flex items-center gap-3 ml-4">
+              <div className="flex items-center gap-2 sm:gap-3 sm:ml-4">
                 <span className="font-mono text-xs text-muted-foreground" title="Difficulty · demand">
                   D{skill.baseDifficulty} · {formatPercent(skill.marketDemand)}
                 </span>
                 <span className="font-mono text-xs text-muted-foreground">{formatHours(skill.estHours)}</span>
-                <button onClick={() => setFormSkill(skill)} className="text-xs text-muted-foreground hover:text-primary transition-colors">Edit</button>
-                <button onClick={() => openDelete(skill)} className="text-xs text-muted-foreground hover:text-red-500 transition-colors">Delete</button>
+                <button onClick={() => setFormSkill(skill)} className="min-h-11 min-w-11 px-2 text-sm font-700 text-foreground underline underline-offset-4 hover:text-primary">Edit</button>
+                <button onClick={() => openDelete(skill)} className="min-h-11 min-w-11 px-2 text-sm font-700 text-primary underline underline-offset-4">Delete</button>
               </div>
             </div>
           ))}
@@ -382,10 +383,10 @@ function EdgesTab({ skills, byId }: { skills: Skill[]; byId: Map<string, Skill> 
           </Select>
         </div>
         {edgesQuery.data && <span className="text-xs text-muted-foreground font-mono pb-2.5">{pluralize(edgesQuery.data.length, "edge")}</span>}
-        <Button size="sm" className="ml-auto" onClick={() => setFormEdge("new")}>+ Add edge</Button>
+        <Button size="sm" className="ml-auto" onClick={() => setFormEdge("new")}><PlusIcon size={14} /> Add edge</Button>
       </div>
       <p className="text-xs text-muted-foreground mb-4">
-        The server rejects any prerequisite that would create a cycle. "A → B" means A is a prerequisite of B.
+        The server rejects any prerequisite that would create a cycle. "A to B" in this list means A is a prerequisite of B.
       </p>
 
       {edgesQuery.isPending ? (
@@ -394,18 +395,18 @@ function EdgesTab({ skills, byId }: { skills: Skill[]; byId: Map<string, Skill> 
         <ErrorState title="Couldn't load edges" message={edgesQuery.error.message} onRetry={() => edgesQuery.refetch()} />
       ) : edges.length === 0 ? (
         <EmptyState
-          icon="🔗"
+          icon={<RouteIcon size={28} />}
           title={filterSkillId ? "No edges for this skill" : "No edges yet"}
           description="Connect two skills to add a prerequisite."
         />
       ) : (
-        <Card className="divide-y divide-border">
+        <Card className="divide-y divide-border overflow-hidden">
           {edges.map(edge => (
-            <div key={edge._id} className="flex items-center justify-between gap-3 px-4 py-3">
+            <div key={edge._id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-2 odd:bg-muted/50">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-sm flex-wrap">
                   <span className="font-500 text-foreground">{nameOf(edge.sourceSkillId)}</span>
-                  <span className="text-muted-foreground">{edge.type === "prerequisite_of" ? "→" : "↔"}</span>
+                  <span className="text-muted-foreground inline-flex items-center">{edge.type === "prerequisite_of" ? <ArrowIcon size={16} role="img" aria-hidden={false} aria-label="is a prerequisite of" /> : <span className="text-xs font-700">with</span>}</span>
                   <span className="font-500 text-foreground">{nameOf(edge.targetSkillId)}</span>
                   <Badge variant={edge.type === "prerequisite_of" ? "in-progress" : "advanced"}>
                     {edge.type === "prerequisite_of" ? "prerequisite" : "co-requisite"}
@@ -414,9 +415,9 @@ function EdgesTab({ skills, byId }: { skills: Skill[]; byId: Map<string, Skill> 
                 </div>
                 {edge.source && <p className="text-xs text-muted-foreground truncate mt-0.5" title={edge.source}>{edge.source}</p>}
               </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <button onClick={() => setFormEdge(edge)} className="text-xs text-muted-foreground hover:text-primary transition-colors">Edit</button>
-                <button onClick={() => openDelete(edge)} className="text-xs text-muted-foreground hover:text-red-500 transition-colors">Remove</button>
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <button onClick={() => setFormEdge(edge)} className="min-h-11 min-w-11 px-2 text-sm font-700 text-foreground underline underline-offset-4 hover:text-primary">Edit</button>
+                <button onClick={() => openDelete(edge)} className="min-h-11 min-w-11 px-2 text-sm font-700 text-primary underline underline-offset-4">Remove</button>
               </div>
             </div>
           ))}
@@ -449,7 +450,7 @@ function EdgesTab({ skills, byId }: { skills: Skill[]; byId: Map<string, Skill> 
       >
         <p>
           Remove the edge <span className="font-600 text-foreground">{deleteTarget && nameOf(deleteTarget.sourceSkillId)}</span>
-          {deleteTarget?.type === "prerequisite_of" ? " → " : " ↔ "}
+          {deleteTarget?.type === "prerequisite_of" ? " to " : " with "}
           <span className="font-600 text-foreground">{deleteTarget && nameOf(deleteTarget.targetSkillId)}</span>? This cannot be undone.
         </p>
         <p>All learners' paths are recalculated afterwards.</p>
@@ -489,15 +490,15 @@ function RolesTab({ roles, skills, byId }: { roles: Role[]; skills: Skill[]; byI
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <Button size="sm" onClick={() => setFormRole("new")}>+ Add role</Button>
+        <Button size="sm" onClick={() => setFormRole("new")}><PlusIcon size={14} /> Add role</Button>
       </div>
 
       {roles.length === 0 ? (
-        <EmptyState icon="🎯" title="No roles yet" description="Add a role so learners can pick a target." />
+        <EmptyState icon={<RouteIcon size={28} />} title="No roles yet" description="Add a role so learners can pick a target." />
       ) : (
-        <Card className="divide-y divide-border">
+        <Card className="divide-y divide-border overflow-hidden">
           {roles.map(role => (
-            <div key={role._id} className="px-4 py-4">
+            <div key={role._id} className="px-4 py-3 odd:bg-muted/50">
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -506,10 +507,10 @@ function RolesTab({ roles, skills, byId }: { roles: Role[]; skills: Skill[]; byI
                   </div>
                   <p className="text-xs text-muted-foreground font-mono">{role.slug}</p>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <Badge variant={role.demandScore >= 0.9 ? "demand" : "default"}>Demand: {formatPercent(role.demandScore)}</Badge>
-                  <button onClick={() => setFormRole(role)} className="text-xs text-muted-foreground hover:text-primary transition-colors">Edit</button>
-                  <button onClick={() => openDelete(role)} className="text-xs text-muted-foreground hover:text-red-500 transition-colors">Delete</button>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
+                  <Badge variant={role.demandScore >= 0.9 ? "demand" : "default"}>Demand {formatPercent(role.demandScore)}</Badge>
+                  <button onClick={() => setFormRole(role)} className="min-h-11 min-w-11 px-2 text-sm font-700 text-foreground underline underline-offset-4 hover:text-primary">Edit</button>
+                  <button onClick={() => openDelete(role)} className="min-h-11 min-w-11 px-2 text-sm font-700 text-primary underline underline-offset-4">Delete</button>
                 </div>
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -517,7 +518,7 @@ function RolesTab({ roles, skills, byId }: { roles: Role[]; skills: Skill[]; byI
                   <span
                     key={req._id ?? i}
                     title={`${req.label ? `${req.label} · ` : ""}min. ${req.minProficiency}`}
-                    className={`text-xs px-2 py-0.5 rounded-full font-mono ${req.anyOf.length > 1 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" : "bg-primary/10 text-primary"}`}
+                    className={`text-xs px-2 py-0.5 rounded-full font-mono text-foreground border ${req.anyOf.length > 1 ? "border-line-design" : "border-foreground"}`}
                   >
                     {req.anyOf.map(nameOf).join(" / ")}
                   </span>

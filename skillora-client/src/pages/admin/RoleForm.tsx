@@ -1,5 +1,6 @@
 import React, { FormEvent, useState } from "react";
 import { Button, Input, Select, Textarea } from "@/components/ui";
+import { CloseIcon, PlusIcon } from "@/components/transit/icons";
 import { useCreateRole, useUpdateRole } from "@/api/queries";
 import type { Proficiency, Role, RoleCategory, RoleInput, Skill } from "@/api/types";
 import { isValidSlug, slugify } from "@/lib/slug";
@@ -122,7 +123,7 @@ export default function RoleForm({ role, skills, byId, onDone, onCancel }: RoleF
         </p>
         <div className="flex flex-col gap-3">
           {rows.map((row, i) => (
-            <div key={row.key} className={`rounded-lg border p-3 flex flex-col gap-3 ${rowErrors[row.key] ? "border-red-500" : "border-border"}`}>
+            <div key={row.key} className={`rounded-md border p-3 flex flex-col gap-3 ${rowErrors[row.key] ? "border-primary" : "border-border"}`}>
               <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
                 <Input
                   label={`Requirement ${i + 1} label`}
@@ -142,15 +143,15 @@ export default function RoleForm({ role, skills, byId, onDone, onCancel }: RoleF
                 {row.anyOf.map((id, j) => (
                   <React.Fragment key={id}>
                     {j > 0 && <span className="text-xs text-muted-foreground">or</span>}
-                    <span className="inline-flex items-center gap-1 text-xs pl-2.5 pr-1 py-0.5 rounded-full font-mono bg-primary/10 text-primary">
+                    <span className="inline-flex items-center gap-1 text-xs pl-2.5 pr-1 py-0.5 rounded-full font-mono border border-foreground text-foreground">
                       {nameOf(id)}
                       <button
                         type="button"
                         onClick={() => updateRow(row.key, { anyOf: row.anyOf.filter(x => x !== id) })}
-                        className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-primary/20"
+                        className="w-11 h-11 -my-2.5 flex items-center justify-center rounded-full hover:bg-muted"
                         aria-label={`Remove option ${nameOf(id)}`}
                       >
-                        ✕
+                        <CloseIcon size={12} />
                       </button>
                     </span>
                   </React.Fragment>
@@ -158,7 +159,7 @@ export default function RoleForm({ role, skills, byId, onDone, onCancel }: RoleF
                 <select
                   value=""
                   onChange={e => { if (e.target.value) updateRow(row.key, { anyOf: [...row.anyOf, e.target.value] }); }}
-                  className="px-2 py-1 rounded-lg border border-border bg-card text-foreground text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="min-h-11 px-3 rounded-md border-2 border-line-grey bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   aria-label={`Add option to requirement ${i + 1}`}
                 >
                   <option value="">Add option…</option>
@@ -166,11 +167,11 @@ export default function RoleForm({ role, skills, byId, onDone, onCancel }: RoleF
                 </select>
               </div>
               <div className="flex items-center justify-between">
-                {rowErrors[row.key] ? <p className="text-xs text-red-500">{rowErrors[row.key]}</p> : <span />}
+                {rowErrors[row.key] ? <p className="text-sm font-600 text-primary">{rowErrors[row.key]}</p> : <span />}
                 <button
                   type="button"
                   onClick={() => setRows(prev => prev.filter(r => r.key !== row.key))}
-                  className="text-xs text-muted-foreground hover:text-red-500 transition-colors"
+                  className="min-h-11 px-2 text-sm font-700 text-primary hover:underline"
                 >
                   Remove requirement
                 </button>
@@ -178,13 +179,13 @@ export default function RoleForm({ role, skills, byId, onDone, onCancel }: RoleF
             </div>
           ))}
         </div>
-        {errors.requirements && <p className="text-xs text-red-500 mt-2">{errors.requirements}</p>}
+        {errors.requirements && <p className="text-sm font-600 text-primary mt-2">{errors.requirements}</p>}
         <Button type="button" variant="ghost" size="sm" className="mt-3" onClick={() => { setRows(prev => [...prev, newRow()]); setErrors(p => ({ ...p, requirements: undefined })); }}>
-          + Add requirement
+          <PlusIcon size={14} /> Add requirement
         </Button>
       </div>
 
-      {serverError && <p className="text-sm text-red-500" role="alert">{serverError}</p>}
+      {serverError && <p className="text-sm font-600 text-primary" role="alert">{serverError}</p>}
       <div className="flex gap-2 mt-2">
         <Button type="button" variant="ghost" className="flex-1" onClick={onCancel} disabled={pending}>Cancel</Button>
         <Button type="submit" className="flex-1 justify-center" disabled={pending}>

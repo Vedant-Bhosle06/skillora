@@ -77,6 +77,7 @@ Two services expose APIs. **API-N-\*** endpoints belong to the Node API (`skillo
 | API-N-12 | `GET /api/paths/:pathDocId/alternatives` | — | `{ paths, algorithm, stats }` of one of the user's documents | 400, 404 |
 | API-N-13 | `POST /api/paths/select` | `{ rank }` (integer ≥ 1; numeric strings accepted) | `{ message }` — sets `users.selectedPathRank`, no recompute | 400 invalid or unknown rank, 404 no active document |
 | API-N-14 | `POST /api/users/me/skills/complete` | `{ skillId }` | `200 { message, path }` (new document), or `202 { recomputePending: true, message }` | 400 (bad id, no target role, no active path, skill not in the selected path), 409 already completed for this role |
+| API-N-14b | `DELETE /api/users/me/skills/complete/:skillId` | — | `200 { message, path }` (new document), or `202 { recomputePending: true, message }` | 400 (bad id, no target role), 404 user missing or skill not completed for the current target role |
 | API-N-27 | `GET /api/paths/history` | — | Archived documents, newest first | — |
 | API-N-11 | `GET /api/graph` | `?scope=full` (default) or `?scope=path` | `{ nodes: [{ _id, slug, name, category, estHours, marketDemand }], edges: [{ source, target, type, group }] }` | 401 |
 

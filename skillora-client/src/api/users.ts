@@ -40,3 +40,9 @@ export async function completeSkill(skillId: string): Promise<CompleteSkillRespo
   const res = await api.post<CompleteSkillResponse>('/users/me/skills/complete', { skillId });
   return res.data;
 }
+
+/** Undo a completion for the current target role. Same 200 / 202 shapes as completeSkill. */
+export async function uncompleteSkill(skillId: string): Promise<CompleteSkillResponse> {
+  const res = await api.delete<CompleteSkillResponse>(`/users/me/skills/complete/${enc(skillId)}`);
+  return res.data;
+}

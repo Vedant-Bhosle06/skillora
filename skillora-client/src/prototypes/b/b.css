@@ -1,0 +1,59 @@
+/* Prototype B — "Daylight Editorial" (taste skill: minimalist-ui, with the brief's frosted glass) */
+@import 'tailwindcss';
+
+@theme {
+  --font-b-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+  --font-b-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-b-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --color-b-bone: #f7f6f3;
+  --color-b-ink: #111111;
+  --color-b-text: #2f3437;
+  --color-b-muted: #6f6e6a;
+  --color-b-line: #eaeaea;
+  --color-b-blue-bg: #e1f3fe;   --color-b-blue: #1f6c9f;
+  --color-b-green-bg: #edf3ec;  --color-b-green: #346538;
+  --color-b-yellow-bg: #fbf3db; --color-b-yellow: #956400;
+  --color-b-red-bg: #fdebec;    --color-b-red: #9f2f2d;
+  --ease-b: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  --logo-from: #5b45f0;
+  --logo-to: #0377c4;
+  --logo-tile-from: #6c4dff;
+  --logo-tile-to: #1e88e5;
+  --foreground: #111111;
+}
+
+html, body { background: var(--color-b-bone); }
+body { font-family: var(--font-b-sans); color: var(--color-b-text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+::selection { background: #e1f3fe; }
+
+/* Soft light spots on a fixed layer, so the frosted panels have something to frost. */
+.b-light { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.b-light::before, .b-light::after { content: ""; position: absolute; border-radius: 9999px; filter: blur(80px); }
+.b-light::before { width: 44vw; height: 44vw; right: -10vw; top: -8vw; background: rgba(225, 243, 254, 0.9); animation: b-drift 30s var(--ease-b) infinite alternate; }
+.b-light::after { width: 38vw; height: 38vw; left: -12vw; top: 55vh; background: rgba(251, 243, 219, 0.85); animation: b-drift 36s var(--ease-b) infinite alternate-reverse; }
+@keyframes b-drift { to { transform: translate3d(3vw, 4vh, 0); } }
+
+/* Frosted panel: white glass, one 1px edge, near-invisible shadow. */
+.b-glass {
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02), 0 8px 24px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  transition: box-shadow 200ms var(--ease-b), transform 200ms var(--ease-b);
+}
+.b-glass-hover:hover { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02), 0 12px 32px rgba(0, 0, 0, 0.05); }
+
+.b-kbd {
+  font-family: var(--font-b-mono); font-size: 11px; line-height: 1;
+  padding: 3px 6px; border: 1px solid var(--color-b-line); border-bottom-width: 2px;
+  border-radius: 4px; background: var(--color-b-bone); color: var(--color-b-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .b-light::before, .b-light::after { animation: none; }
+}

@@ -1,5 +1,6 @@
 import React, { FormEvent, useState } from "react";
 import { Button, Input, Select } from "@/components/ui";
+import { ArrowIcon } from "@/components/transit/icons";
 import { useCreateEdge, useUpdateEdge } from "@/api/queries";
 import type { EdgeInput, EdgeType, Skill, SkillEdge } from "@/api/types";
 
@@ -49,9 +50,9 @@ export default function EdgeForm({ edge, skills, byId, onDone, onCancel }: EdgeF
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
       {edge ? (
-        <div className="flex items-center gap-2 text-sm bg-muted rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2 text-sm bg-muted rounded-md px-3 py-2">
           <span className="font-600 text-foreground">{nameOf(edge.sourceSkillId)}</span>
-          <span className="text-muted-foreground">{isPrereq ? "→" : "↔"}</span>
+          <span className="text-muted-foreground inline-flex items-center">{isPrereq ? <ArrowIcon size={16} aria-label="is a prerequisite of" role="img" aria-hidden={false} /> : <span className="text-xs font-700">with</span>}</span>
           <span className="font-600 text-foreground">{nameOf(edge.targetSkillId)}</span>
         </div>
       ) : (
@@ -99,7 +100,7 @@ export default function EdgeForm({ edge, skills, byId, onDone, onCancel }: EdgeF
         placeholder="e.g. why this prerequisite exists, or where it came from"
         hint="Free text for curators; saved as the edge's source note."
       />
-      {error && <p className="text-sm text-red-500" role="alert">{error}</p>}
+      {error && <p className="text-sm font-600 text-primary" role="alert">{error}</p>}
       <div className="flex gap-2 mt-2">
         <Button type="button" variant="ghost" className="flex-1" onClick={onCancel} disabled={pending}>Cancel</Button>
         <Button type="submit" className="flex-1 justify-center" disabled={pending}>

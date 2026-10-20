@@ -1,0 +1,63 @@
+/* Prototype C — "Pathfinder" (taste skill: design-taste-frontend v2 · direction "One motif", seed 1195429049).
+   Palette proportions from the sheet (black ground, off-white ink, one accent); the accent is taken from the
+   SKILLORA mark instead of the dealt crimson. Glass appears only on product interface fragments ([data-ui]). */
+@import 'tailwindcss';
+
+@theme {
+  --font-c: 'Outfit Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-c-bg: #0a0a0a;
+  --color-c-surface: #151515;
+  --color-c-ink: #efefef;
+  --color-c-muted: #9a9a9a;
+  --color-c-accent: #3ba4ff;
+  --color-c-accent-ink: #06121f;
+  --color-c-paper: #efefef;
+  --color-c-paper-ink: #0a0a0a;
+  --ease-c: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root {
+  --logo-from: #8b7bff;
+  --logo-to: #3ba4ff;
+  --logo-tile-from: #6c4dff;
+  --logo-tile-to: #1e88e5;
+  --foreground: #efefef;
+  color-scheme: dark;
+}
+
+html, body { background: var(--color-c-bg); }
+body { font-family: var(--font-c); color: var(--color-c-ink); font-size: 1.0625rem; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+::selection { background: var(--color-c-accent); color: var(--color-c-accent-ink); }
+
+/* Product interface fragments: the one place glass is used. */
+[data-ui] {
+  background: rgba(16, 16, 18, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 24px 60px -24px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-radius: 16px;
+}
+[data-ui].c-ui-light {
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 0 1px rgba(0, 0, 0, 0.06), 0 24px 60px -30px rgba(0, 0, 0, 0.35);
+  color: var(--color-c-paper-ink);
+}
+
+/* Slider (live figure) */
+.c-range { appearance: none; -webkit-appearance: none; width: 100%; height: 44px; background: transparent; cursor: pointer; }
+.c-range::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: linear-gradient(to right, var(--color-c-accent) var(--fill, 40%), rgba(255,255,255,0.12) var(--fill, 40%)); }
+.c-range::-moz-range-track { height: 6px; border-radius: 999px; background: rgba(255,255,255,0.12); }
+.c-range::-moz-range-progress { height: 6px; border-radius: 999px; background: var(--color-c-accent); }
+.c-range::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; margin-top: -11px; border-radius: 999px; background: var(--color-c-ink); box-shadow: 0 0 0 6px rgba(59, 164, 255, 0.25); }
+.c-range::-moz-range-thumb { width: 28px; height: 28px; border: 0; border-radius: 999px; background: var(--color-c-ink); }
+.c-range:focus-visible { outline: 2px solid var(--color-c-accent); outline-offset: 6px; border-radius: 999px; }
+
+/* Signature move: slow crossfade, plus a slow drift on the visible picture */
+.c-fade { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.6s var(--ease-c); }
+.c-fade.is-on { opacity: 1; animation: c-drift 14s linear forwards; }
+@keyframes c-drift { from { transform: scale(1.04); } to { transform: scale(1.12); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .c-fade { transition: none; }
+  .c-fade.is-on { animation: none; }
+}

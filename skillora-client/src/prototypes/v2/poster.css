@@ -1,0 +1,39 @@
+/* Prototype v2 · Poster — International Typographic Style: one committed colour field, a strict grid,
+   condensed display type, and the page's numbers as the image. */
+@import 'tailwindcss';
+
+@theme {
+  --font-big: 'Big Shoulders Display Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-text: 'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-p-ground: var(--p-ground);
+  --color-p-ink: var(--p-ink);
+  --color-p-muted: var(--p-muted);
+  --color-p-field: var(--p-field);
+  --color-p-on-field: var(--p-on-field);
+  --color-p-cell: var(--p-cell);
+}
+
+:root {
+  --p-ground: #f4f4f1; --p-ink: #0d0d0d; --p-muted: #4e4e4a; --p-field: #ff4a1c; --p-on-field: #0d0d0d; --p-cell: #dcdcd6;
+  --logo-from: #0d0d0d; --logo-to: #0d0d0d; --logo-tile-from: #ff4a1c; --logo-tile-to: #e0360b; --foreground: #0d0d0d;
+  color-scheme: light;
+}
+.dark {
+  --p-ground: #0b0b0b; --p-ink: #f2f1ec; --p-muted: #a9a8a2; --p-field: #ff4a1c; --p-on-field: #0b0b0b; --p-cell: #272725;
+  --logo-from: #f2f1ec; --logo-to: #f2f1ec; --foreground: #f2f1ec;
+  color-scheme: dark;
+}
+
+html, body { background: var(--p-ground); }
+body, body * { font-family: var(--font-text); }
+body { color: var(--p-ink); -webkit-font-smoothing: antialiased; }
+.p-big, .p-big * { font-family: var(--font-big); font-weight: 900; line-height: 0.82; letter-spacing: -0.01em; text-transform: uppercase; }
+.p-num { font-variant-numeric: tabular-nums; }
+::selection { background: var(--p-field); color: var(--p-on-field); }
+:focus-visible { outline: 3px solid var(--p-field); outline-offset: 3px; }
+
+/* Rolling digit: a column of 0–9 moved by transform */
+.p-digit { display: inline-block; height: 1em; overflow: hidden; vertical-align: top; line-height: 1; }
+.p-big .p-digit, .p-big .p-digit * { line-height: 1; }
+.p-digit > span { display: block; will-change: transform; }
+.p-digit > span > i { display: block; height: 1em; font-style: normal; }

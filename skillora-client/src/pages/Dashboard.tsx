@@ -1,10 +1,15 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Button, StatusBadge, Card, StatTile, PageLoader, ErrorState, EmptyState, ProgressRing } from "@/components/ui";
+import { Button, Badge, Card, PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import { ArrowIcon, CheckIcon, LineDiagram, ServiceList, ServiceRow, SignPanel, WarningIcon } from "@/components/transit";
+import type { LineStop, StopState } from "@/components/transit";
+import SkillDetailPanel from "@/components/SkillDetailPanel";
+import JourneyClock from "@/components/progress/JourneyClock";
+import { landingGraph } from "@/content/landingGraph";
 import { useGraph, useSelectPath, useSkillsCatalog } from "@/api/queries";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
-import { formatDate, formatHours, formatPercent, rankLabel } from "@/lib/format";
+import { demandWord, formatDate, formatHours, formatPercent, pluralize, rankLabel } from "@/lib/format";
 import {
   completedForRole, estWeeks, orChoiceDiff, pathLabel, progressFraction, remainingSteps, selectedRankedPath, totalHours,
 } from "@/lib/pathMetrics";
@@ -13,18 +18,9 @@ import { heldRankMap, refId } from "@/lib/requirements";
 import { useToast } from "@/context/ToastContext";
 import type { NodeStatus } from "@/lib/types";
 
-function statusIcon(status: NodeStatus) {
-  if (status === "completed")   return <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white text-sm">✓</div>;
-  if (status === "in-progress") return <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm animate-pulse">◉</div>;
-  if (status === "unlocked")    return <div className="w-8 h-8 rounded-full border-2 border-primary bg-card flex items-center justify-center text-primary text-sm">◎</div>;
-  return <div className="w-8 h-8 rounded-full border-2 border-border bg-card flex items-center justify-center text-muted-foreground text-sm">🔒</div>;
-}
-
-function connectorColor(status: NodeStatus) {
-  if (status === "completed") return "bg-emerald-300 dark:bg-emerald-700";
-  if (status === "in-progress" || status === "unlocked") return "bg-primary/40";
-  return "bg-border";
-}
+const STOP_STATE: Record<NodeStatus, StopState> = { completed: "done", "in-progress": "current", unlocked: "next", locked: "locked" };
+const STATUS_WORD: Record<NodeStatus, string> = { completed: "Completed", "in-progress": "Up next", unlocked: "Available", locked: "Locked" };
+const STATUS_COLOR: Record<NodeStatus, string> = { completed: "var(--line-route)", "in-progress": "var(--line-route)", unlocked: "var(--foreground)", locked: "var(--line-grey)" };
 
 export default function Dashboard() {
   const { showToast } = useToast();
@@ -73,6 +69,10 @@ export default function Dashboard() {
   }
   const weeks = estWeeks(remainingHours);
 
+  // Clicking a stop opens its skill sign (the same panel the graph uses).
+  const [openSkillId, setOpenSkillId] = useState<string | null>(null);
+  const closeSkill = useCallback(() => setOpenSkillId(null), []);
+
   if (isLoading) return <PageLoader label="Loading your roadmap…" />;
   if (loadError) return <ErrorState title="Couldn't load your roadmap" message={loadError.message} onRetry={reload} />;
   if (needsRole) return <PageLoader label="Taking you to role selection…" />;
@@ -90,39 +90,79 @@ export default function Dashboard() {
   const roleTitle = user.targetRoleId?.title ?? "this role";
   const alreadyQualified = !currentPath || remaining.length === 0;
 
+  const stops: LineStop[] = [
+    ...completed.map(c => ({
+      key: c._id,
+      state: "done" as StopState,
+      label: c.skillId?.name ?? "Deleted skill",
+      detail: <>Completed {formatDate(c.completedAt)}</>,
+      onSelect: refId(c.skillId) ? () => setOpenSkillId(refId(c.skillId)) : undefined,
+    })),
+    ...steps.map(step => {
+      const skill = catalog.byId.get(step.skillId);
+      return {
+        key: step.skillId,
+        state: STOP_STATE[step.status],
+        label: skill?.name ?? "Unknown skill",
+        hours: formatHours(step.estCost),
+        onSelect: () => setOpenSkillId(step.skillId),
+        detail: (
+          <>
+            <span className="font-mono">{rankLabel(step.fromRank)} to {rankLabel(step.toRank)}</span>
+            {step.rationale && <span className="mt-1 block"><span className="font-bold text-foreground">Why this skill? </span>{step.rationale}</span>}
+            {step.status === "locked" && step.blockedBy.length > 0 && (
+              <span className="mt-1 block">Needs {step.blockedBy.map(skillName).join(", ")} first.</span>
+            )}
+          </>
+        ),
+        action: step.status !== "locked" ? (
+          <Link to="/progress" className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-bold text-foreground underline underline-offset-4 hover:bg-muted">
+            Mark complete in Progress <ArrowIcon size={14} />
+          </Link>
+        ) : undefined,
+      };
+    }),
+  ];
+
+  const lockedCount = steps.filter(s => s.status === "locked").length;
+  const e = landingGraph.facts.evaluation;
+  const openStep = openSkillId ? steps.find(s => s.skillId === openSkillId) : undefined;
+  const openStatus: NodeStatus = openStep ? openStep.status : completedIds.has(openSkillId ?? "") ? "completed" : "unlocked";
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {failure && (
-          <div className="mb-6 rounded-xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-900/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <p className="text-sm text-amber-800 dark:text-amber-300">
+          <div className="mb-6 flex flex-col justify-between gap-3 rounded-md border border-border border-t-4 border-t-line-design bg-card p-4 sm:flex-row sm:items-center">
+            <p className="flex items-start gap-2 text-base text-foreground">
+              <WarningIcon size={20} className="mt-0.5 shrink-0" />
               {failure.status === 503 ? "Path service unavailable — showing your last computed path" : `${failure.message} — showing your last computed path`}
             </p>
             <Button size="sm" variant="secondary" onClick={retry} disabled={isComputing}>Retry</Button>
           </div>
         )}
         {isComputing && (
-          <div className="mb-4 flex justify-center">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-mono">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" /> Recalculating…
-            </span>
+          <div className="mb-4">
+            <Badge variant="in-progress">Recalculating…</Badge>
           </div>
         )}
-        <div className={isComputing ? "opacity-50 pointer-events-none transition-opacity" : "transition-opacity"} aria-busy={isComputing}>
+        <div className={isComputing ? "pointer-events-none opacity-50 transition-opacity" : "transition-opacity"} aria-busy={isComputing}>
         {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
             <div>
-              <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mb-1">Active Path</p>
-              <h1 className="font-display font-800 text-2xl text-foreground">{user.targetRoleId?.title}</h1>
-              <p className="text-xs font-mono text-muted-foreground mt-1">
+              <h1 className="font-display text-3xl font-extrabold leading-tight text-foreground md:text-4xl">Your line to {user.targetRoleId?.title}</h1>
+              <p className="mt-2 font-mono text-base text-foreground">
+                {currentPath ? pathLabel(currentPath.rank) : "No route"} · {formatHours(currentPath?.totalLearningCost ?? 0)} in all · {formatHours(remainingHours)} to go{weeks > 0 ? ` · about ${pluralize(weeks, "week")} at 10h a week` : ""}
+              </p>
+              <p className="mt-1 font-mono text-sm text-muted-foreground">
                 {pathDoc.algorithm === "a_star" ? "A*" : pathDoc.algorithm} · {pathDoc.stats.statesExpanded} states · {pathDoc.stats.elapsedMs.toFixed(1)} ms · generated {formatDate(pathDoc.generatedAt)}
               </p>
               {pathDoc.stats.capped && (
-                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Search limit reached — best routes found so far</p>
+                <p className="mt-1 text-sm font-bold text-foreground">Search limit reached — best routes found so far</p>
               )}
               {pathDoc.algorithm === "greedy_fallback" && (
-                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Approximate route (search limit reached)</p>
+                <p className="mt-1 text-sm font-bold text-foreground">Approximate route (search limit reached)</p>
               )}
             </div>
             <div className="flex flex-wrap gap-2">
@@ -132,110 +172,34 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatTile label="Path" value={currentPath ? pathLabel(currentPath.rank) : "—"} sub={`${pathDoc.paths.length} route${pathDoc.paths.length === 1 ? "" : "s"} found`} />
-            <StatTile label="Remaining" value={formatHours(remainingHours)} sub={`${remaining.length} skill${remaining.length === 1 ? "" : "s"} to go`} />
-            <div className="rounded-xl border border-border p-4 bg-card flex items-center justify-between gap-2">
-              <div>
-                <p className="text-xs font-mono uppercase tracking-wider mb-1 text-muted-foreground">Progress</p>
-                <p className="font-display font-800 text-2xl text-foreground">{completed.length}/{completed.length + remaining.length}</p>
-                <p className="text-xs mt-0.5 text-muted-foreground">skills done</p>
-              </div>
-              <ProgressRing value={progressFraction(completed.length, remaining.length)} size={64} stroke={6} />
-            </div>
-            <StatTile label="Est. finish" value={weeks === 0 ? "Done" : `~${weeks} week${weeks === 1 ? "" : "s"}`} sub="at 10h/week" />
-          </div>
+          <SignPanel rule="var(--line-route)" className="p-5">
+            <JourneyClock
+              value={progressFraction(completed.length, remaining.length)}
+              end={roleTitle}
+              caption={`${completed.length} of ${completed.length + remaining.length} stops done`}
+            />
+          </SignPanel>
         </div>
 
         {alreadyQualified ? (
           <EmptyState
-            icon="🎉"
+            icon={<CheckIcon size={28} />}
             title={`You already meet every requirement for ${roleTitle}`}
             description="There is nothing left to learn for this role. Pick another role to keep growing."
             action={<Button onClick={() => navigate("/onboarding/role")}>Change role</Button>}
           />
         ) : (
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main path timeline */}
-          <div className="lg:col-span-2">
-            <h2 className="font-display font-700 text-base text-foreground mb-4">Learning Roadmap</h2>
-            <div className="flex flex-col">
-              {completed.map((c, i) => {
-                const isLast = i === completed.length - 1 && steps.length === 0;
-                return (
-                  <div key={c._id} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      {statusIcon("completed")}
-                      {!isLast && <div className={`w-0.5 flex-1 min-h-8 my-1 ${connectorColor("completed")}`} />}
-                    </div>
-                    <div className="flex-1 pb-6">
-                      <div className="rounded-xl border p-4 border-emerald-200 dark:border-emerald-800/40 bg-emerald-50/50 dark:bg-emerald-900/10">
-                        <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-display font-700 text-sm text-foreground">{c.skillId?.name ?? "Deleted skill"}</h3>
-                          <StatusBadge status="completed" />
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">Completed {formatDate(c.completedAt)}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+        <>
+        <div className="grid gap-10 lg:grid-cols-3">
+          {/* The line */}
+          <section className="lg:col-span-2" aria-labelledby="line-h">
+            <h2 id="line-h" className="mb-5 font-display text-xl font-extrabold text-foreground">Your stops</h2>
+            <LineDiagram stops={stops} label={`Learning path to ${roleTitle}`} />
+          </section>
 
-              {steps.map((step, i) => {
-                const skill = catalog.byId.get(step.skillId);
-                const isLast = i === steps.length - 1;
-
-                return (
-                  <div key={step.skillId} className="flex gap-4">
-                    {/* Timeline column */}
-                    <div className="flex flex-col items-center">
-                      {statusIcon(step.status)}
-                      {!isLast && <div className={`w-0.5 flex-1 min-h-8 my-1 ${connectorColor(step.status)}`} />}
-                    </div>
-
-                    {/* Content */}
-                    <div className={`flex-1 pb-6 ${step.status === "locked" ? "opacity-50" : ""}`}>
-                      <div className={`rounded-xl border p-4 ${
-                        step.status === "in-progress" ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-card"
-                      }`}>
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs text-muted-foreground">#{step.order}</span>
-                            <h3 className="font-display font-700 text-sm text-foreground">{skill?.name ?? "Unknown skill"}</h3>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="font-mono text-xs text-muted-foreground">{formatHours(step.estCost)}</span>
-                            <StatusBadge status={step.status} />
-                          </div>
-                        </div>
-                        <span className="inline-block text-[11px] font-mono px-2 py-0.5 rounded-full bg-muted text-muted-foreground mb-2">
-                          {rankLabel(step.fromRank)} → {rankLabel(step.toRank)}
-                        </span>
-                        {skill?.description && <p className="text-xs text-muted-foreground mb-2">{skill.description}</p>}
-                        {step.rationale && (
-                          <p className="text-xs text-muted-foreground italic mb-1.5">
-                            <span className="not-italic font-600 text-foreground">Why this skill? </span>{step.rationale}
-                          </p>
-                        )}
-                        {step.status === "locked" && step.blockedBy.length > 0 && (
-                          <p className="text-xs text-muted-foreground">Needs: {step.blockedBy.map(skillName).join(", ")}</p>
-                        )}
-                        {step.status !== "locked" && (
-                          <Link to="/progress" className="text-xs text-primary hover:underline font-500">
-                            Mark complete in Progress →
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Alt paths sidebar */}
-          <div>
-            <h2 className="font-display font-700 text-base text-foreground mb-4">Alternative Paths</h2>
+          {/* Other routes */}
+          <section aria-labelledby="alt-h">
+            <h2 id="alt-h" className="mb-5 font-display text-xl font-extrabold text-foreground">Other routes</h2>
             <div className="flex flex-col gap-3">
               {pathDoc.paths.length === 1 && (
                 <Card className="p-4">
@@ -245,53 +209,85 @@ export default function Dashboard() {
               {otherPaths.map(path => {
                 const diff = currentPath ? orChoiceDiff(path, currentPath) : { added: [], removed: [] };
                 return (
-                  <Card key={path.rank} className="p-4">
-                    <p className="font-display font-600 text-sm text-foreground mb-1">{pathLabel(path.rank)}</p>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      {formatHours(path.totalLearningCost)} · {path.steps.length} skill{path.steps.length === 1 ? "" : "s"}
+                  <SignPanel key={path.rank} rule="var(--line-alt)" className="p-4">
+                    <p className="font-display text-base font-extrabold text-foreground">{pathLabel(path.rank)}</p>
+                    <p className="mb-3 font-mono text-sm text-muted-foreground">
+                      {formatHours(path.totalLearningCost)} · {pluralize(path.steps.length, "skill")}
                     </p>
-                    <div className="flex flex-col gap-1 text-xs mb-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground font-mono">Demand</span>
-                        <span className="font-mono text-foreground">{formatPercent(path.marketDemandAvg)}</span>
+                    <dl className="mb-3 flex flex-col gap-1 text-sm">
+                      <div className="flex items-center justify-between gap-3">
+                        <dt className="text-muted-foreground">Demand</dt>
+                        <dd className="text-foreground"><span className="font-bold">{demandWord(path.marketDemandAvg)}</span> <span className="font-mono text-muted-foreground">{formatPercent(path.marketDemandAvg)}</span></dd>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground font-mono">Score</span>
-                        <span className="font-mono text-foreground">{path.compositeScore.toFixed(3)}</span>
+                      <div className="flex items-center justify-between gap-3">
+                        <dt className="text-muted-foreground">Score (lower is better)</dt>
+                        <dd className="font-mono text-foreground">{path.compositeScore.toFixed(3)}</dd>
                       </div>
-                    </div>
+                    </dl>
                     {(diff.added.length > 0 || diff.removed.length > 0) && (
-                      <p className="text-xs text-muted-foreground">
-                        {diff.added.length > 0 && <span className="text-emerald-600 dark:text-emerald-400">+ {diff.added.map(skillName).join(", ")}</span>}
-                        {diff.added.length > 0 && diff.removed.length > 0 && " · "}
-                        {diff.removed.length > 0 && <span className="text-rose-600 dark:text-rose-400">− {diff.removed.map(skillName).join(", ")}</span>}
+                      <p className="flex flex-col gap-0.5 text-sm text-foreground">
+                        {diff.added.length > 0 && <span><span className="font-bold">Adds</span> {diff.added.map(skillName).join(", ")}</span>}
+                        {diff.removed.length > 0 && <span><span className="font-bold">Drops</span> {diff.removed.map(skillName).join(", ")}</span>}
                       </p>
                     )}
                     <Button
                       size="sm"
                       variant="secondary"
-                      className="w-full mt-3 justify-center"
+                      className="mt-3 w-full justify-center"
                       disabled={selectPath.isPending}
                       onClick={() => handleSelectPath(path.rank)}
                     >
                       Select this path
                     </Button>
-                  </Card>
+                  </SignPanel>
                 );
               })}
 
-              <Card className="p-4 border-dashed">
-                <p className="text-xs text-muted-foreground text-center mb-2">Want a custom path?</p>
+              <Card className="border-dashed p-4">
+                <p className="mb-2 text-center text-sm text-muted-foreground">Want to see them side by side?</p>
                 <Button size="sm" variant="ghost" className="w-full" onClick={() => navigate("/dashboard/alternatives")}>
-                  Compare all paths →
+                  Compare all paths <ArrowIcon size={14} />
                 </Button>
               </Card>
             </div>
-          </div>
+          </section>
         </div>
+
+        <section className="mt-14" aria-labelledby="service-h">
+          <h2 id="service-h" className="font-display text-xl font-extrabold text-foreground">Service status</h2>
+          <ServiceList className="mt-4">
+            <ServiceRow tag="Time" color="var(--line-route)">
+              {formatHours(remainingHours)} still to go on your line. Across {e.profiles} test journeys, plans were {e.meanSavedPct.toFixed(1)}% shorter on average than a generic roadmap.
+            </ServiceRow>
+            <ServiceRow tag="Order" color="var(--line-web)">
+              Good service: no stop comes before what it needs.{lockedCount > 0 ? ` ${pluralize(lockedCount, "stop")} ${lockedCount === 1 ? "is" : "are"} waiting for an earlier one.` : " Everything left is ready to start."}
+            </ServiceRow>
+            <ServiceRow tag="Plan" color="var(--line-data)">
+              {isComputing || pathDoc.status === "stale"
+                ? "Recomputing your plan now."
+                : `Your plan is up to date, built ${formatDate(pathDoc.generatedAt)}.`}
+            </ServiceRow>
+          </ServiceList>
+        </section>
+        </>
         )}
         </div>
       </div>
+
+      {openSkillId && (
+        <div className="fixed inset-0 z-[60]">
+          <SkillDetailPanel
+            key={openSkillId}
+            overlay
+            skillId={openSkillId}
+            status={{ label: STATUS_WORD[openStatus], color: STATUS_COLOR[openStatus] }}
+            step={openStep}
+            nameOf={skillName}
+            onSelect={setOpenSkillId}
+            onClose={closeSkill}
+          />
+        </div>
+      )}
     </div>
   );
 }

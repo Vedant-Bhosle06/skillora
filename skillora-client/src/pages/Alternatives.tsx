@@ -1,12 +1,14 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Badge, Card, PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import { Button, Badge, PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import { ArrowIcon, CheckIcon, RouteIcon, SignPanel } from "@/components/transit";
 import { useAlternatives, useSelectPath, useSkillsCatalog } from "@/api/queries";
 import { useCurrentUser } from "@/auth/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { useEnsureFreshPath } from "@/hooks/useEnsureFreshPath";
+import RouteMap from "@/components/RouteMap";
 import TradeoffChart from "@/components/TradeoffChart";
-import { formatHours, formatPercent, pluralize } from "@/lib/format";
+import { demandWord, formatHours, formatPercent, pluralize } from "@/lib/format";
 import { orChoiceDiff, pathLabel } from "@/lib/pathMetrics";
 
 export default function Alternatives() {
@@ -40,7 +42,7 @@ export default function Alternatives() {
       if (fresh.isComputing) return <PageLoader label="Computing your optimal path…" />;
       return (
         <EmptyState
-          icon="🧭"
+          icon={<RouteIcon size={28} />}
           title="No path yet"
           description={fresh.failure?.message ?? "Open the Dashboard to compute your learning path first."}
           action={<Button onClick={() => navigate("/dashboard")}>Go to Dashboard</Button>}
@@ -54,109 +56,88 @@ export default function Alternatives() {
 
     const paths = alternatives.data.paths;
     if (paths.length === 0) {
-      return <EmptyState icon="🧭" title="No routes found" description="The path service returned no routes for your profile." />;
+      return <EmptyState icon={<RouteIcon size={28} />} title="No routes found" description="The path service returned no routes for your profile." />;
     }
 
     const primary = paths.find(p => p.rank === 1) ?? paths[0];
 
     return (
       <>
-      {paths.length === 1 ? (
-        <Card className="p-4 mb-6">
-          <p className="text-sm text-muted-foreground">Only one route exists for your profile.</p>
-        </Card>
-      ) : (
-        <Card className="p-4 mb-6">
-          <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">Trade-off: hours vs. demand</p>
-          <div className="max-w-xl mx-auto"><TradeoffChart paths={paths} selectedRank={user.selectedPathRank} /></div>
-        </Card>
+      {paths.length === 1 && (
+        <SignPanel className="mb-6 p-4">
+          <p className="text-base text-muted-foreground">Only one route exists for your profile.</p>
+        </SignPanel>
       )}
 
-      <div className={`grid gap-4 mb-8 ${paths.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
-        {paths.map(path => {
-          const isCurrent = path.rank === user.selectedPathRank;
-          const diff = path.rank === primary.rank ? null : orChoiceDiff(path, primary);
-          return (
-            <Card key={path.rank} className={`overflow-hidden transition-all ${isCurrent ? "ring-2 ring-primary" : ""}`}>
-              {/* Header */}
-              <div className={`px-4 py-3 border-b border-border ${isCurrent ? "bg-primary/8" : "bg-muted/30"}`}>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-display font-700 text-sm text-foreground">
-                      {path.rank === 1 ? "Primary (recommended)" : pathLabel(path.rank)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {pluralize(path.steps.length, "skill")} · {formatHours(path.totalLearningCost)} total
-                    </p>
-                  </div>
-                  {isCurrent && <Badge variant="in-progress">Active</Badge>}
-                </div>
-              </div>
+      <section className="mb-10" aria-labelledby="map-h">
+        <h2 id="map-h" className="mb-5 font-display text-xl font-extrabold text-foreground">The routes on one map</h2>
+        <SignPanel className="p-5">
+          <RouteMap paths={paths} skillName={skillName} currentRank={user.selectedPathRank} />
+        </SignPanel>
+      </section>
 
-              {/* Stats */}
-              <div className="p-4 grid grid-cols-3 gap-2 border-b border-border">
-                <div className="text-center">
-                  <p className="font-display font-800 text-xl text-primary">{formatHours(path.totalLearningCost)}</p>
-                  <p className="text-xs font-mono text-muted-foreground">Hours</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-display font-800 text-xl text-rose-500">{formatPercent(path.marketDemandAvg)}</p>
-                  <p className="text-xs font-mono text-muted-foreground">Demand</p>
-                </div>
-                <div className="text-center" title="Composite score: lower is better">
-                  <p className="font-display font-800 text-xl text-foreground">{path.compositeScore.toFixed(3)}</p>
-                  <p className="text-xs font-mono text-muted-foreground">Score</p>
-                </div>
-              </div>
-              <p className="px-4 pt-2 text-[11px] text-muted-foreground text-right">Score: lower is better</p>
-
-              {/* OR-choices vs the primary route */}
-              {diff && (diff.added.length > 0 || diff.removed.length > 0) && (
-                <div className="px-4 py-3 border-b border-border text-xs flex flex-col gap-1">
-                  {diff.added.length > 0 && (
-                    <p><span className="font-mono text-muted-foreground">Chooses </span><span className="text-emerald-600 dark:text-emerald-400">{diff.added.map(skillName).join(", ")}</span></p>
-                  )}
-                  {diff.removed.length > 0 && (
-                    <p><span className="font-mono text-muted-foreground">Instead of </span><span className="text-rose-600 dark:text-rose-400">{diff.removed.map(skillName).join(", ")}</span></p>
-                  )}
-                </div>
-              )}
-
-              {/* Sequence */}
-              <div className="p-4">
-                <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-3">Sequence</p>
-                <div className="flex flex-col gap-1.5">
-                  {[...path.steps].sort((a, b) => a.order - b.order).slice(0, 5).map((step, i) => (
-                    <div key={step.skillId} className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground text-xs flex items-center justify-center font-mono shrink-0">{i + 1}</span>
-                      <span className="text-xs text-foreground flex-1">{skillName(step.skillId)}</span>
-                      <span className="text-xs font-mono text-muted-foreground">{formatHours(step.estCost)}</span>
+      <section className="mb-10" aria-labelledby="compare-h">
+        <h2 id="compare-h" className="mb-5 font-display text-xl font-extrabold text-foreground">Compare the routes</h2>
+        <div className="overflow-hidden rounded-md border border-border bg-card">
+          <div className="flex items-center justify-between bg-foreground px-5 py-3 text-background">
+            <span className="text-[15px] font-extrabold">Routes to your role</span>
+            <span className="font-mono text-[13px]">{pluralize(paths.length, "route")}</span>
+          </div>
+          <ul className="divide-y divide-border">
+            {paths.map(path => {
+              const isCurrent = path.rank === user.selectedPathRank;
+              const diff = path.rank === primary.rank ? null : orChoiceDiff(path, primary);
+              return (
+                <li key={path.rank} className="grid gap-4 px-5 py-4 md:grid-cols-[1fr_auto] md:items-center">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <p className="font-display text-lg font-extrabold text-foreground">
+                        {path.rank === 1 ? "Primary (recommended)" : pathLabel(path.rank)}
+                      </p>
+                      {isCurrent && <Badge variant="in-progress">Active</Badge>}
                     </div>
-                  ))}
-                  {path.steps.length > 5 && (
-                    <p className="text-xs text-muted-foreground pl-6">+{path.steps.length - 5} more</p>
-                  )}
-                </div>
-              </div>
+                    <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-base">
+                      <div className="flex gap-2"><dt className="text-muted-foreground">Time</dt><dd className="font-mono font-bold text-foreground">{formatHours(path.totalLearningCost)}</dd></div>
+                      <div className="flex gap-2"><dt className="text-muted-foreground">Demand</dt><dd className="text-foreground"><span className="font-bold">{demandWord(path.marketDemandAvg)}</span> <span className="font-mono text-sm text-muted-foreground">{formatPercent(path.marketDemandAvg)}</span></dd></div>
+                      <div className="flex gap-2"><dt className="text-muted-foreground">Stops</dt><dd className="font-mono font-bold text-foreground">{path.steps.length}</dd></div>
+                      <div className="flex gap-2" title="Composite score: lower is better"><dt className="text-muted-foreground">Score (lower is better)</dt><dd className="font-mono font-bold text-foreground">{path.compositeScore.toFixed(3)}</dd></div>
+                    </dl>
+                    {/* OR-choices vs the primary route */}
+                    {diff && (diff.added.length > 0 || diff.removed.length > 0) && (
+                      <p className="mt-2 text-base text-foreground">
+                        {diff.added.length > 0 && <span><span className="text-muted-foreground">Chooses </span><span className="font-bold">{diff.added.map(skillName).join(", ")}</span></span>}
+                        {diff.added.length > 0 && diff.removed.length > 0 && " "}
+                        {diff.removed.length > 0 && <span><span className="text-muted-foreground">instead of </span><span className="font-bold">{diff.removed.map(skillName).join(", ")}</span></span>}
+                      </p>
+                    )}
+                    {!diff && <p className="mt-2 text-base text-muted-foreground">The route the planner scored best.</p>}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={isCurrent ? "secondary" : "primary"}
+                    className="w-full justify-center md:w-auto"
+                    disabled={isCurrent || selectPath.isPending}
+                    onClick={() => handleSelect(path.rank)}
+                  >
+                    {isCurrent ? <><CheckIcon size={14} strokeWidth={2.2} /> Currently selected</> : <>Select this path <ArrowIcon size={14} /></>}
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
 
-              {/* CTA */}
-              <div className="p-4 border-t border-border">
-                <Button
-                  size="sm"
-                  variant={isCurrent ? "secondary" : "primary"}
-                  className="w-full justify-center"
-                  disabled={isCurrent || selectPath.isPending}
-                  onClick={() => handleSelect(path.rank)}
-                >
-                  {isCurrent ? "✓ Currently selected" : "Select this path →"}
-                </Button>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+      {paths.length > 1 && (
+        <section className="mb-8" aria-labelledby="tradeoff-h">
+          <h2 id="tradeoff-h" className="mb-5 font-display text-xl font-extrabold text-foreground">Hours against demand</h2>
+          <SignPanel className="p-5">
+            <div className="mx-auto max-w-lg"><TradeoffChart paths={paths} selectedRank={user.selectedPathRank} /></div>
+          </SignPanel>
+        </section>
+      )}
 
-      <p className="text-xs text-muted-foreground text-center">
+      <p className="text-center text-sm text-muted-foreground">
         Ranked by α·(hours/maxHours) + β·(1 − demand), α={pathDoc.alpha}, β={pathDoc.beta}. Lower scores rank higher.
       </p>
       </>
@@ -165,10 +146,10 @@ export default function Alternatives() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
         <div className="mb-8">
-          <h1 className="font-display font-800 text-2xl text-foreground mb-1">Alternative Paths</h1>
-          <p className="text-muted-foreground">Compare learning sequences, total time, and market relevance side by side.</p>
+          <h1 className="mb-1 font-display text-3xl font-extrabold text-foreground md:text-4xl">Compare routes</h1>
+          <p className="text-lg text-muted-foreground">Same destination, different roads: total time, demand, and where each route differs.</p>
         </div>
 
         {renderBody()}
