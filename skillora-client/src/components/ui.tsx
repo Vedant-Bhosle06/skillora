@@ -2,6 +2,7 @@ import React, { ReactNode, useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, m } from "motion/react";
 import { useToast, type Toast } from "@/context/ToastContext";
 import { fadeIn, scaleIn } from "@/lib/motion";
+import { useSlowPending } from "@/hooks/useSlowPending";
 import type { NodeStatus, Proficiency } from "@/lib/types";
 import { CheckIcon, CloseIcon, InfoIcon, LockIcon, StationIcon, TrainIcon, WarningIcon } from "@/components/transit/icons";
 
@@ -425,11 +426,22 @@ export function Spinner({ className = "" }: { className?: string }) {
 
 // ── Page Loader ───────────────────────────────────────────────────────────────
 
-export function PageLoader({ label = "Loading…" }: { label?: string }) {
+/** Polite live region: after ~4 s of waiting it explains the free-hosting cold start. */
+export function WakingNote({ pending, className = "" }: { pending: boolean; className?: string }) {
+  const slow = useSlowPending(pending);
+  return (
+    <p role="status" aria-live="polite" className={`text-sm text-muted-foreground max-w-sm ${className}`}>
+      {pending && slow ? "Waking the planner — free hosting sleeps when idle. This can take up to a minute." : ""}
+    </p>
+  );
+}
+
+export function PageLoader({ label = "Loading…", waking = false }: { label?: string; waking?: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
       <Spinner className="w-8 h-8" />
       <p className="text-sm text-muted-foreground">{label}</p>
+      {waking && <WakingNote pending />}
     </div>
   );
 }

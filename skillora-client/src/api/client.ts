@@ -49,7 +49,8 @@ if (import.meta.env.PROD && !rawBase.startsWith('https:')) {
 
 export const api = axios.create({
   baseURL: `${rawBase.replace(/\/+$/, '')}/api`,
-  timeout: 20000,
+  // Generous: a sleeping free-tier API can take about a minute to answer the first request.
+  timeout: 75000,
 });
 
 let onUnauthorized: (() => void) | null = null;

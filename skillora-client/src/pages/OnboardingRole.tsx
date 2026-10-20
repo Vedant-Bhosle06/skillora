@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Badge, PageLoader, ErrorState, EmptyState } from "@/components/ui";
+import { Button, Badge, PageLoader, WakingNote, ErrorState, EmptyState } from "@/components/ui";
 import { useRoleDetail, useRoles, useSetTargetRole } from "@/api/queries";
 import type { Role, RoleDetail } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
@@ -212,6 +212,7 @@ export default function OnboardingRole() {
           </div>
         )}
 
+        <WakingNote pending={setTargetRole.isPending} className="mb-3" />
         <div className="flex items-center justify-between gap-3">
           <button onClick={() => navigate("/onboarding/skills")} className="inline-flex min-h-11 items-center gap-2 rounded-md px-2 text-[15px] font-700 text-foreground hover:bg-muted">
             <ArrowIcon size={16} className="rotate-180" /> Back
