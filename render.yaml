@@ -1,0 +1,47 @@
+# Render Blueprint: two free web services. Secrets are entered in the Render
+# dashboard (sync: false) and are never stored in this file.
+services:
+  - type: web
+    name: skillora-api
+    runtime: node
+    plan: free
+    rootDir: skillora-api
+    buildCommand: npm ci
+    startCommand: node index.js
+    healthCheckPath: /api/stats/public
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: PYTHON_TIMEOUT_MS
+        value: "60000"
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: INTERNAL_API_KEY
+        sync: false
+      # Comma-separated list of allowed browser origins, e.g. https://<your-app>.vercel.app
+      - key: CLIENT_ORIGIN
+        sync: false
+      # Public URL of the path service, e.g. https://skillora-path.onrender.com
+      - key: PYTHON_SERVICE_URL
+        sync: false
+
+  - type: web
+    name: skillora-path
+    runtime: python
+    plan: free
+    rootDir: skillora-path-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: MONGO_URI
+        sync: false
+      # Must equal the API's INTERNAL_API_KEY
+      - key: INTERNAL_API_KEY
+        sync: false

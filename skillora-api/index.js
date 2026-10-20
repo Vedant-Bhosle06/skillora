@@ -18,7 +18,13 @@ if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
 
 connectDB();
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' }));
+// CLIENT_ORIGIN: one origin or a comma-separated list (e.g. localhost + the Vercel URL).
+// Trailing slashes are stripped because browsers send Origin without one.
+const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map(o => o.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+app.use(cors({ origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins }));
 app.use(express.json());
 
 // Routes
@@ -38,4 +44,8 @@ app.use('/api', notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+  // Free hosting sleeps idle services: nudge the path service awake (non-blocking, errors ignored)
+  require('./services/pythonProxy').wakePathService().catch(() => {});
+});
