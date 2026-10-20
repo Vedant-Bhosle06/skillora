@@ -123,7 +123,7 @@ export default function SkillForm({ skill, categories, onDone, onCancel }: Skill
         />
         <Input label="Market demand (0–1)" type="number" min={0} max={1} step={0.01} value={marketDemand} onChange={e => setMarketDemand(e.target.value)} error={errors.marketDemand} />
       </div>
-      {serverError && <p className="text-sm text-red-500" role="alert">{serverError}</p>}
+      {serverError && <p className="text-sm font-600 text-primary" role="alert">{serverError}</p>}
       <div className="flex gap-2 mt-2">
         <Button type="button" variant="ghost" className="flex-1" onClick={onCancel} disabled={pending}>Cancel</Button>
         <Button type="submit" className="flex-1 justify-center" disabled={pending}>

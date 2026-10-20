@@ -8,6 +8,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/context/ToastContext";
 import type { Proficiency } from "@/api/types";
 import { pluralize } from "@/lib/format";
+import { ArrowIcon, CheckIcon, RouteIcon, StationIcon } from "@/components/transit/icons";
 
 const proficiencyLevels: Proficiency[] = ["beginner", "intermediate", "advanced"];
 
@@ -93,8 +94,8 @@ export default function Settings() {
 
   const tabs = [
     { id: "account", label: "Account" },
-    { id: "skills",  label: "My Skills" },
-    { id: "role",    label: "Target Role" },
+    { id: "skills",  label: "My skills" },
+    { id: "role",    label: "Target role" },
   ] as const;
 
   return (
@@ -108,9 +109,9 @@ export default function Settings() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-4 py-2.5 text-sm font-500 border-b-2 -mb-px transition-colors ${
+              className={`min-h-11 px-4 text-sm font-700 border-b-4 -mb-px transition-colors ${
                 tab === t.id
-                  ? "border-primary text-primary"
+                  ? "border-primary text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -122,7 +123,7 @@ export default function Settings() {
         {tab === "account" && (
           <div className="flex flex-col gap-5">
             <Card className="p-5">
-              <h2 className="font-display font-700 text-base text-foreground mb-4">Account Details</h2>
+              <h2 className="font-display font-700 text-base text-foreground mb-4">Account details</h2>
               <dl className="flex flex-col gap-3 text-sm">
                 <div>
                   <dt className="text-xs text-muted-foreground">Full name</dt>
@@ -152,9 +153,11 @@ export default function Settings() {
                   role="switch"
                   aria-checked={darkMode}
                   aria-label="Dark mode"
-                  className={`w-12 h-6 rounded-full border-2 transition-all relative ${darkMode ? "bg-primary border-primary" : "bg-muted border-border"}`}
+                  className="relative flex h-11 w-16 shrink-0 items-center justify-center"
                 >
-                  <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-all ${darkMode ? "left-6" : "left-0.5"}`} />
+                  <span className={`relative block h-7 w-14 rounded-full border-2 transition-colors ${darkMode ? "bg-primary border-primary" : "bg-muted border-line-grey"}`}>
+                    <span className={`absolute top-0.5 block h-5 w-5 rounded-full transition-[left] ${darkMode ? "left-[1.875rem] bg-primary-foreground" : "left-0.5 bg-foreground"}`} />
+                  </span>
                 </button>
               </div>
             </Card>
@@ -168,8 +171,8 @@ export default function Settings() {
             </Card>
 
             {/* Danger zone */}
-            <Card className="p-5 border-red-200 dark:border-red-900/40">
-              <h2 className="font-display font-700 text-base text-red-600 dark:text-red-400 mb-2">Danger Zone</h2>
+            <Card className="p-5 border-2 border-primary">
+              <h2 className="font-display font-700 text-base text-primary mb-2">Danger zone</h2>
               <p className="text-sm text-muted-foreground mb-4">Permanently delete your account and all associated data. This action cannot be undone.</p>
               <Button variant="danger" onClick={() => setDeleteModal(true)}>Delete account</Button>
             </Card>
@@ -180,12 +183,12 @@ export default function Settings() {
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">{pluralize(currentSkills.length, "skill")} in your profile</p>
-              <Button size="sm" variant="secondary" onClick={() => navigate("/onboarding/skills")}>Edit in wizard →</Button>
+              <Button size="sm" variant="secondary" onClick={() => navigate("/onboarding/skills")}>Edit in wizard <ArrowIcon size={16} /></Button>
             </div>
 
             {currentSkills.length === 0 ? (
               <EmptyState
-                icon="🧩"
+                icon={<StationIcon size={28} />}
                 title="No skills yet"
                 description="Add the skills you already have so SKILLORA can plan your path."
                 action={<Button onClick={() => navigate("/onboarding/skills")}>Add skills</Button>}
@@ -197,14 +200,14 @@ export default function Settings() {
                 const skillId = refId(skill) as string;
                 return (
                   <div key={skillId} className="px-4 py-3">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-1">
                       <div>
                         <span className="font-600 text-sm text-foreground">{skill.name}</span>
                         <span className="text-xs text-muted-foreground ml-2">{skill.category}</span>
                       </div>
-                      <button onClick={() => setRemoveTarget({ id: skillId, name: skill.name })} aria-label={`Remove ${skill.name}`} className="text-xs text-muted-foreground hover:text-red-500">Remove</button>
+                      <button onClick={() => setRemoveTarget({ id: skillId, name: skill.name })} aria-label={`Remove ${skill.name}`} className="min-h-11 min-w-11 px-2 text-sm font-700 text-primary underline underline-offset-4">Remove</button>
                     </div>
-                    <div className="flex gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {proficiencyLevels.map(level => (
                         <button
                           key={level}
@@ -212,12 +215,10 @@ export default function Settings() {
                           aria-pressed={us.proficiency === level}
                           disabled={updateProficiency.isPending || us.proficiency === level}
                           onClick={() => setProficiency(skillId, level)}
-                          className={`px-2.5 py-1 rounded-full text-xs font-mono transition-all disabled:cursor-default ${
+                          className={`min-h-11 px-4 rounded-full text-sm font-700 border-2 transition-colors disabled:cursor-default ${
                             us.proficiency === level
-                              ? level === "beginner"     ? "bg-emerald-500 text-white"
-                              : level === "intermediate" ? "bg-amber-500 text-white"
-                                                         : "bg-purple-500 text-white"
-                              : "bg-muted text-muted-foreground hover:bg-muted/80"
+                              ? "bg-foreground text-background border-foreground"
+                              : "border-line-grey text-foreground hover:border-foreground"
                           }`}
                         >
                           {level}
@@ -259,7 +260,7 @@ export default function Settings() {
             ) : rolesQuery.error ? (
               <ErrorState title="Couldn't load roles" message={rolesQuery.error.message} onRetry={() => rolesQuery.refetch()} />
             ) : !rolesQuery.data?.length ? (
-              <EmptyState icon="🎯" title="No roles available" description="An administrator hasn't added any target roles yet." />
+              <EmptyState icon={<RouteIcon size={28} />} title="No roles available" description="An administrator hasn't added any target roles yet." />
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -269,7 +270,7 @@ export default function Settings() {
                       hover
                       onClick={() => setSelectedRoleId(r._id)}
                       selected={chosenRoleId === r._id}
-                      className={`p-3 transition-all ${chosenRoleId === r._id ? "ring-2 ring-primary border-primary" : ""}`}
+                      className="p-3"
                     >
                       <div className="flex items-start justify-between">
                         <div>
@@ -280,7 +281,7 @@ export default function Settings() {
                         </div>
                         {currentRoleId === r._id
                           ? <Badge variant="in-progress">current</Badge>
-                          : chosenRoleId === r._id && <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs">✓</div>}
+                          : chosenRoleId === r._id && <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground" role="img" aria-label="selected"><CheckIcon size={14} strokeWidth={2.4} /></span>}
                       </div>
                     </Card>
                   ))}
@@ -312,7 +313,7 @@ export default function Settings() {
       </Modal>
 
       {/* Delete confirm modal */}
-      <Modal open={deleteModal} onClose={() => { setDeleteModal(false); setDeleteConfirm(""); }} title="Delete Account">
+      <Modal open={deleteModal} onClose={() => { setDeleteModal(false); setDeleteConfirm(""); }} title="Delete account">
         <p className="text-sm text-muted-foreground mb-4">
           This will permanently delete your account, all skill data, and your learning history. This cannot be reversed.
         </p>
